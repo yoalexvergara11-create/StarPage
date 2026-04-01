@@ -9,24 +9,19 @@
     <style>
         body { margin: 0; font-family: 'Inter', sans-serif; background-color: #0b0b10; color: white; padding: 20px; }
         .container { max-width: 600px; margin: auto; }
-        
-        /* Tarjeta de Bienvenida */
         .user-card { background: linear-gradient(135deg, #1a1a24, #232330); padding: 25px; border-radius: 20px; border: 1px solid #2e2e3a; margin-bottom: 20px; display: flex; align-items: center; gap: 15px; }
         .avatar { width: 60px; height: 60px; border-radius: 50%; background: #9333ea; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold; }
-        
         .grid-menu { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px; }
         .menu-item { background: #1a1a24; padding: 20px; border-radius: 15px; text-align: center; border: 1px solid #2e2e3a; cursor: pointer; text-decoration: none; color: white; transition: 0.3s; }
         .menu-item:hover { border-color: #4ade80; transform: translateY(-5px); }
         .menu-item i { font-size: 24px; margin-bottom: 10px; color: #9333ea; }
-
-        /* Sección de Métodos de Pago */
-        .payment-section { background: #1a1a24; padding: 20px; border-radius: 20px; border: 1px solid #2e2e3a; }
-        .payment-section h3 { margin-top: 0; font-size: 16px; color: #4ade80; }
+        .payment-section { background: #1a1a24; padding: 25px; border-radius: 20px; border: 1px solid #2e2e3a; }
+        .payment-section h3 { margin-top: 0; color: #4ade80; display: flex; align-items: center; gap: 10px; }
         .input-group { margin-bottom: 15px; }
         .input-group label { display: block; font-size: 12px; color: #888; margin-bottom: 5px; }
         .input-group input, .input-group select { width: 100%; padding: 12px; background: #0b0b10; border: 1px solid #2e2e3a; border-radius: 10px; color: white; outline: none; box-sizing: border-box; }
-        
-        .btn-save { width: 100%; padding: 12px; background: #9333ea; border: none; border-radius: 10px; color: white; font-weight: 700; cursor: pointer; }
+        .btn-save { width: 100%; padding: 14px; background: linear-gradient(135deg, #9333ea, #4ade80); border: none; border-radius: 12px; color: white; font-weight: 700; cursor: pointer; transition: 0.3s; }
+        .btn-save:hover { opacity: 0.9; }
     </style>
 </head>
 <body>
@@ -35,44 +30,57 @@
         <div class="user-card">
             <div class="avatar" id="user-initial">U</div>
             <div>
-                <h2 style="margin:0; font-size: 18px;" id="user-email">Cargando...</h2>
-                <span style="color: #4ade80; font-size: 12px;"><i class="fa-solid fa-circle-check"></i> Verificado</span>
+                <h2 style="margin:0; font-size: 18px;" id="user-email">Usuario</h2>
+                <span style="color: #4ade80; font-size: 12px;"><i class="fa-solid fa-circle-check"></i> Perfil Verificado</span>
             </div>
         </div>
 
         <div class="grid-menu">
             <a href="vender.html" class="menu-item">
                 <i class="fa-solid fa-right-left"></i>
-                <div>Cambiar Divisas</div>
+                <div>Vender Divisas</div>
             </a>
-            <div class="menu-item">
+            <div class="menu-item" onclick="alert('Historial en desarrollo')">
                 <i class="fa-solid fa-clock-rotate-left"></i>
-                <div>Mis Pedidos</div>
+                <div>Mis Operaciones</div>
             </div>
         </div>
 
         <div class="payment-section">
-            <h3><i class="fa-solid fa-university"></i> Mi Pago Móvil (Para recibir)</h3>
-            <div id="payment-form">
-                <div class="input-group">
-                    <label>Banco</label>
-                    <select id="bank-name">
-                        <option value="Banesco">Banesco</option>
-                        <option value="Mercantil">Mercantil</option>
-                        <option value="Venezuela">Banco de Venezuela</option>
-                        <option value="BNC">BNC</option>
-                    </select>
-                </div>
-                <div class="input-group">
-                    <label>Teléfono (WhatsApp o Pago Móvil)</label>
-                    <input type="text" id="bank-phone" placeholder="04121234567">
-                </div>
-                <div class="input-group">
-                    <label>Cédula</label>
-                    <input type="text" id="bank-id" placeholder="V-12345678">
-                </div>
-                <button class="btn-save" onclick="guardarCuenta()">Guardar Datos de Recepción</button>
+            <h3><i class="fa-solid fa-university"></i> Configurar Pago Móvil</h3>
+            <div class="input-group">
+                <label>Banco Receptor</label>
+                <select id="bank-name">
+                    <option value="" disabled selected>Selecciona un banco</option>
+                    <option value="Banesco">Banesco</option>
+                    <option value="Banco de Venezuela">Banco de Venezuela (BDV)</option>
+                    <option value="Mercantil">Mercantil</option>
+                    <option value="Provincial">BBVA Provincial</option>
+                    <option value="BNC">BNC (Nacional de Crédito)</option>
+                    <option value="Bancamiga">Bancamiga</option>
+                    <option value="Bancaribe">Bancaribe</option>
+                    <option value="Exterior">Banco Exterior</option>
+                    <option value="DELSUR">DELSUR</option>
+                    <option value="Bicentenario">Banco Bicentenario</option>
+                    <option value="Tesoro">Banco del Tesoro</option>
+                    <option value="Banplus">Banplus</option>
+                    <option value="Fondo Común">BFC (Fondo Común)</option>
+                    <option value="Activo">Banco Activo</option>
+                    <option value="Plaza">Banco Plaza</option>
+                    <option value="Caroní">Banco Caroní</option>
+                    <option value="100% Banco">100% Banco</option>
+                    <option value="Sofitasa">Sofitasa</option>
+                </select>
             </div>
+            <div class="input-group">
+                <label>Número de Teléfono</label>
+                <input type="text" id="bank-phone" placeholder="Ej: 04121234567">
+            </div>
+            <div class="input-group">
+                <label>Cédula de Identidad</label>
+                <input type="text" id="bank-id" placeholder="Ej: V-12345678">
+            </div>
+            <button class="btn-save" onclick="guardarCuenta()">Guardar Datos de Recepción</button>
         </div>
     </div>
 
@@ -98,35 +106,28 @@
             if (user) {
                 document.getElementById('user-email').innerText = user.email;
                 document.getElementById('user-initial').innerText = user.email[0].toUpperCase();
-                
-                // Cargar datos si ya existen
-                const docRef = doc(db, "bank_accounts", user.uid);
-                const docSnap = await getDoc(docRef);
+                const docSnap = await getDoc(doc(db, "bank_accounts", user.uid));
                 if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    document.getElementById('bank-name').value = data.banco;
-                    document.getElementById('bank-phone').value = data.telefono;
-                    document.getElementById('bank-id').value = data.cedula;
+                    const d = docSnap.data();
+                    document.getElementById('bank-name').value = d.banco;
+                    document.getElementById('bank-phone').value = d.telefono;
+                    document.getElementById('bank-id').value = d.cedula;
                 }
-            } else {
-                window.location.href = 'index.html';
-            }
+            } else { window.location.href = 'index.html'; }
         });
 
         window.guardarCuenta = async () => {
             const user = auth.currentUser;
-            const btn = document.querySelector('.btn-save');
-            btn.innerText = "Guardando...";
+            const banco = document.getElementById('bank-name').value;
+            const tlf = document.getElementById('bank-phone').value;
+            const id = document.getElementById('bank-id').value;
+
+            if(!banco || !tlf || !id) return alert("Completa todos los campos");
 
             await setDoc(doc(db, "bank_accounts", user.uid), {
-                banco: document.getElementById('bank-name').value,
-                telefono: document.getElementById('bank-phone').value,
-                cedula: document.getElementById('bank-id').value,
-                email: user.email
+                banco, telefono: tlf, cedula: id, email: user.email, updated: new Date()
             });
-
-            alert("¡Datos guardados! Ahora tus cambios serán más rápidos.");
-            btn.innerText = "Guardar Datos de Recepción";
+            alert("¡Datos guardados con éxito!");
         };
     </script>
 </body>
