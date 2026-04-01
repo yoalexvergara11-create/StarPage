@@ -1,859 +1,124 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>StarPage | Remesas + USDT | Yoalex Vergara</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StarPage | Acceso</title>
 
-        body {
-            font-family: 'Inter', sans-serif;
-            color: #e5e9f0;
-            line-height: 1.5;
-            padding: 1.5rem;
-            min-height: 100vh;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            background: #08080c;
-        }
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 
-        /* Fondo animado más vivo (purpura y morado) */
-        .animated-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -2;
-            background: linear-gradient(135deg, #0a0a0f 0%, #1c0f2f 40%, #2f125a 70%, #160a22 100%);
-            overflow: hidden;
-        }
+<style>
+body{
+    font-family: 'Inter', sans-serif;
+    background: #0b0b10;
+    color: white;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+}
 
-        .light {
-            position: absolute;
-            background: radial-gradient(circle, rgba(168, 85, 247, 0.4) 0%, transparent 70%); /* Púrpura brillante */
-            border-radius: 50%;
-            filter: blur(80px);
-            animation: floatLight 12s infinite ease-in-out alternate;
-        }
+.container{
+    width:350px;
+    background:#111;
+    padding:30px;
+    border-radius:20px;
+    box-shadow:0 0 30px rgba(192,132,252,0.2);
+}
 
-        .light:nth-child(1) { width: 600px; height: 600px; top: -100px; left: -100px; animation-delay: 0s; background: radial-gradient(circle, rgba(147, 51, 234, 0.5) 0%, transparent 70%); }
-        .light:nth-child(2) { width: 700px; height: 700px; bottom: -200px; right: -100px; animation-delay: -4s; background: radial-gradient(circle, rgba(192, 132, 252, 0.3) 0%, transparent 70%); }
-        .light:nth-child(3) { width: 500px; height: 500px; top: 40%; left: 20%; animation-delay: -8s; background: radial-gradient(circle, rgba(126, 34, 206, 0.4) 0%, transparent 70%); }
-        .light:nth-child(4) { width: 450px; height: 450px; bottom: 10%; right: 40%; animation-delay: -12s; background: radial-gradient(circle, rgba(74, 222, 128, 0.15) 0%, transparent 70%); }
+h2{
+    text-align:center;
+    margin-bottom:20px;
+}
 
-        @keyframes floatLight {
-            0% { transform: translate(0, 0) scale(1); opacity: 0.5; }
-            100% { transform: translate(60px, 40px) scale(1.2); opacity: 0.9; }
-        }
+input{
+    width:100%;
+    padding:12px;
+    margin:10px 0;
+    border-radius:10px;
+    border:none;
+    background:#1e1e2a;
+    color:white;
+}
 
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            position: relative;
-            z-index: 1;
-            flex: 1;
-        }
+button{
+    width:100%;
+    padding:12px;
+    background:linear-gradient(90deg,#9333ea,#4ade80);
+    border:none;
+    border-radius:10px;
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+}
 
-        .hands-bill {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 15px;
-            font-size: 3.5rem;
-            filter: drop-shadow(0 0 15px #c084fc);
-            margin-bottom: 0.5rem;
-        }
-        .hands-bill i {
-            background: rgba(0,0,0,0.5);
-            border-radius: 50%;
-            padding: 0.5rem;
-            transition: all 0.3s ease;
-        }
-        .hands-bill i:hover {
-            transform: scale(1.15);
-            filter: drop-shadow(0 0 12px #c084fc);
-        }
-
-        .view { transition: opacity 0.3s ease; }
-        .card {
-            background: rgba(17, 17, 21, 0.85);
-            backdrop-filter: blur(15px);
-            border-radius: 32px;
-            padding: 1.8rem;
-            border: 1px solid rgba(192, 132, 252, 0.5);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-            margin-bottom: 2rem;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .card:hover { border-color: rgba(192, 132, 252, 1); box-shadow: 0 0 25px rgba(168, 85, 247, 0.3); }
-        .card-title {
-            font-size: 1.6rem;
-            font-weight: 700;
-            margin-bottom: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            border-left: 4px solid #4ade80;
-            padding-left: 1rem;
-        }
-        .card-title i { color: #c084fc; transition: transform 0.2s; }
-        .card-title i:hover { transform: scale(1.1); }
-
-        input, select, button, textarea {
-            background: #1e1e2a;
-            border: 1px solid #3b3b4f;
-            border-radius: 20px;
-            padding: 0.9rem 1.2rem;
-            color: white;
-            font-family: 'Inter', sans-serif;
-            width: 100%;
-            margin: 0.6rem 0;
-            transition: 0.3s;
-            font-size: 1rem;
-        }
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: #c084fc;
-            box-shadow: 0 0 15px rgba(192, 132, 252, 0.5);
-            background: #252536;
-        }
-        button {
-            background: linear-gradient(95deg, #9333ea, #4ade80);
-            border: none;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-top: 1rem;
-        }
-        button:hover { transform: scale(0.97); filter: brightness(1.1); box-shadow: 0 0 20px rgba(74, 222, 128, 0.6); }
-        .btn-outline { background: transparent; border: 1px solid #c084fc; color: #c084fc; }
-        .flex-row { display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; }
-        .rate-badge {
-            background: #1a1a24;
-            border-radius: 20px;
-            padding: 0.8rem;
-            text-align: center;
-            margin-bottom: 1rem;
-            border-left: 3px solid #4ade80;
-        }
-        
-        /* Cajas de pago con vida y colores (Pagando a) */
-        .rate-box-container {
-            display: flex;
-            gap: 15px;
-            justify-content: space-around;
-            text-align: center;
-            flex-wrap: wrap;
-        }
-        .rate-box {
-            background: rgba(30, 30, 42, 0.6);
-            border-radius: 20px;
-            padding: 1.5rem 1rem;
-            flex: 1;
-            min-width: 110px;
-            transition: transform 0.3s, box-shadow 0.3s;
-            backdrop-filter: blur(5px);
-        }
-        .rate-box:hover { transform: translateY(-5px); }
-        .rate-box.paypal { border: 1px solid #0070ba; box-shadow: 0 0 15px rgba(0, 112, 186, 0.3); }
-        .rate-box.zinli { border: 1px solid #c084fc; box-shadow: 0 0 15px rgba(192, 132, 252, 0.3); }
-        .rate-box.usdt { border: 1px solid #4ade80; box-shadow: 0 0 15px rgba(74, 222, 128, 0.3); }
-        .rate-box h4 { margin: 10px 0 5px 0; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 1px; }
-        .rate-box .price { font-size: 1.4rem; font-weight: 800; }
-
-        .result-box {
-            background: #0b0b10;
-            border-radius: 24px;
-            padding: 1.2rem;
-            text-align: center;
-            font-size: 2rem;
-            font-weight: 800;
-            margin: 1.5rem 0;
-            color: #4ade80;
-            text-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
-            border: 1px solid rgba(74, 222, 128, 0.3);
-        }
-        .small-text { font-size: 0.85rem; color: #aaa; }
-        .whatsapp-float {
-            position: fixed;
-            bottom: 28px;
-            right: 28px;
-            background: #25d366;
-            width: 65px;
-            height: 65px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2.2rem;
-            color: white;
-            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.5);
-            z-index: 999;
-            text-decoration: none;
-            transition: transform 0.2s;
-        }
-        .whatsapp-float:hover { transform: scale(1.1); box-shadow: 0 0 25px rgba(37, 211, 102, 0.8); }
-        .logout-btn, .settings-btn {
-            background: transparent;
-            border: 1px solid #f87171;
-            color: #f87171;
-            width: auto;
-            padding: 0.5rem 1.5rem;
-            border-radius: 30px;
-            font-size: 0.9rem;
-            margin-top: 0;
-        }
-        .logout-btn:hover { background: #f87171; color: #fff; box-shadow: 0 0 15px rgba(248, 113, 113, 0.6); }
-        .settings-btn { border-color: #c084fc; color: #c084fc; margin-right: 0.5rem; }
-        .settings-btn:hover { background: #c084fc; color: #fff; box-shadow: 0 0 15px rgba(192, 132, 252, 0.6); }
-        .admin-table { width: 100%; overflow-x: auto; margin-top: 1.5rem; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; background: rgba(0,0,0,0.3); border-radius: 15px; overflow: hidden; }
-        th, td { text-align: left; padding: 1rem; border-bottom: 1px solid #2c2c3a; }
-        th { color: #c084fc; background: rgba(192,132,252,0.1); text-transform: uppercase; letter-spacing: 1px; }
-        .footer { text-align: center; padding: 2rem 0 1rem; font-size: 0.8rem; color: #777; border-top: 1px solid rgba(192,132,252,0.2); margin-top: 3rem; }
-        
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85);
-            backdrop-filter: blur(10px);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-        .modal-content {
-            background: #111115;
-            border-radius: 32px;
-            padding: 2.5rem;
-            max-width: 500px;
-            width: 90%;
-            border: 1px solid #c084fc;
-            box-shadow: 0 0 40px rgba(192, 132, 252, 0.2);
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-        
-        /* Ojos reales para contraseñas */
-        .password-wrapper {
-            position: relative;
-            width: 100%;
-        }
-        .password-wrapper input {
-            padding-right: 3rem;
-        }
-        .toggle-password {
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            cursor: pointer;
-            font-size: 1.4rem;
-            user-select: none;
-            background: transparent;
-            width: auto;
-            padding: 0;
-            margin: 0;
-            transition: 0.2s;
-        }
-        .toggle-password:hover { transform: translateY(-50%) scale(1.1); filter: brightness(1.2); }
-        .country-code {
-            display: flex;
-            gap: 10px;
-        }
-        .country-code select { width: 130px; margin-right: 0; }
-        .country-code input { flex: 1; }
-
-        /* Panel de solo lectura en ajustes */
-        .readonly-panel {
-            background: #1e1e2a;
-            padding: 1rem;
-            border-radius: 15px;
-            margin-bottom: 1.5rem;
-            border-left: 3px solid #c084fc;
-        }
-        .readonly-panel p { margin: 5px 0; font-size: 0.95rem; }
-        .readonly-panel strong { color: #fff; }
-        .readonly-panel span { color: #aaa; }
-
-        @media (max-width: 700px) {
-            body { padding: 1rem; }
-            .card-title { font-size: 1.3rem; }
-            .rate-box-container { flex-direction: column; }
-            .hands-bill { font-size: 2.8rem; }
-        }
-    </style>
+.switch{
+    text-align:center;
+    margin-top:10px;
+    cursor:pointer;
+    color:#c084fc;
+}
+</style>
 </head>
+
 <body>
-<div class="animated-bg">
-    <div class="light"></div>
-    <div class="light"></div>
-    <div class="light"></div>
-    <div class="light"></div>
-</div>
 
 <div class="container">
-    <div class="hands-bill">
-        <i class="fas fa-hands-helping"></i>
-        <i class="fas fa-star" style="color: #f5b042; text-shadow:0 0 15px gold;"></i>
-        <i class="fas fa-money-bill-wave"></i>
-    </div>
 
-    <div id="viewRegister" class="view" style="max-width: 550px; margin: 0 auto;">
-        <div class="card">
-            <div class="card-title"><i class="fas fa-user-plus"></i> Crear cuenta StarPage</div>
-            <form id="registerForm">
-                <input type="email" id="regEmail" placeholder="Correo electrónico" required>
-                <select id="regCountry">
-                    <option value="Venezuela">Venezuela</option>
-                    <option value="Estados Unidos">Estados Unidos</option>
-                    <option value="Colombia">Colombia</option>
-                    <option value="España">España</option>
-                    <option value="México">México</option>
-                    <option value="Argentina">Argentina</option>
-                    <option value="Perú">Perú</option>
-                    <option value="Chile">Chile</option>
-                </select>
-                <div class="country-code">
-                    <select id="phoneCode">
-                        <option value="+58">+58 (Venezuela)</option>
-                        <option value="+1">+1 (USA)</option>
-                        <option value="+57">+57 (Colombia)</option>
-                        <option value="+34">+34 (España)</option>
-                        <option value="+52">+52 (México)</option>
-                    </select>
-                    <input type="tel" id="regPhone" placeholder="Número de teléfono" required>
-                </div>
-                <input type="text" id="regIdNumber" placeholder="Cédula / Pasaporte" required>
-                <label class="small-text" style="color: #fff; margin-top: 10px; display: block;">Fecha de nacimiento (para verificar mayoría de edad)</label>
-                <input type="date" id="regBirthDate" required>
-                <label class="small-text" style="color: #fff; display: block;">Foto de tu documento (cédula o pasaporte)</label>
-                <input type="file" id="regDocument" accept="image/*" required>
-                <div class="password-wrapper">
-                    <input type="password" id="regPassword" placeholder="Contraseña segura" required>
-                    <span class="toggle-password" data-target="regPassword">👁️</span>
-                </div>
-                <div class="small-text" style="margin-bottom: 10px;">La contraseña debe tener mínimo 8 caracteres e incluir: mayúsculas, minúsculas, números y símbolos (@$!%*?&).</div>
-                <button type="submit" id="doRegisterBtn">Registrarme</button>
-                <div id="regError" class="small-text" style="color:#f87171; margin-top: 10px; text-align: center; font-size: 0.95rem;"></div>
-            </form>
-            <hr style="margin: 1.5rem 0; border-color: rgba(255,255,255,0.1);">
-            <p style="text-align:center;">¿Ya tienes cuenta? <a href="#" id="goToLoginLink" style="color:#c084fc; font-weight: bold; text-decoration: none;">Inicia sesión</a></p>
-        </div>
-        <div id="loginInline" style="display: none;">
-            <div class="card">
-                <div class="card-title"><i class="fas fa-sign-in-alt"></i> Iniciar sesión</div>
-                <input type="email" id="loginEmail" placeholder="Correo electrónico">
-                <div class="password-wrapper">
-                    <input type="password" id="loginPassword" placeholder="Contraseña">
-                    <span class="toggle-password" data-target="loginPassword">👁️</span>
-                </div>
-                <button id="doLoginBtn">Ingresar al sistema</button>
-                <div id="loginError" class="small-text" style="color:#f87171; margin-top: 10px; text-align: center; font-size: 0.95rem;"></div>
-                <p style="text-align:center; margin-top:1.5rem;"><a href="#" id="goToRegisterLink" style="color:#c084fc; font-weight: bold; text-decoration: none;">Crear cuenta nueva</a></p>
-            </div>
-        </div>
-    </div>
+<h2 id="title">Iniciar sesión</h2>
 
-    <div id="viewDashboard" class="view" style="display: none;">
-        <div class="flex-row" style="justify-content: space-between; margin-bottom: 2rem;">
-            <div class="logo">
-                <h1 style="font-size: 2.2rem; background: linear-gradient(135deg,#c084fc,#4ade80); -webkit-background-clip:text; background-clip:text; color:transparent; text-shadow: 0 0 20px rgba(192,132,252,0.3);">✨ StarPage ✨</h1>
-                <p class="small-text" style="font-size: 1rem;">Remesas al instante | Vende USDT</p>
-            </div>
-            <div style="display: flex; gap: 10px;">
-                <button id="settingsModalBtn" class="settings-btn"><i class="fas fa-cog"></i> Perfil</button>
-                <button id="dashboardLogoutBtn" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Salir</button>
-            </div>
-        </div>
+<input type="email" id="email" placeholder="Correo">
+<input type="password" id="password" placeholder="Contraseña">
 
-        <div class="card">
-            <div class="card-title"><i class="fas fa-hand-holding-usd"></i> Pagando a:</div>
-            <div class="rate-box-container">
-                <div class="rate-box paypal">
-                    <i class="fab fa-paypal" style="font-size: 3.5rem; color: #0070ba; text-shadow: 0 0 15px #0070ba;"></i>
-                    <h4 style="color: #0070ba;">PayPal</h4>
-                    <div class="price"><span id="paypalRateDisplay">--</span> Bs</div>
-                </div>
-                <div class="rate-box zinli">
-                    <i class="fas fa-bolt" style="font-size: 3.5rem; color: #c084fc; text-shadow: 0 0 15px #c084fc;"></i>
-                    <h4 style="color: #c084fc;">Zinli</h4>
-                    <div class="price"><span id="zinliRateDisplay">--</span> Bs</div>
-                </div>
-                <div class="rate-box usdt">
-                    <i class="fab fa-usdt" style="font-size: 3.5rem; color: #4ade80; text-shadow: 0 0 15px #4ade80;"></i>
-                    <h4 style="color: #4ade80;">USDT</h4>
-                    <div class="price"><span id="usdtRateDisplay">--</span> Bs</div>
-                </div>
-            </div>
-        </div>
+<button onclick="login()">Entrar</button>
 
-        <div class="card">
-            <div class="card-title"><i class="fas fa-exchange-alt"></i> Cambiar dinero</div>
-            <select id="exchangeDirection">
-                <option value="usd_to_ves">Dólares (USD) → Bolívares (VES)</option>
-                <option value="ves_to_usd">Bolívares (VES) → Dólares (USD)</option>
-            </select>
-            <select id="paymentMethod">
-                <option value="paypal">PayPal</option>
-                <option value="zinli">Zinli</option>
-            </select>
-            <div id="receiverInfo" class="rate-badge">Correo al que debes enviar el pago: <br><strong id="paymentEmail" style="font-size: 1.1rem; color: #c084fc;">yoalexflores12@gmail.com</strong></div>
-            <label class="small-text" style="color: #fff;">Monto que enviaste:</label>
-            <input type="number" id="exchangeAmount" placeholder="Ej: 50.00" step="any">
-            <div class="result-box" id="exchangeResult">Recibirás: 0,00 Bs</div>
-            <label class="small-text" style="color: #fff;">Subir comprobante de pago (captura)</label>
-            <input type="file" id="paymentProof" accept="image/*">
-            <button id="submitExchangeBtn"><i class="fas fa-check-circle"></i> Reportar pago y continuar</button>
-            <div id="exchangeMsg" class="small-text" style="margin-top: 10px; font-size: 1rem; text-align: center;"></div>
-        </div>
+<p class="switch" onclick="toggle()">Crear cuenta</p>
 
-        <div class="card">
-            <div class="card-title"><i class="fab fa-bitcoin"></i> Vender USDT vía Binance</div>
-            <div class="rate-badge">Cotización USDT: <strong id="usdtRateValue" style="color: #4ade80;">--</strong> Bs/USDT</div>
-            <div id="binanceInfo" class="rate-badge">ID Binance Pay / Wallet para enviar:<br><strong id="binanceWallet" style="font-size: 1.2rem; color: #f5b042;">--</strong></div>
-            <label class="small-text" style="color: #fff;">Cantidad de USDT a vender:</label>
-            <input type="number" id="usdtAmount" placeholder="Ej: 100.00" step="any">
-            <div class="result-box" id="usdtResult" style="color: #f5b042; text-shadow: 0 0 10px rgba(245, 176, 66, 0.5); border-color: rgba(245, 176, 66, 0.3);">Recibirás: 0,00 Bs</div>
-            <label class="small-text" style="color: #fff;">Subir comprobante de transferencia USDT</label>
-            <input type="file" id="usdtProof" accept="image/*">
-            <button id="submitUsdtBtn" style="background: linear-gradient(95deg, #f5b042, #fbbf24);"><i class="fab fa-binance"></i> Reportar venta de USDT</button>
-            <div id="usdtMsg" class="small-text" style="margin-top: 10px; font-size: 1rem; text-align: center;"></div>
-        </div>
-
-        <div id="payoutForm" style="display: none;" class="card">
-            <div class="card-title"><i class="fas fa-university"></i> Datos para recibir tu dinero</div>
-            <select id="payoutMethod">
-                <option value="movil">Pago Móvil</option>
-                <option value="transfer">Transferencia Bancaria</option>
-            </select>
-            <div id="movilFields">
-                <input type="text" id="movilPhone" placeholder="Teléfono (Ej: 04121234567)">
-                <input type="text" id="movilId" placeholder="Cédula del titular">
-                <select id="movilBank">
-                    <option value="Banesco">Banesco</option>
-                    <option value="Mercantil">Mercantil</option>
-                    <option value="Provincial">Provincial</option>
-                    <option value="Venezuela">Banco de Venezuela</option>
-                    <option value="Bicentenario">Bicentenario</option>
-                    <option value="Caribe">Banco Caribe</option>
-                    <option value="Exterior">Banco Exterior</option>
-                    <option value="Activo">Banco Activo</option>
-                    <option value="BNC">Banco Nacional de Crédito (BNC)</option>
-                    <option value="Tesoro">Banco del Tesoro</option>
-                    <option value="Caroni">Banco Caroní</option>
-                </select>
-            </div>
-            <div id="transferFields" style="display: none;">
-                <input type="text" id="transferBank" placeholder="Banco (Ej: Mercantil)">
-                <input type="text" id="transferAccountType" placeholder="Tipo de cuenta (Corriente/Ahorro)">
-                <input type="text" id="transferAccountNumber" placeholder="Número de cuenta (20 dígitos)">
-                <input type="text" id="transferHolder" placeholder="Titular de la cuenta">
-                <input type="text" id="transferId" placeholder="Cédula del titular">
-            </div>
-            <button id="confirmPayoutBtn"><i class="fas fa-paper-plane"></i> Confirmar datos y finalizar pedido</button>
-            <div id="payoutMsg" class="small-text" style="margin-top: 10px; text-align: center;"></div>
-        </div>
-
-        <div class="card">
-            <div class="card-title"><i class="fas fa-history"></i> Mi historial de transacciones</div>
-            <div id="userHistory" class="admin-table"></div>
-        </div>
-
-        <div id="founderPanel" style="display: none; margin-top: 3rem;">
-            <div class="card" style="border-color: #f5b042; box-shadow: 0 0 30px rgba(245, 176, 66, 0.2);">
-                <div class="card-title" style="color: #f5b042; border-left-color: #f5b042;"><i class="fas fa-crown" style="color: #f5b042;"></i> Panel de Administración - Yoalex Vergara (CEO)</div>
-                <div style="background: rgba(0,0,0,0.5); border-radius: 20px; padding: 1.5rem; margin-bottom: 2rem; text-align: center; border: 1px solid rgba(245, 176, 66, 0.5);">
-                    <div style="font-size: 1.2rem; text-transform: uppercase;">Comisiones netas estimadas: <br><span id="totalCommissionDisplay" style="font-size: 2.5rem; font-weight: 800; color: #4ade80; text-shadow: 0 0 10px #4ade80;">$0.00</span> USD</div>
-                </div>
-                <div><h3 style="color: #fff; margin-bottom: 1rem;">⚙️ Configuración de tasas (Lo que el cliente ve)</h3></div>
-                <div class="flex-row">
-                    <div style="flex:1; min-width: 150px;"><label class="small-text" style="color:#fff;">Tasa PayPal (Bs/USD)</label><input type="number" id="adminPaypalRate" step="any"></div>
-                    <div style="flex:1; min-width: 150px;"><label class="small-text" style="color:#fff;">Tasa Zinli (Bs/USD)</label><input type="number" id="adminZinliRate" step="any"></div>
-                    <div style="flex:1; min-width: 150px;"><label class="small-text" style="color:#fff;">Tasa USDT (Bs/USDT)</label><input type="number" id="adminUsdtRate" step="any"></div>
-                </div>
-                <div style="margin-top: 1rem;"><label class="small-text" style="color:#fff;">Correo Zinli para recibir pagos</label><input type="email" id="adminZinliEmail" placeholder="correo@zinli.com"></div>
-                <div><label class="small-text" style="color:#fff;">ID Binance Pay / Wallet para recibir USDT</label><input type="text" id="adminBinanceWallet" placeholder="ID Binance"></div>
-                <button id="saveAdminSettings" style="background: linear-gradient(95deg, #f5b042, #c084fc);"><i class="fas fa-save"></i> Guardar configuración global</button>
-                <hr style="margin: 2.5rem 0; border-color: rgba(245, 176, 66, 0.3);">
-                <div><h3 style="color: #fff; margin-bottom: 1rem;">📦 Pedidos en proceso</h3></div>
-                <div id="ordersList" class="admin-table"></div>
-            </div>
-        </div>
-    </div>
 </div>
 
-<div id="settingsModal" class="modal">
-    <div class="modal-content">
-        <h3 style="font-size: 1.8rem; margin-bottom: 1.5rem; border-bottom: 2px solid #c084fc; padding-bottom: 10px;"><i class="fas fa-user-edit"></i> Mi Perfil</h3>
-        
-        <div class="readonly-panel">
-            <h4 style="margin-bottom: 10px; color: #4ade80;">Datos de Registro (KYC)</h4>
-            <p><strong>Correo:</strong> <span id="profileEmailTxt"></span></p>
-            <p><strong>Cédula / Pasaporte:</strong> <span id="profileIdTxt"></span></p>
-            <p><strong>País:</strong> <span id="profileCountryTxt"></span></p>
-        </div>
+<!-- FIREBASE -->
+<script type="module">
 
-        <label class="small-text" style="color:#fff;">Foto de perfil</label>
-        <input type="file" id="profilePhoto" accept="image/*">
-        
-        <label class="small-text" style="color:#fff;">Nombre de usuario público</label>
-        <input type="text" id="editUsername" placeholder="Tu nombre de usuario">
-        
-        <label class="small-text" style="color:#fff;">Número de teléfono (Contacto)</label>
-        <input type="tel" id="editPhone" placeholder="Teléfono">
-        
-        <button id="saveProfileBtn"><i class="fas fa-save"></i> Guardar cambios de perfil</button>
-        <button id="closeSettingsModal" class="btn-outline" style="margin-top: 10px; width: 100%;">Cerrar panel</button>
-    </div>
-</div>
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-<a href="https://wa.me/584125556789?text=Hola%20StarPage%2C%20necesito%20ayuda" target="_blank" class="whatsapp-float"><i class="fab fa-whatsapp"></i></a>
-<footer class="footer">© 2026 StarPage - Todos los derechos reservados.<br>Desarrollado por Yoalex Vergara, CEO de StarPage.</footer>
+const firebaseConfig = {
+  apiKey: "AQUI_TU_API_KEY",
+  authDomain: "TU_APP.firebaseapp.com",
+  projectId: "TU_ID",
+};
 
-<script>
-    // ========== STORAGE KEYS ==========
-    const USERS_KEY = "starpage_users_v3";
-    const SESSION_KEY = "starpage_session";
-    const TRANSACTIONS_KEY = "starpage_transactions";
-    const COMMISSIONS_KEY = "starpage_commissions";
-    const ORDERS_KEY = "starpage_orders";
-    const SETTINGS_KEY = "starpage_settings";
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 
-    // Configuración por defecto
-    const defaultSettings = {
-        paypalRate: 570,
-        zinliRate: 600,
-        usdtRate: 670,
-        zinliEmail: "starpage@zinli.com",
-        binanceWallet: "1234567890"
-    };
+window.isLogin = true;
 
-    function initStorage() {
-        if (!localStorage.getItem(USERS_KEY)) {
-            localStorage.setItem(USERS_KEY, JSON.stringify([{
-                email: "yoalexvergara11@gmail.com",
-                password: "Yoalex.11",
-                kycApproved: true,
-                country: "Venezuela",
-                idNumber: "V-CEO",
-                profile: { username: "Yoalex CEO", phone: "+58 412 5556789", photo: "" },
-                createdAt: new Date().toISOString(),
-                isFounder: true
-            }]));
-        }
-        if (!localStorage.getItem(SETTINGS_KEY)) localStorage.setItem(SETTINGS_KEY, JSON.stringify(defaultSettings));
-        if (!localStorage.getItem(TRANSACTIONS_KEY)) localStorage.setItem(TRANSACTIONS_KEY, JSON.stringify([]));
-        if (!localStorage.getItem(COMMISSIONS_KEY)) localStorage.setItem(COMMISSIONS_KEY, JSON.stringify({ totalUSD: 0 }));
-        if (!localStorage.getItem(ORDERS_KEY)) localStorage.setItem(ORDERS_KEY, JSON.stringify([]));
+window.toggle = function(){
+    isLogin = !isLogin;
+    document.getElementById("title").innerText = isLogin ? "Iniciar sesión" : "Crear cuenta";
+    document.querySelector("button").innerText = isLogin ? "Entrar" : "Registrarme";
+}
+
+window.login = function(){
+    let email = document.getElementById("email").value;
+    let pass = document.getElementById("password").value;
+
+    if(isLogin){
+        signInWithEmailAndPassword(auth, email, pass)
+        .then(()=>{
+            window.location.href = "dashboard.html";
+        })
+        .catch(e=>alert(e.message));
+    }else{
+        createUserWithEmailAndPassword(auth, email, pass)
+        .then(()=>{
+            alert("Cuenta creada");
+        })
+        .catch(e=>alert(e.message));
     }
-    initStorage();
+}
 
-    function getUsers() { return JSON.parse(localStorage.getItem(USERS_KEY)); }
-    function saveUsers(users) { localStorage.setItem(USERS_KEY, JSON.stringify(users)); }
-    function getSession() { return JSON.parse(localStorage.getItem(SESSION_KEY)); }
-    function setSession(user) { if (user) localStorage.setItem(SESSION_KEY, JSON.stringify(user)); else localStorage.removeItem(SESSION_KEY); }
-    function getTransactions() { return JSON.parse(localStorage.getItem(TRANSACTIONS_KEY)); }
-    function addTransaction(tx) { let txs = getTransactions(); txs.unshift({ ...tx, timestamp: new Date().toISOString() }); localStorage.setItem(TRANSACTIONS_KEY, JSON.stringify(txs)); }
-    function getCommissions() { return JSON.parse(localStorage.getItem(COMMISSIONS_KEY)); }
-    function addCommission(amount) { let c = getCommissions(); c.totalUSD += amount; localStorage.setItem(COMMISSIONS_KEY, JSON.stringify(c)); }
-    function getOrders() { return JSON.parse(localStorage.getItem(ORDERS_KEY)); }
-    function addOrder(order) { let orders = getOrders(); orders.unshift(order); localStorage.setItem(ORDERS_KEY, JSON.stringify(orders)); }
-    function updateOrderStatus(orderId, status) { let orders = getOrders(); let idx = orders.findIndex(o => o.id === orderId); if(idx !== -1) { orders[idx].status = status; localStorage.setItem(ORDERS_KEY, JSON.stringify(orders)); } }
-    function getSettings() { return JSON.parse(localStorage.getItem(SETTINGS_KEY)); }
-    function saveSettings(settings) { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }
-
-    // Helper: validar contraseña segura (Ahora más estricta pero con mensaje claro)
-    function isStrongPassword(pwd) { 
-        // Obliga al menos: 1 mayúscula, 1 minúscula, 1 número, 1 símbolo especial, mín 8 caracteres.
-        return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(pwd); 
-    }
-
-    // Registrar usuario con KYC integrado
-    function registerUser(email, password, country, phoneCode, phone, idNumber, birthDate, documentFile) {
-        let users = getUsers();
-        if (users.find(u => u.email === email)) return { success: false, error: "El correo ya está registrado en el sistema." };
-        if (!isStrongPassword(password)) return { success: false, error: "Error: La contraseña debe tener mínimo 8 caracteres e incluir: mayúsculas, minúsculas, números y símbolos." };
-        
-        const today = new Date(); 
-        const birth = new Date(birthDate); 
-        let age = today.getFullYear() - birth.getFullYear(); 
-        const m = today.getMonth() - birth.getMonth(); 
-        if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
-        
-        if (age < 18) return { success: false, error: "Lo sentimos, debes ser mayor de 18 años para utilizar esta plataforma." };
-        
-        const newUser = {
-            email, password, kycApproved: true, country, phone: phoneCode + phone, idNumber, birthDate,
-            profile: { username: email.split('@')[0], phone: phoneCode + phone, photo: "" },
-            createdAt: new Date().toISOString(), isFounder: (email === "yoalexvergara11@gmail.com")
-        };
-        users.push(newUser); saveUsers(users);
-        return { success: true };
-    }
-
-    function loginUser(email, password) {
-        let users = getUsers();
-        let user = users.find(u => u.email === email && u.password === password);
-        if (user) { setSession({ email: user.email, kycApproved: user.kycApproved, isFounder: user.isFounder }); return { success: true }; }
-        return { success: false, error: "Contraseña o correo incorrecto. Verifica los datos." };
-    }
-
-    function logout() { setSession(null); location.reload(); }
-    
-    // Conectar el botón de salir de forma explícita
-    document.getElementById("dashboardLogoutBtn")?.addEventListener('click', logout);
-
-    // ========== UI ==========
-    let currentOrderType = null, currentOrderAmount = null, currentOrderProof = null, currentPaymentMethod = null, currentExchangeDirection = null;
-
-    function showView(viewName) {
-        document.getElementById("viewRegister").style.display = "none";
-        document.getElementById("viewDashboard").style.display = "none";
-        document.getElementById(`view${viewName}`).style.display = "block";
-    }
-
-    function loadDashboard() {
-        let session = getSession(); if (!session) return;
-        let users = getUsers(); let user = users.find(u => u.email === session.email);
-        let settings = getSettings();
-        
-        // Mostrar valores
-        document.getElementById("paypalRateDisplay").innerText = settings.paypalRate;
-        document.getElementById("zinliRateDisplay").innerText = settings.zinliRate;
-        document.getElementById("usdtRateDisplay").innerText = settings.usdtRate;
-        document.getElementById("usdtRateValue").innerText = settings.usdtRate;
-        document.getElementById("binanceWallet").innerText = settings.binanceWallet;
-        
-        let method = document.getElementById("paymentMethod").value;
-        document.getElementById("paymentEmail").innerText = (method === "paypal") ? "yoalexflores12@gmail.com" : settings.zinliEmail;
-        
-        // Cargar datos en el modal de ajustes
-        if(user) {
-            document.getElementById("profileEmailTxt").innerText = user.email;
-            document.getElementById("profileIdTxt").innerText = user.idNumber || "N/A";
-            document.getElementById("profileCountryTxt").innerText = user.country || "N/A";
-            document.getElementById("editUsername").value = user.profile.username || "";
-            document.getElementById("editPhone").value = user.profile.phone || "";
-        }
-
-        // Actualizar historial visualmente
-        let myTxs = getTransactions().filter(t => t.userEmail === session.email);
-        document.getElementById("userHistory").innerHTML = myTxs.length ? `<table><thead><tr><th>Fecha</th><th>Tipo</th><th>Detalle</th><th>Monto</th></tr></thead><tbody>${myTxs.map(t => `<tr><td>${new Date(t.timestamp).toLocaleString()}</td><td>${t.type}</td><td>${t.detail}</td><td><strong style="color:#4ade80;">${t.amount || ''}</strong></td></tr>`).join('')}</tbody></table>` : "<p class='small-text' style='text-align:center;'>Aún no tienes transacciones en tu historial.</p>";
-        
-        if (session.isFounder) {
-            document.getElementById("founderPanel").style.display = "block";
-            document.getElementById("adminPaypalRate").value = settings.paypalRate;
-            document.getElementById("adminZinliRate").value = settings.zinliRate;
-            document.getElementById("adminUsdtRate").value = settings.usdtRate;
-            document.getElementById("adminZinliEmail").value = settings.zinliEmail;
-            document.getElementById("adminBinanceWallet").value = settings.binanceWallet;
-            let commissions = getCommissions();
-            document.getElementById("totalCommissionDisplay").innerText = `$${commissions.totalUSD.toFixed(2)}`;
-            let orders = getOrders();
-            document.getElementById("ordersList").innerHTML = orders.length ? `<table><thead><tr><th>ID</th><th>Usuario</th><th>Tipo</th><th>Monto</th><th>Comprobante</th><th>Estado</th><th>Acción</th></tr></thead><tbody>${orders.map(o => `<tr><td><span style="font-size:0.7rem;">${o.id}</span></td><td>${o.userEmail}</td><td>${o.type}</td><td>${o.amount}</td><td><a href="${o.proof}" target="_blank" style="color:#c084fc;">Ver Captura</a></td><td><span style="color:${o.status === 'pendiente' ? '#f5b042' : '#4ade80'}; font-weight:bold;">${o.status.toUpperCase()}</span></td><td>${o.status === 'pendiente' ? `<button class='completeOrderBtn' data-id='${o.id}' style='padding:5px 10px; font-size:0.8rem; margin:0;'>Completar</button>` : '✔️ Listo'}</td></tr>`).join('')}</tbody></table>` : "<p style='text-align:center; color:#aaa;'>No hay pedidos pendientes o procesados.</p>";
-            document.querySelectorAll('.completeOrderBtn').forEach(btn => btn.addEventListener('click', (e) => { let id = btn.getAttribute('data-id'); updateOrderStatus(id, 'completado'); alert("✅ Pedido marcado como completado con éxito. (Se ha simulado el envío de correo al cliente)."); loadDashboard(); }));
-        } else { document.getElementById("founderPanel").style.display = "none"; }
-    }
-
-    function updateExchangeResult() {
-        let direction = document.getElementById("exchangeDirection").value;
-        let amount = parseFloat(document.getElementById("exchangeAmount").value);
-        let method = document.getElementById("paymentMethod").value;
-        let settings = getSettings();
-        let rate = method === 'paypal' ? settings.paypalRate : settings.zinliRate;
-        if (isNaN(amount)) amount = 0;
-        let result = direction === 'usd_to_ves' ? amount * rate : amount / rate;
-        let prefix = direction === 'usd_to_ves' ? 'Recibirás: ' : 'Pagarás: ';
-        let suffix = direction === 'usd_to_ves' ? ' Bs' : ' USD';
-        document.getElementById("exchangeResult").innerHTML = prefix + result.toLocaleString('es-VE', { minimumFractionDigits: 2 }) + suffix;
-    }
-
-    document.getElementById("exchangeDirection")?.addEventListener('change', updateExchangeResult);
-    document.getElementById("paymentMethod")?.addEventListener('change', function() {
-        let settings = getSettings();
-        document.getElementById("paymentEmail").innerHTML = (this.value === 'paypal' ? "yoalexflores12@gmail.com" : settings.zinliEmail);
-        updateExchangeResult();
-    });
-    document.getElementById("exchangeAmount")?.addEventListener('input', updateExchangeResult);
-    document.getElementById("usdtAmount")?.addEventListener('input', function() {
-        let settings = getSettings(); let amount = parseFloat(this.value) || 0;
-        document.getElementById("usdtResult").innerHTML = "Recibirás: " + (amount * settings.usdtRate).toLocaleString('es-VE', { minimumFractionDigits: 2 }) + " Bs";
-    });
-
-    function showPayoutForm(orderType, amount, proof, method, direction) {
-        currentOrderType = orderType; currentOrderAmount = amount; currentOrderProof = proof; currentPaymentMethod = method; currentExchangeDirection = direction;
-        document.getElementById("payoutForm").style.display = "block";
-    }
-
-    document.getElementById("submitExchangeBtn")?.addEventListener('click', () => {
-        let session = getSession(); if (!session) { alert("Tu sesión expiró. Inicia sesión nuevamente."); return; }
-        let direction = document.getElementById("exchangeDirection").value;
-        let method = document.getElementById("paymentMethod").value;
-        let amount = parseFloat(document.getElementById("exchangeAmount").value);
-        let proof = document.getElementById("paymentProof").files[0];
-        
-        if (!amount || amount <= 0) { document.getElementById("exchangeMsg").innerHTML = "<span style='color:#f87171'>❌ Por favor ingresa un monto válido a cambiar.</span>"; return; }
-        if (!proof) { document.getElementById("exchangeMsg").innerHTML = "<span style='color:#f87171'>❌ Debes subir la captura o comprobante de tu pago.</span>"; return; }
-        
-        let reader = new FileReader(); reader.onload = function(e) {
-            showPayoutForm("Cambio Normal", amount, e.target.result, method, direction);
-            document.getElementById("exchangeMsg").innerHTML = "<span style='color:#4ade80'>✅ Comprobante subido. Ahora llena los datos donde quieres recibir tu dinero.</span>";
-        }; reader.readAsDataURL(proof);
-    });
-
-    document.getElementById("submitUsdtBtn")?.addEventListener('click', () => {
-        let session = getSession(); if (!session) { alert("Tu sesión expiró. Inicia sesión nuevamente."); return; }
-        let amount = parseFloat(document.getElementById("usdtAmount").value);
-        let proof = document.getElementById("usdtProof").files[0];
-        
-        if (!amount || amount <= 0) { document.getElementById("usdtMsg").innerHTML = "<span style='color:#f87171'>❌ Por favor ingresa la cantidad de USDT.</span>"; return; }
-        if (!proof) { document.getElementById("usdtMsg").innerHTML = "<span style='color:#f87171'>❌ Debes subir la captura de la transferencia de Binance.</span>"; return; }
-        
-        let reader = new FileReader(); reader.onload = function(e) {
-            showPayoutForm("Venta USDT", amount, e.target.result, "usdt", null);
-            document.getElementById("usdtMsg").innerHTML = "<span style='color:#4ade80'>✅ Comprobante subido. Ahora llena los datos donde quieres recibir los Bolívares.</span>";
-        }; reader.readAsDataURL(proof);
-    });
-
-    document.getElementById("payoutMethod")?.addEventListener('change', function() {
-        document.getElementById("movilFields").style.display = this.value === 'movil' ? 'block' : 'none';
-        document.getElementById("transferFields").style.display = this.value === 'transfer' ? 'block' : 'none';
-    });
-
-    document.getElementById("confirmPayoutBtn")?.addEventListener('click', () => {
-        let session = getSession(); if (!session) return;
-        let payoutMethod = document.getElementById("payoutMethod").value;
-        let payoutData = {};
-        
-        if (payoutMethod === 'movil') {
-            payoutData = { phone: document.getElementById("movilPhone").value, id: document.getElementById("movilId").value, bank: document.getElementById("movilBank").value };
-        } else {
-            payoutData = { bank: document.getElementById("transferBank").value, accountType: document.getElementById("transferAccountType").value, accountNumber: document.getElementById("transferAccountNumber").value, holder: document.getElementById("transferHolder").value, id: document.getElementById("transferId").value };
-        }
-        
-        let orderId = 'ORD-' + Math.floor(Math.random() * 1000000);
-        let order = {
-            id: orderId, userEmail: session.email, type: currentOrderType, amount: currentOrderAmount, proof: currentOrderProof,
-            payoutMethod, payoutData, status: 'pendiente', timestamp: new Date().toISOString()
-        };
-        
-        addOrder(order);
-        addTransaction({ userEmail: session.email, type: currentOrderType, detail: `Pago en proceso / Envío de ${currentOrderAmount}`, amount: currentOrderAmount });
-        
-        // Simulación de ganancia automática hacia el panel de admin (2% de ejemplo)
-        addCommission(currentOrderAmount * 0.02);
-        
-        document.getElementById("payoutForm").style.display = "none";
-        alert("🎉 ¡Tu pedido ha sido enviado con éxito! Recibirás tu dinero en minutos a los datos proporcionados.");
-        document.getElementById("exchangeMsg").innerHTML = ""; document.getElementById("usdtMsg").innerHTML = "";
-        
-        // Limpiar inputs
-        document.getElementById("exchangeAmount").value = "";
-        document.getElementById("usdtAmount").value = "";
-        document.getElementById("paymentProof").value = "";
-        document.getElementById("usdtProof").value = "";
-        
-        loadDashboard();
-    });
-
-    document.getElementById("saveAdminSettings")?.addEventListener('click', () => {
-        let settings = {
-            paypalRate: parseFloat(document.getElementById("adminPaypalRate").value),
-            zinliRate: parseFloat(document.getElementById("adminZinliRate").value),
-            usdtRate: parseFloat(document.getElementById("adminUsdtRate").value),
-            zinliEmail: document.getElementById("adminZinliEmail").value,
-            binanceWallet: document.getElementById("adminBinanceWallet").value
-        };
-        saveSettings(settings);
-        alert("✅ Configuración guardada correctamente. Las tasas han sido actualizadas en tiempo real.");
-        loadDashboard();
-    });
-
-    // Modal de perfil
-    document.getElementById("settingsModalBtn")?.addEventListener('click', () => { document.getElementById("settingsModal").style.display = "flex"; });
-    document.getElementById("closeSettingsModal")?.addEventListener('click', () => { document.getElementById("settingsModal").style.display = "none"; });
-    document.getElementById("saveProfileBtn")?.addEventListener('click', () => {
-        let session = getSession(); if (!session) return;
-        let users = getUsers(); let idx = users.findIndex(u => u.email === session.email);
-        if (idx !== -1) {
-            if (document.getElementById("editUsername").value) users[idx].profile.username = document.getElementById("editUsername").value;
-            if (document.getElementById("editPhone").value) users[idx].profile.phone = document.getElementById("editPhone").value;
-            let file = document.getElementById("profilePhoto").files[0];
-            if (file) {
-                let reader = new FileReader(); reader.onload = e => { users[idx].profile.photo = e.target.result; saveUsers(users); alert("Tu perfil ha sido actualizado."); location.reload(); };
-                reader.readAsDataURL(file);
-            } else { saveUsers(users); alert("Tu perfil ha sido actualizado."); location.reload(); }
-        }
-    });
-
-    // Toggle de vistas Login/Registro
-    let showLoginLink = document.getElementById("goToLoginLink"), showRegisterLink = document.getElementById("goToRegisterLink"), loginInline = document.getElementById("loginInline"), registerCard = document.querySelector("#viewRegister .card");
-    if(showLoginLink) showLoginLink.onclick = (e) => { e.preventDefault(); registerCard.style.display = "none"; loginInline.style.display = "block"; };
-    if(showRegisterLink) showRegisterLink.onclick = (e) => { e.preventDefault(); registerCard.style.display = "block"; loginInline.style.display = "none"; };
-
-    document.getElementById("doLoginBtn")?.addEventListener('click', () => {
-        let email = document.getElementById("loginEmail").value, pass = document.getElementById("loginPassword").value;
-        let res = loginUser(email, pass);
-        if (res.success) checkAuthAndRedirect();
-        else document.getElementById("loginError").innerText = res.error;
-    });
-
-    document.getElementById("doRegisterBtn")?.addEventListener('click', (e) => {
-        e.preventDefault();
-        let email = document.getElementById("regEmail").value;
-        let password = document.getElementById("regPassword").value;
-        let country = document.getElementById("regCountry").value;
-        let phoneCode = document.getElementById("phoneCode").value;
-        let phone = document.getElementById("regPhone").value;
-        let idNumber = document.getElementById("regIdNumber").value;
-        let birthDate = document.getElementById("regBirthDate").value;
-        let docFile = document.getElementById("regDocument").files[0];
-        
-        if (!docFile) { document.getElementById("regError").innerText = "Por favor adjunta la foto de tu documento de identidad para el registro (KYC)."; return; }
-        
-        let reader = new FileReader(); reader.onload = function() {
-            let res = registerUser(email, password, country, phoneCode, phone, idNumber, birthDate, reader.result);
-            if (res.success) { alert("🎉 ¡Registro exitoso en StarPage! Ahora puedes iniciar sesión."); registerCard.style.display = "none"; loginInline.style.display = "block"; }
-            else document.getElementById("regError").innerText = res.error;
-        }; reader.readAsDataURL(docFile);
-    });
-
-    function checkAuthAndRedirect() {
-        let session = getSession();
-        if (!session) { showView("Register"); registerCard.style.display = "block"; loginInline.style.display = "none"; return; }
-        let users = getUsers(); let user = users.find(u => u.email === session.email);
-        if (!user || !user.kycApproved) { logout(); return; }
-        showView("Dashboard"); loadDashboard();
-    }
-
-    // Toggle Ojos reales (visibilidad de contraseñas)
-    document.querySelectorAll('.toggle-password').forEach(icon => {
-        icon.addEventListener('click', function() {
-            let target = document.getElementById(this.getAttribute('data-target'));
-            if (target) { 
-                target.type = target.type === 'password' ? 'text' : 'password'; 
-                // Efecto visual al presionar
-                this.style.transform = "translateY(-50%) scale(0.9)";
-                setTimeout(() => { this.style.transform = "translateY(-50%) scale(1)"; }, 100);
-            }
-        });
-    });
-
-    checkAuthAndRedirect();
 </script>
+
 </body>
 </html>
