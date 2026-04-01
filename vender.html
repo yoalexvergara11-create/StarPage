@@ -3,80 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StarPage | Terminal de Cambio</title>
+    <title>StarPage | Vender Divisas</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { margin: 0; font-family: 'Inter', sans-serif; background-color: #0b0b10; color: white; display: flex; justify-content: center; padding: 20px; }
-        .trade-container { width: 100%; max-width: 450px; background: #1a1a24; padding: 30px; border-radius: 24px; border: 1px solid #2e2e3a; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
-        .logo { font-weight: 700; color: #4ade80; font-size: 20px; }
-        
+        .trade-container { width: 100%; max-width: 450px; background: #1a1a24; padding: 30px; border-radius: 24px; border: 1px solid #2e2e3a; }
         .input-box { background: #0b0b10; padding: 15px; border-radius: 16px; margin-bottom: 15px; border: 1px solid #2e2e3a; }
-        .input-box label { color: #888; font-size: 12px; display: block; margin-bottom: 5px; }
-        .input-row { display: flex; justify-content: space-between; align-items: center; }
-        .input-row input { background: transparent; border: none; color: white; font-size: 20px; font-weight: 600; width: 60%; outline: none; }
-        .currency { font-weight: 700; color: #c084fc; }
-
-        .info-row { display: flex; justify-content: space-between; font-size: 13px; color: #888; margin-bottom: 10px; }
-        .highlight { color: #4ade80; font-weight: 600; }
-
-        .upload-area { border: 2px dashed #444; padding: 20px; text-align: center; border-radius: 16px; margin: 20px 0; cursor: pointer; transition: 0.3s; }
-        .upload-area:hover { border-color: #9333ea; background: #232330; }
-        
-        .btn-trade { width: 100%; padding: 18px; background: linear-gradient(135deg, #9333ea, #4ade80); border: none; border-radius: 14px; color: white; font-weight: 700; cursor: pointer; font-size: 16px; }
+        .input-box label { color: #888; font-size: 12px; display: block; margin-bottom: 8px; }
+        .input-box input { background: transparent; border: none; color: white; font-size: 20px; font-weight: 600; width: 100%; outline: none; }
+        .bank-preview { background: rgba(147, 51, 234, 0.1); border: 1px solid #9333ea; padding: 15px; border-radius: 14px; margin: 15px 0; font-size: 13px; }
+        .upload-area { border: 2px dashed #444; padding: 20px; text-align: center; border-radius: 16px; margin: 20px 0; cursor: pointer; }
+        .btn-trade { width: 100%; padding: 18px; background: linear-gradient(135deg, #9333ea, #4ade80); border: none; border-radius: 14px; color: white; font-weight: 700; cursor: pointer; }
         .hidden { display: none; }
     </style>
 </head>
 <body>
 
     <div class="trade-container">
-        <div class="header">
-            <div class="logo">STARPAGE P2P</div>
-            <i class="fa-solid fa-bolt" style="color: #4ade80;"></i>
+        <div style="display:flex; justify-content:space-between; margin-bottom:20px">
+            <span style="font-weight:bold; color:#4ade80">STARPAGE EXCHANGE</span>
+            <a href="lobby.html" style="color:#888; text-decoration:none; font-size:12px">Volver</a>
         </div>
 
         <div class="input-box">
-            <label>Tú envías (Pago)</label>
-            <div class="input-row">
-                <input type="number" id="send-amount" placeholder="0.00" oninput="calculate()">
-                <span class="currency">USD (Zinli/Binance)</span>
-            </div>
-        </div>
-
-        <div style="text-align: center; margin: -10px 0 10px;">
-            <i class="fa-solid fa-arrow-down-long" style="color: #2e2e3a;"></i>
+            <label>Tú envías (USD)</label>
+            <input type="number" id="send-amount" placeholder="0.00" oninput="calculate()">
         </div>
 
         <div class="input-box">
-            <label>Tú recibes (BSD)</label>
-            <div class="input-row">
-                <input type="number" id="receive-amount" readonly placeholder="0.00">
-                <span class="currency">VES (Pago Móvil)</span>
-            </div>
+            <label>Recibes en Bolívares (VES)</label>
+            <input type="number" id="receive-amount" readonly placeholder="0.00">
         </div>
 
-        <div class="info-row">
-            <span>Tasa de cambio:</span>
-            <span class="highlight">1 USD = <span id="current-rate">45.50</span> VES</span>
+        <div id="bank-info" class="bank-preview hidden">
+            <span style="color:#c084fc; font-weight:bold">Depósito en:</span>
+            <p id="bank-text" style="margin:5px 0 0;"></p>
         </div>
-
-        <hr style="border: 0.5px solid #2e2e3a; margin: 20px 0;">
 
         <div class="upload-area" onclick="document.getElementById('receipt').click()">
-            <i class="fa-solid fa-file-invoice-dollar" style="font-size: 30px; margin-bottom: 10px;"></i>
-            <p id="file-status">Subir captura de transferencia</p>
-            <input type="file" id="receipt" class="hidden" accept="image/*" onchange="updateFileStatus(this)">
+            <i class="fa-solid fa-camera"></i>
+            <p id="file-status">Subir comprobante de pago</p>
+            <input type="file" id="receipt" class="hidden" accept="image/*" onchange="document.getElementById('file-status').innerText=this.files[0].name">
         </div>
 
-        <button class="btn-trade" id="btn-order" onclick="crearPedido()">Confirmar Intercambio</button>
+        <button class="btn-trade" id="btn-submit" onclick="enviarPedido()">Confirmar Venta</button>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
-        import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCH9EghFUhATPScF0KFPP78RhhOaRXw7w4",
@@ -89,59 +67,59 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        const storage = getStorage(app);
         const auth = getAuth(app);
+        const storage = getStorage(app);
 
-        const TASA = 45.50; // Tú puedes cambiar esto manualmente
+        let myBank = null;
+        const TASA = 45.00; // Ajusta esto según el día
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const docSnap = await getDoc(doc(db, "bank_accounts", user.uid));
+                if (docSnap.exists()) {
+                    myBank = docSnap.data();
+                    document.getElementById('bank-info').classList.remove('hidden');
+                    document.getElementById('bank-text').innerText = `${myBank.banco} - ${myBank.telefono}`;
+                } else {
+                    alert("Por favor, configura tu Pago Móvil en el Lobby antes de vender.");
+                    window.location.href = 'lobby.html';
+                }
+            }
+        });
 
         window.calculate = () => {
-            const send = document.getElementById('send-amount').value;
-            document.getElementById('receive-amount').value = (send * TASA).toFixed(2);
+            const val = document.getElementById('send-amount').value;
+            document.getElementById('receive-amount').value = (val * TASA).toFixed(2);
         };
 
-        window.updateFileStatus = (input) => {
-            document.getElementById('file-status').innerText = "Archivo: " + input.files[0].name;
-        };
-
-        window.crearPedido = async () => {
+        window.enviarPedido = async () => {
             const user = auth.currentUser;
-            if(!user) return alert("Debes iniciar sesión");
-
-            const amountIn = document.getElementById('send-amount').value;
-            const amountOut = document.getElementById('receive-amount').value;
             const file = document.getElementById('receipt').files[0];
+            const amountIn = document.getElementById('send-amount').value;
 
-            if(!amountIn || !file) return alert("Completa el monto y sube el comprobante");
+            if(!file || !amountIn) return alert("Monto y comprobante obligatorios");
 
-            document.getElementById('btn-order').innerText = "Procesando...";
-            document.getElementById('btn-order').disabled = true;
-
+            document.getElementById('btn-submit').innerText = "Procesando...";
+            
             try {
-                // 1. Subir captura de pago a Storage
-                const storageRef = ref(storage, `pedidos/${Date.now()}_${user.uid}`);
-                await uploadBytes(storageRef, file);
-                const url = await getDownloadURL(storageRef);
+                const sRef = ref(storage, `pedidos/${Date.now()}_${user.uid}`);
+                await uploadBytes(sRef, file);
+                const url = await getDownloadURL(sRef);
 
-                // 2. Guardar pedido en Firestore
                 await addDoc(collection(db, "pedidos"), {
-                    userId: user.uid,
                     userEmail: user.email,
                     montoIn: amountIn,
-                    monedaIn: "USD",
-                    montoOut: amountOut,
-                    monedaOut: "VES",
+                    montoOut: (amountIn * TASA),
+                    bancoDestino: myBank.banco,
+                    pagoMovil: myBank.telefono,
                     comprobanteURL: url,
                     status: "pending",
-                    timestamp: new Date()
+                    date: new Date()
                 });
 
-                alert("¡Pedido enviado! StarPage procesará tu pago en breve.");
-                location.reload();
-            } catch (e) {
-                alert("Error al enviar: " + e.message);
-                document.getElementById('btn-order').innerText = "Confirmar Intercambio";
-                document.getElementById('btn-order').disabled = false;
-            }
+                alert("¡Pedido enviado! Revisa tu cuenta en unos minutos.");
+                window.location.href = 'lobby.html';
+            } catch (e) { alert("Error: " + e.message); }
         };
     </script>
 </body>
