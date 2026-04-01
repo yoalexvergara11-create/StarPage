@@ -3,35 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StarPage | Vender USDT</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <title>StarPage | Terminal de Cambio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { background: #0b0b10; color: white; font-family: 'Inter', sans-serif; padding: 40px; display: flex; flex-direction: column; align-items: center; }
-        .card { background: #111; padding: 30px; border-radius: 20px; box-shadow: 0 0 20px rgba(74, 222, 128, 0.1); width: 320px; }
-        input { width: 100%; padding: 12px; margin: 15px 0; border-radius: 10px; border: 1px solid #2e2e3a; background: #1e1e2a; color: white; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: linear-gradient(90deg, #4ade80, #22c55e); border: none; border-radius: 10px; color: white; font-weight: bold; cursor: pointer; }
-        h3 { color: #4ade80; text-align: center; margin-top: 20px; }
+        body { margin: 0; font-family: 'Inter', sans-serif; background-color: #0b0b10; color: white; display: flex; justify-content: center; padding: 20px; }
+        .trade-container { width: 100%; max-width: 450px; background: #1a1a24; padding: 30px; border-radius: 24px; border: 1px solid #2e2e3a; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .logo { font-weight: 700; color: #4ade80; font-size: 20px; }
+        
+        .input-box { background: #0b0b10; padding: 15px; border-radius: 16px; margin-bottom: 15px; border: 1px solid #2e2e3a; }
+        .input-box label { color: #888; font-size: 12px; display: block; margin-bottom: 5px; }
+        .input-row { display: flex; justify-content: space-between; align-items: center; }
+        .input-row input { background: transparent; border: none; color: white; font-size: 20px; font-weight: 600; width: 60%; outline: none; }
+        .currency { font-weight: 700; color: #c084fc; }
+
+        .info-row { display: flex; justify-content: space-between; font-size: 13px; color: #888; margin-bottom: 10px; }
+        .highlight { color: #4ade80; font-weight: 600; }
+
+        .upload-area { border: 2px dashed #444; padding: 20px; text-align: center; border-radius: 16px; margin: 20px 0; cursor: pointer; transition: 0.3s; }
+        .upload-area:hover { border-color: #9333ea; background: #232330; }
+        
+        .btn-trade { width: 100%; padding: 18px; background: linear-gradient(135deg, #9333ea, #4ade80); border: none; border-radius: 14px; color: white; font-weight: 700; cursor: pointer; font-size: 16px; }
         .hidden { display: none; }
     </style>
 </head>
-
 <body>
 
-    <div id="app-content" class="hidden">
-        <div class="card">
-            <h2>Vender USDT</h2>
-            <p style="font-size: 14px; color: #888;">Tasa actual: 670 Bs/USDT</p>
-            
-            <input type="number" id="usdt" placeholder="Cantidad de USDT">
-            <button onclick="calc()">Calcular Cambio</button>
-
-            <h3 id="res"></h3>
+    <div class="trade-container">
+        <div class="header">
+            <div class="logo">STARPAGE P2P</div>
+            <i class="fa-solid fa-bolt" style="color: #4ade80;"></i>
         </div>
+
+        <div class="input-box">
+            <label>Tú envías (Pago)</label>
+            <div class="input-row">
+                <input type="number" id="send-amount" placeholder="0.00" oninput="calculate()">
+                <span class="currency">USD (Zinli/Binance)</span>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin: -10px 0 10px;">
+            <i class="fa-solid fa-arrow-down-long" style="color: #2e2e3a;"></i>
+        </div>
+
+        <div class="input-box">
+            <label>Tú recibes (BSD)</label>
+            <div class="input-row">
+                <input type="number" id="receive-amount" readonly placeholder="0.00">
+                <span class="currency">VES (Pago Móvil)</span>
+            </div>
+        </div>
+
+        <div class="info-row">
+            <span>Tasa de cambio:</span>
+            <span class="highlight">1 USD = <span id="current-rate">45.50</span> VES</span>
+        </div>
+
+        <hr style="border: 0.5px solid #2e2e3a; margin: 20px 0;">
+
+        <div class="upload-area" onclick="document.getElementById('receipt').click()">
+            <i class="fa-solid fa-file-invoice-dollar" style="font-size: 30px; margin-bottom: 10px;"></i>
+            <p id="file-status">Subir captura de transferencia</p>
+            <input type="file" id="receipt" class="hidden" accept="image/*" onchange="updateFileStatus(this)">
+        </div>
+
+        <button class="btn-trade" id="btn-order" onclick="crearPedido()">Confirmar Intercambio</button>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCH9EghFUhATPScF0KFPP78RhhOaRXw7w4",
@@ -43,31 +88,61 @@
         };
 
         const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
         const auth = getAuth(app);
 
-        // EL GUARDIÁN: Verifica si el usuario es real
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                // Si hay usuario, mostramos la página
-                document.getElementById("app-content").classList.remove("hidden");
-            } else {
-                // Si no hay usuario, lo mandamos al login inmediatamente
-                window.location.href = "index.html"; 
-            }
-        });
+        const TASA = 45.50; // Tú puedes cambiar esto manualmente
 
-        // Función de cálculo
-        window.calc = function() {
-            let usdt = document.getElementById("usdt").value;
-            let tasa = 670; // Esta tasa luego la traeremos de tu Panel de Admin
-            if(usdt > 0) {
-                let resultado = usdt * tasa;
-                document.getElementById("res").innerText = "Recibirás: " + resultado.toLocaleString('es-VE') + " Bs";
-            } else {
-                alert("Ingresa una cantidad válida");
+        window.calculate = () => {
+            const send = document.getElementById('send-amount').value;
+            document.getElementById('receive-amount').value = (send * TASA).toFixed(2);
+        };
+
+        window.updateFileStatus = (input) => {
+            document.getElementById('file-status').innerText = "Archivo: " + input.files[0].name;
+        };
+
+        window.crearPedido = async () => {
+            const user = auth.currentUser;
+            if(!user) return alert("Debes iniciar sesión");
+
+            const amountIn = document.getElementById('send-amount').value;
+            const amountOut = document.getElementById('receive-amount').value;
+            const file = document.getElementById('receipt').files[0];
+
+            if(!amountIn || !file) return alert("Completa el monto y sube el comprobante");
+
+            document.getElementById('btn-order').innerText = "Procesando...";
+            document.getElementById('btn-order').disabled = true;
+
+            try {
+                // 1. Subir captura de pago a Storage
+                const storageRef = ref(storage, `pedidos/${Date.now()}_${user.uid}`);
+                await uploadBytes(storageRef, file);
+                const url = await getDownloadURL(storageRef);
+
+                // 2. Guardar pedido en Firestore
+                await addDoc(collection(db, "pedidos"), {
+                    userId: user.uid,
+                    userEmail: user.email,
+                    montoIn: amountIn,
+                    monedaIn: "USD",
+                    montoOut: amountOut,
+                    monedaOut: "VES",
+                    comprobanteURL: url,
+                    status: "pending",
+                    timestamp: new Date()
+                });
+
+                alert("¡Pedido enviado! StarPage procesará tu pago en breve.");
+                location.reload();
+            } catch (e) {
+                alert("Error al enviar: " + e.message);
+                document.getElementById('btn-order').innerText = "Confirmar Intercambio";
+                document.getElementById('btn-order').disabled = false;
             }
-        }
+        };
     </script>
-
 </body>
 </html>
