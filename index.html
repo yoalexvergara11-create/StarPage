@@ -94,7 +94,7 @@ button:active {
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-// Tus credenciales reales de StarPage
+// Credenciales oficiales de StarPage
 const firebaseConfig = {
     apiKey: "AIzaSyCH9EghFUhATPScF0KFPP78RhhOaRXw7w4",
     authDomain: "starpage-aad7e.firebaseapp.com",
@@ -105,14 +105,11 @@ const firebaseConfig = {
     measurementId: "G-G5L12SKLRS"
 };
 
-// Inicializar Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-// Variable de control
 window.isLogin = true;
 
-// Función para cambiar entre Login y Registro
 window.toggle = function(){
     isLogin = !isLogin;
     document.getElementById("title").innerText = isLogin ? "Iniciar sesión" : "Crear cuenta";
@@ -120,7 +117,6 @@ window.toggle = function(){
     document.getElementById("toggleLink").innerText = isLogin ? "¿No tienes cuenta? Crear cuenta" : "¿Ya tienes cuenta? Inicia sesión";
 }
 
-// Función principal de acción
 window.ejecutarAccion = function(){
     let email = document.getElementById("email").value;
     let pass = document.getElementById("password").value;
@@ -131,21 +127,24 @@ window.ejecutarAccion = function(){
     }
 
     if(isLogin){
-        // Lógica de Inicio de Sesión
         signInWithEmailAndPassword(auth, email, pass)
         .then((userCredential) => {
-            console.log("Acceso concedido");
-            window.location.href = "venta.html"; // Redirige a tu página de ventas
+            const user = userCredential.user;
+            // Si eres tú (CEO), vas al Dashboard. Si es cliente, va a Vender.
+            if(user.email === "yoalexvergara11@gmail.com") {
+                window.location.href = "dashboard.html";
+            } else {
+                window.location.href = "vender.html";
+            }
         })
         .catch((error) => {
             manejarErrores(error.code);
         });
     } else {
-        // Lógica de Registro
         createUserWithEmailAndPassword(auth, email, pass)
         .then((userCredential) => {
             alert("¡Cuenta creada exitosamente! Bienvenido a StarPage.");
-            window.location.href = "venta.html";
+            window.location.href = "vender.html";
         })
         .catch((error) => {
             manejarErrores(error.code);
@@ -153,7 +152,6 @@ window.ejecutarAccion = function(){
     }
 }
 
-// Traductor de errores comunes para tus clientes
 function manejarErrores(code) {
     switch(code) {
         case 'auth/email-already-in-use':
