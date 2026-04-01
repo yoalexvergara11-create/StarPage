@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>StarPage | Acceso</title>
+<title>StarPage | Acceso Seguro</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 
@@ -16,6 +16,7 @@ body{
     justify-content:center;
     align-items:center;
     height:100vh;
+    margin: 0;
 }
 
 .container{
@@ -29,6 +30,7 @@ body{
 h2{
     text-align:center;
     margin-bottom:20px;
+    font-weight: 700;
 }
 
 input{
@@ -36,27 +38,41 @@ input{
     padding:12px;
     margin:10px 0;
     border-radius:10px;
-    border:none;
+    border: 1px solid #2e2e3a;
     background:#1e1e2a;
     color:white;
+    box-sizing: border-box;
+}
+
+input:focus {
+    outline: 2px solid #9333ea;
+    border: none;
 }
 
 button{
     width:100%;
     padding:12px;
+    margin-top: 15px;
     background:linear-gradient(90deg,#9333ea,#4ade80);
     border:none;
     border-radius:10px;
     color:white;
     font-weight:bold;
     cursor:pointer;
+    transition: transform 0.2s;
+}
+
+button:active {
+    transform: scale(0.98);
 }
 
 .switch{
     text-align:center;
-    margin-top:10px;
+    margin-top:20px;
     cursor:pointer;
     color:#c084fc;
+    font-size: 14px;
+    text-decoration: underline;
 }
 </style>
 </head>
@@ -64,60 +80,98 @@ button{
 <body>
 
 <div class="container">
+    <h2 id="title">Iniciar sesión</h2>
 
-<h2 id="title">Iniciar sesión</h2>
+    <input type="email" id="email" placeholder="Correo electrónico">
+    <input type="password" id="password" placeholder="Contraseña">
 
-<input type="email" id="email" placeholder="Correo">
-<input type="password" id="password" placeholder="Contraseña">
+    <button id="mainBtn" onclick="ejecutarAccion()">Entrar</button>
 
-<button onclick="login()">Entrar</button>
-
-<p class="switch" onclick="toggle()">Crear cuenta</p>
-
+    <p class="switch" id="toggleLink" onclick="toggle()">¿No tienes cuenta? Crear cuenta</p>
 </div>
 
-<!-- FIREBASE -->
 <script type="module">
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
+// Tus credenciales reales de StarPage
 const firebaseConfig = {
-  apiKey: "AQUI_TU_API_KEY",
-  authDomain: "TU_APP.firebaseapp.com",
-  projectId: "TU_ID",
+    apiKey: "AIzaSyCH9EghFUhATPScF0KFPP78RhhOaRXw7w4",
+    authDomain: "starpage-aad7e.firebaseapp.com",
+    projectId: "starpage-aad7e",
+    storageBucket: "starpage-aad7e.firebasestorage.app",
+    messagingSenderId: "68878211023",
+    appId: "1:68878211023:web:81015ce98366639003e4ba",
+    measurementId: "G-G5L12SKLRS"
 };
 
+// Inicializar Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
+// Variable de control
 window.isLogin = true;
 
+// Función para cambiar entre Login y Registro
 window.toggle = function(){
     isLogin = !isLogin;
     document.getElementById("title").innerText = isLogin ? "Iniciar sesión" : "Crear cuenta";
-    document.querySelector("button").innerText = isLogin ? "Entrar" : "Registrarme";
+    document.getElementById("mainBtn").innerText = isLogin ? "Entrar" : "Registrarme";
+    document.getElementById("toggleLink").innerText = isLogin ? "¿No tienes cuenta? Crear cuenta" : "¿Ya tienes cuenta? Inicia sesión";
 }
 
-window.login = function(){
+// Función principal de acción
+window.ejecutarAccion = function(){
     let email = document.getElementById("email").value;
     let pass = document.getElementById("password").value;
 
+    if(email === "" || pass === "") {
+        alert("Por favor, llena todos los campos");
+        return;
+    }
+
     if(isLogin){
+        // Lógica de Inicio de Sesión
         signInWithEmailAndPassword(auth, email, pass)
-        .then(()=>{
-            window.location.href = "dashboard.html";
+        .then((userCredential) => {
+            console.log("Acceso concedido");
+            window.location.href = "venta.html"; // Redirige a tu página de ventas
         })
-        .catch(e=>alert(e.message));
-    }else{
+        .catch((error) => {
+            manejarErrores(error.code);
+        });
+    } else {
+        // Lógica de Registro
         createUserWithEmailAndPassword(auth, email, pass)
-        .then(()=>{
-            alert("Cuenta creada");
+        .then((userCredential) => {
+            alert("¡Cuenta creada exitosamente! Bienvenido a StarPage.");
+            window.location.href = "venta.html";
         })
-        .catch(e=>alert(e.message));
+        .catch((error) => {
+            manejarErrores(error.code);
+        });
     }
 }
 
+// Traductor de errores comunes para tus clientes
+function manejarErrores(code) {
+    switch(code) {
+        case 'auth/email-already-in-use':
+            alert("Este correo ya está registrado.");
+            break;
+        case 'auth/weak-password':
+            alert("La contraseña debe tener al menos 6 caracteres.");
+            break;
+        case 'auth/user-not-found':
+            alert("No existe una cuenta con este correo.");
+            break;
+        case 'auth/wrong-password':
+            alert("Contraseña incorrecta.");
+            break;
+        default:
+            alert("Error: " + code);
+    }
+}
 </script>
 
 </body>
