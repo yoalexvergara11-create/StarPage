@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Vender USDT</title>
+</head>
+
+<body style="background:#0b0b10;color:white;font-family:Arial;padding:20px;">
+
+<h2>Vender USDT</h2>
+
+<input type="number" id="usdt" placeholder="Cantidad USDT">
+
+<button onclick="calc()">Calcular</button>
+
+<h3 id="res"></h3>
+
+<script>
+function calc(){
+    let usdt = document.getElementById("usdt").value;
+    let tasa = 670;
+    document.getElementById("res").innerText = "Recibirás: " + (usdt * tasa) + " Bs";
+}
+</script>
+
+</body>
+</html>
