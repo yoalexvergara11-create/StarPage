@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StarPage | Mi Lobby</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { margin: 0; font-family: 'Inter', sans-serif; background-color: #0b0b10; color: white; padding: 20px; }
+        .container { max-width: 600px; margin: auto; }
+        
+        /* Tarjeta de Bienvenida */
+        .user-card { background: linear-gradient(135deg, #1a1a24, #232330); padding: 25px; border-radius: 20px; border: 1px solid #2e2e3a; margin-bottom: 20px; display: flex; align-items: center; gap: 15px; }
+        .avatar { width: 60px; height: 60px; border-radius: 50%; background: #9333ea; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold; }
+        
+        .grid-menu { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px; }
+        .menu-item { background: #1a1a24; padding: 20px; border-radius: 15px; text-align: center; border: 1px solid #2e2e3a; cursor: pointer; text-decoration: none; color: white; transition: 0.3s; }
+        .menu-item:hover { border-color: #4ade80; transform: translateY(-5px); }
+        .menu-item i { font-size: 24px; margin-bottom: 10px; color: #9333ea; }
+
+        /* Sección de Métodos de Pago */
+        .payment-section { background: #1a1a24; padding: 20px; border-radius: 20px; border: 1px solid #2e2e3a; }
+        .payment-section h3 { margin-top: 0; font-size: 16px; color: #4ade80; }
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; font-size: 12px; color: #888; margin-bottom: 5px; }
+        .input-group input, .input-group select { width: 100%; padding: 12px; background: #0b0b10; border: 1px solid #2e2e3a; border-radius: 10px; color: white; outline: none; box-sizing: border-box; }
+        
+        .btn-save { width: 100%; padding: 12px; background: #9333ea; border: none; border-radius: 10px; color: white; font-weight: 700; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="user-card">
+            <div class="avatar" id="user-initial">U</div>
+            <div>
+                <h2 style="margin:0; font-size: 18px;" id="user-email">Cargando...</h2>
+                <span style="color: #4ade80; font-size: 12px;"><i class="fa-solid fa-circle-check"></i> Verificado</span>
+            </div>
+        </div>
+
+        <div class="grid-menu">
+            <a href="vender.html" class="menu-item">
+                <i class="fa-solid fa-right-left"></i>
+                <div>Cambiar Divisas</div>
+            </a>
+            <div class="menu-item">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                <div>Mis Pedidos</div>
+            </div>
+        </div>
+
+        <div class="payment-section">
+            <h3><i class="fa-solid fa-university"></i> Mi Pago Móvil (Para recibir)</h3>
+            <div id="payment-form">
+                <div class="input-group">
+                    <label>Banco</label>
+                    <select id="bank-name">
+                        <option value="Banesco">Banesco</option>
+                        <option value="Mercantil">Mercantil</option>
+                        <option value="Venezuela">Banco de Venezuela</option>
+                        <option value="BNC">BNC</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Teléfono (WhatsApp o Pago Móvil)</label>
+                    <input type="text" id="bank-phone" placeholder="04121234567">
+                </div>
+                <div class="input-group">
+                    <label>Cédula</label>
+                    <input type="text" id="bank-id" placeholder="V-12345678">
+                </div>
+                <button class="btn-save" onclick="guardarCuenta()">Guardar Datos de Recepción</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCH9EghFUhATPScF0KFPP78RhhOaRXw7w4",
+            authDomain: "starpage-aad7e.firebaseapp.com",
+            projectId: "starpage-aad7e",
+            storageBucket: "starpage-aad7e.firebasestorage.app",
+            messagingSenderId: "68878211023",
+            appId: "1:68878211023:web:81015ce98366639003e4ba"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                document.getElementById('user-email').innerText = user.email;
+                document.getElementById('user-initial').innerText = user.email[0].toUpperCase();
+                
+                // Cargar datos si ya existen
+                const docRef = doc(db, "bank_accounts", user.uid);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    document.getElementById('bank-name').value = data.banco;
+                    document.getElementById('bank-phone').value = data.telefono;
+                    document.getElementById('bank-id').value = data.cedula;
+                }
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
+
+        window.guardarCuenta = async () => {
+            const user = auth.currentUser;
+            const btn = document.querySelector('.btn-save');
+            btn.innerText = "Guardando...";
+
+            await setDoc(doc(db, "bank_accounts", user.uid), {
+                banco: document.getElementById('bank-name').value,
+                telefono: document.getElementById('bank-phone').value,
+                cedula: document.getElementById('bank-id').value,
+                email: user.email
+            });
+
+            alert("¡Datos guardados! Ahora tus cambios serán más rápidos.");
+            btn.innerText = "Guardar Datos de Recepción";
+        };
+    </script>
+</body>
+</html>
