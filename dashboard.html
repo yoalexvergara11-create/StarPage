@@ -2,13 +2,14 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>StarPage Dashboard</title>
+<title>StarPage | Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
 body{
     margin:0;
-    font-family: Arial, sans-serif;
+    font-family: 'Inter', sans-serif;
     background:#0b0b10;
     color:white;
 }
@@ -17,6 +18,7 @@ body{
 .navbar{
     display:flex;
     justify-content:space-between;
+    align-items: center;
     padding:15px;
     background:#111;
     border-bottom:1px solid #222;
@@ -26,6 +28,7 @@ body{
     color:#c084fc;
     text-decoration:none;
     margin-right:15px;
+    font-size: 14px;
 }
 
 /* CARDS */
@@ -38,6 +41,7 @@ body{
     padding:20px;
     border-radius:15px;
     margin-bottom:20px;
+    border: 1px solid #1e1e2a;
 }
 
 /* LOGOS */
@@ -49,45 +53,98 @@ body{
 
 .logos img{
     width:60px;
+    border-radius: 10px;
+}
+
+button.logout-btn {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.hidden {
+    display: none;
+}
+
+#user-info {
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 10px;
 }
 </style>
 </head>
 
 <body>
 
-<div class="navbar">
-    <div>
-        <a href="dashboard.html">Inicio</a>
-        <a href="comprar.html">Comprar USD</a>
-        <a href="vender.html">Vender USDT</a>
-        <a href="perfil.html">Perfil</a>
+<div id="app-content" class="hidden">
+    <div class="navbar">
+        <div>
+            <a href="dashboard.html">Inicio</a>
+            <a href="comprar.html">Comprar USD</a>
+            <a href="vender.html">Vender USDT</a>
+            <a href="perfil.html">Perfil</a>
+        </div>
+        <button class="logout-btn" onclick="logout()">Salir</button>
     </div>
-    <button onclick="logout()">Salir</button>
-</div>
 
-<div class="container">
+    <div class="container">
+        <div id="user-info"></div>
 
-<div class="card">
-    <h2>Métodos de pago</h2>
+        <div class="card">
+            <h2>Métodos de pago aceptados</h2>
+            <div class="logos">
+                <img src="assets/paypal.png" alt="PayPal">
+                <img src="assets/binance.png" alt="Binance">
+                <img src="assets/zinli.png" alt="Zinli">
+            </div>
+        </div>
 
-    <div class="logos">
-        <img src="assets/paypal.png">
-        <img src="assets/binance.png">
-        <img src="assets/zinli.png">
+        <div class="card">
+            <h3>Bienvenido a StarPage</h3>
+            <p>Tu plataforma de intercambio y remesas al instante.</p>
+            <p style="color: #4ade80;">Estado: Conexión segura activa.</p>
+        </div>
     </div>
 </div>
 
-<div class="card">
-    <h3>Bienvenido a StarPage</h3>
-    <p>Plataforma de intercambio y remesas.</p>
-</div>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-</div>
+// Tus credenciales de StarPage
+const firebaseConfig = {
+    apiKey: "AIzaSyCH9EghFUhATPScF0KFPP78RhhOaRXw7w4",
+    authDomain: "starpage-aad7e.firebaseapp.com",
+    projectId: "starpage-aad7e",
+    storageBucket: "starpage-aad7e.firebasestorage.app",
+    messagingSenderId: "68878211023",
+    appId: "1:68878211023:web:81015ce98366639003e4ba"
+};
 
-<script>
-function logout(){
-    alert("Sesión cerrada");
-    window.location.href = "index.html";
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+// Verificación de sesión
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        document.getElementById("app-content").classList.remove("hidden");
+        document.getElementById("user-info").innerText = "Usuario: " + user.email;
+    } else {
+        window.location.href = "index.html"; 
+    }
+});
+
+// Función de salida
+window.logout = function() {
+    signOut(auth).then(() => {
+        window.location.href = "index.html";
+    }).catch((error) => {
+        alert("Error al cerrar sesión");
+    });
 }
 </script>
 
