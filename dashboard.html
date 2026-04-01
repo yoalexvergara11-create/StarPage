@@ -1,11 +1,95 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-<title>Dashboard</title>
+<meta charset="UTF-8">
+<title>StarPage Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+    margin:0;
+    font-family: Arial, sans-serif;
+    background:#0b0b10;
+    color:white;
+}
+
+/* NAVBAR */
+.navbar{
+    display:flex;
+    justify-content:space-between;
+    padding:15px;
+    background:#111;
+    border-bottom:1px solid #222;
+}
+
+.navbar a{
+    color:#c084fc;
+    text-decoration:none;
+    margin-right:15px;
+}
+
+/* CARDS */
+.container{
+    padding:20px;
+}
+
+.card{
+    background:#111;
+    padding:20px;
+    border-radius:15px;
+    margin-bottom:20px;
+}
+
+/* LOGOS */
+.logos{
+    display:flex;
+    gap:20px;
+    margin-top:10px;
+}
+
+.logos img{
+    width:60px;
+}
+</style>
 </head>
+
 <body>
 
-<h1>Dashboard funcionando</h1>
+<div class="navbar">
+    <div>
+        <a href="dashboard.html">Inicio</a>
+        <a href="comprar.html">Comprar USD</a>
+        <a href="vender.html">Vender USDT</a>
+        <a href="perfil.html">Perfil</a>
+    </div>
+    <button onclick="logout()">Salir</button>
+</div>
+
+<div class="container">
+
+<div class="card">
+    <h2>Métodos de pago</h2>
+
+    <div class="logos">
+        <img src="assets/paypal.png">
+        <img src="assets/binance.png">
+        <img src="assets/zinli.png">
+    </div>
+</div>
+
+<div class="card">
+    <h3>Bienvenido a StarPage</h3>
+    <p>Plataforma de intercambio y remesas.</p>
+</div>
+
+</div>
+
+<script>
+function logout(){
+    alert("Sesión cerrada");
+    window.location.href = "index.html";
+}
+</script>
 
 </body>
 </html>
