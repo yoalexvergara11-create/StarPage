@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>NEO FX | Remesas & Cripto</title>
+    <!-- Font Awesome 6 (free) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts: modern sans -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #0a0a0f;
+            font-family: 'Inter', sans-serif;
+            color: #e5e9f0;
+            line-height: 1.5;
+            padding: 1.5rem;
+        }
+
+        /* neon glow variables */
+        :root {
+            --neon-purple: #c084fc;
+            --neon-green: #4ade80;
+            --dark-bg: #0a0a0f;
+            --card-bg: #111115;
+            --border-glow: rgba(192, 132, 252, 0.3);
+            --accent-glow: 0 0 5px rgba(192, 132, 252, 0.6);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* header / logo */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 2.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(192, 132, 252, 0.3);
+        }
+
+        .logo h1 {
+            font-size: 1.9rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #c084fc, #4ade80);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.5px;
+        }
+        .logo p {
+            font-size: 0.8rem;
+            color: #a0a0c0;
+            letter-spacing: 0.5px;
+        }
+
+        .user-status {
+            background: #111115;
+            padding: 0.5rem 1.2rem;
+            border-radius: 40px;
+            border: 1px solid rgba(192, 132, 252, 0.4);
+            backdrop-filter: blur(4px);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .user-status span {
+            color: #c084fc;
+        }
+        .btn-sm {
+            background: transparent;
+            border: 1px solid #4ade80;
+            color: #4ade80;
+            padding: 0.3rem 0.9rem;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-sm:hover {
+            background: #4ade8022;
+            box-shadow: 0 0 6px #4ade80;
+        }
+
+        /* grid layout */
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 1.8rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 28px;
+            padding: 1.5rem;
+            border: 1px solid rgba(192, 132, 252, 0.25);
+            backdrop-filter: blur(2px);
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+        }
+        .card:hover {
+            border-color: rgba(192, 132, 252, 0.6);
+            box-shadow: 0 0 12px rgba(192, 132, 252, 0.2);
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-left: 4px solid #4ade80;
+            padding-left: 0.8rem;
+        }
+        .card-title i {
+            color: #c084fc;
+            font-size: 1.3rem;
+        }
+
+        /* forms */
+        input, select, textarea {
+            background: #1e1e2a;
+            border: 1px solid #2c2c3a;
+            border-radius: 16px;
+            padding: 0.8rem 1rem;
+            color: white;
+            font-family: 'Inter', sans-serif;
+            width: 100%;
+            margin-top: 0.4rem;
+            margin-bottom: 1rem;
+            transition: 0.2s;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #c084fc;
+            box-shadow: 0 0 6px #c084fc;
+        }
+        button {
+            background: linear-gradient(95deg, #8b5cf6, #4ade80);
+            border: none;
+            color: #0a0a0f;
+            font-weight: 700;
+            padding: 0.8rem 1.2rem;
+            border-radius: 40px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            width: 100%;
+            font-family: 'Inter', sans-serif;
+        }
+        button:hover {
+            transform: scale(0.98);
+            filter: brightness(1.05);
+            box-shadow: 0 0 12px #4ade80aa;
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #c084fc;
+            color: #c084fc;
+        }
+        .rate-badge {
+            background: #1a1a24;
+            padding: 0.6rem;
+            border-radius: 20px;
+            text-align: center;
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+            border-left: 3px solid #4ade80;
+        }
+        .flex-btns {
+            display: flex;
+            gap: 10px;
+        }
+        .whatsapp-float {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            background: #25d366;
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.5);
+            transition: 0.2s;
+            z-index: 999;
+            text-decoration: none;
+        }
+        .whatsapp-float:hover {
+            transform: scale(1.07);
+            background: #20b859;
+        }
+        .kyc-status {
+            font-size: 0.8rem;
+            background: #1f1f2c;
+            border-radius: 30px;
+            padding: 0.3rem 1rem;
+            display: inline-block;
+            margin-top: 0.8rem;
+        }
+        .success-msg {
+            color: #4ade80;
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+        }
+        .error-msg {
+            color: #f87171;
+            font-size: 0.8rem;
+        }
+        hr {
+            border-color: #2a2a36;
+            margin: 1rem 0;
+        }
+        @media (max-width: 700px) {
+            body {
+                padding: 1rem;
+            }
+            .card-title {
+                font-size: 1.3rem;
+            }
+        }
+        .payment-icons {
+            display: flex;
+            gap: 1rem;
+            font-size: 2rem;
+            justify-content: center;
+            margin: 0.8rem 0;
+            color: #ccc;
+        }
+        .payment-icons i {
+            background: #1e1e2a;
+            padding: 0.5rem;
+            border-radius: 20px;
+            transition: 0.2s;
+        }
+        .mini-text {
+            font-size: 0.75rem;
+            color: #aaa;
+        }
+        .neon-text {
+            color: #c084fc;
+            text-shadow: 0 0 3px #c084fc;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <div class="logo">
+            <h1>⚡ NEO<span style="color:#4ade80;">FX</span></h1>
+            <p>remesas • crypto • tasa premium</p>
+        </div>
+        <div class="user-status" id="userStatusArea">
+            <i class="fas fa-user-circle"></i> <span id="userEmailDisplay">Invitado</span>
+            <button id="openAuthBtn" class="btn-sm">Acceder / Registro</button>
+        </div>
+    </div>
+
+    <div class="dashboard">
+        <!-- CALCULADORA DE CAMBIO + REMESAS (USA/EUROPA/CHINA) -->
+        <div class="card">
+            <div class="card-title"><i class="fas fa-exchange-alt"></i> Remesas & Cambio</div>
+            <div class="rate-badge">
+                <span>🏦 BCV OFICIAL: <strong>490,00 Bs/USD</strong></span><br>
+                <span class="neon-text">✨ TASA NEOFX (DÓLAR ESTABLE): <strong>590,00 Bs/USD</strong> ✨</span>
+                <div class="mini-text">Europa • China • USA → Venezuela | Tasa preferencial</div>
+            </div>
+            <label>🇻🇪 Moneda de origen:</label>
+            <select id="originCurrency">
+                <option value="USD">USD - Dólar EE.UU</option>
+                <option value="EUR">EUR - Euro</option>
+                <option value="CNY">CNY - Yuan Chino</option>
+            </select>
+            <label>💰 Cantidad a enviar:</label>
+            <input type="number" id="amountInput" placeholder="0.00" value="100">
+            <label>🇻🇪 Recibirás en Bolívares (VES):</label>
+            <div style="background:#0b0b10; padding:0.8rem; border-radius:20px; font-size:1.6rem; font-weight:bold; text-align:center; margin-bottom:1rem;">
+                <span id="conversionResult">0,00</span> <span style="font-size:0.9rem;">Bs</span>
+            </div>
+            <div class="mini-text" style="margin-bottom:12px;">* Tasas: USD→590 Bs | EUR→637 Bs | CNY→82.6 Bs (basado en tasa premium)</div>
+            <button id="simulateRemittanceBtn"><i class="fas fa-paper-plane"></i> Simular envío</button>
+            <div id="remittanceMsg" class="success-msg" style="text-align:center; margin-top:12px;"></div>
+        </div>
+
+        <!-- COMPRA DE CRIPTOMONEDAS con USDC / wallet -->
+        <div class="card">
+            <div class="card-title"><i class="fab fa-bitcoin"></i> Compra Crypto (USDC)</div>
+            <p style="margin-bottom:1rem;">Adquiere USDC con tasa estable. El crypto llega directo a tu wallet.</p>
+            <label>💵 Monto en USD a invertir:</label>
+            <input type="number" id="cryptoAmountUSD" placeholder="Monto USD" value="50">
+            <label>📦 Recibirás USDC (1:1):</label>
+            <div style="font-weight:bold; background:#1a1a24; border-radius:20px; padding:0.6rem; margin:0.5rem 0;" id="usdcEstimate">≈ 50.00 USDC</div>
+            <label>🔗 Dirección de tu Wallet (ERC20 / BEP20):</label>
+            <input type="text" id="walletAddress" placeholder="0x... o dirección de wallet">
+            <button id="buyCryptoBtn"><i class="fas fa-coins"></i> Comprar USDC</button>
+            <div id="cryptoMsg" class="success-msg" style="margin-top:10px;"></div>
+            <div class="payment-icons">
+                <i class="fab fa-paypal" title="PayPal"></i> <i class="fas fa-bolt" title="Zinli"></i> <i class="fas fa-university" title="Zelle"></i>
+            </div>
+            <div class="mini-text" style="text-align:center;">Pago con PayPal, Zinli, Zelle (USA/Europa)</div>
+        </div>
+
+        <!-- REGISTRO / KYC / CUENTA -->
+        <div class="card" id="authCard">
+            <div class="card-title"><i class="fas fa-id-card"></i> Cuenta & KYC</div>
+            <div id="authFormsContainer">
+                <!-- modo invitado: mostrar login/registro -->
+                <div id="guestPanel">
+                    <div style="margin-bottom:1rem;">
+                        <button id="showLoginBtn" style="background:#2c2c3a; margin-bottom:0.5rem;">Iniciar Sesión</button>
+                        <button id="showRegisterBtn" class="btn-outline" style="background:transparent;">Crear Cuenta</button>
+                    </div>
+                    <div id="loginForm">
+                        <label>📧 Correo electrónico</label>
+                        <input type="email" id="loginEmail" placeholder="ejemplo@correo.com">
+                        <label>🔒 Contraseña</label>
+                        <input type="password" id="loginPassword" placeholder="******">
+                        <button id="doLoginBtn">Ingresar</button>
+                        <div id="loginError" class="error-msg" style="margin-top:6px;"></div>
+                    </div>
+                    <div id="registerForm" style="display:none;">
+                        <label>📧 Correo electrónico</label>
+                        <input type="email" id="regEmail" placeholder="tu@email.com">
+                        <label>🔒 Contraseña (mín 4 caracteres)</label>
+                        <input type="password" id="regPassword" placeholder="******">
+                        <button id="doRegisterBtn">Registrarme</button>
+                        <div id="regError" class="error-msg"></div>
+                    </div>
+                </div>
+                <div id="loggedPanel" style="display:none;">
+                    <div><i class="fas fa-check-circle" style="color:#4ade80;"></i> <strong id="loggedEmailUser"></strong></div>
+                    <div class="kyc-status" id="kycBadge">🔴 KYC pendiente</div>
+                    <hr>
+                    <label>📝 Verificación KYC (obligatoria)</label>
+                    <input type="text" id="kycFullName" placeholder="Nombre completo">
+                    <input type="text" id="kycIdNumber" placeholder="Cédula / Pasaporte">
+                    <div class="mini-text">Simulación: sube documento (demo)</div>
+                    <input type="file" id="kycDocument" accept="image/*" style="margin-bottom:0.5rem;">
+                    <button id="submitKycBtn">Enviar KYC</button>
+                    <button id="logoutBtn" class="btn-sm" style="margin-top:1rem; background:#222; width:auto;">Cerrar sesión</button>
+                    <div id="kycMessage" class="success-msg"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Segunda fila: métodos de pago + atención al cliente -->
+    <div class="dashboard">
+        <div class="card">
+            <div class="card-title"><i class="fas fa-globe-americas"></i> Métodos de pago internacionales</div>
+            <p>Aceptamos pagos desde USA y Europa con:</p>
+            <div class="payment-icons" style="font-size:2.5rem; justify-content:flex-start; gap:1.5rem;">
+                <i class="fab fa-paypal"></i> <span>PayPal</span>
+                <i class="fas fa-bolt"></i> <span>Zinli</span>
+                <i class="fas fa-university"></i> <span>Zelle</span>
+            </div>
+            <div class="rate-badge" style="margin-top:1rem;">
+                💱 Conversión instantánea a tasa NEOFX: +100 Bs sobre BCV (ej: BCV 490 → TASA 590)
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title"><i class="fas fa-headset"></i> Atención al cliente 24/7</div>
+            <p>¿Necesitas ayuda con tu remesa o compra de cripto? Contáctanos directamente por WhatsApp empresarial.</p>
+            <button id="whatsappBtn" style="background:#25d366; color:#0a0a0f; margin-top:0.8rem;"><i class="fab fa-whatsapp"></i> Chatear con soporte</button>
+            <div class="mini-text" style="margin-top:1rem;">+58 412 555 6789 | Respuesta inmediata</div>
+        </div>
+    </div>
+
+    <!-- tasa adicional información -->
+    <div style="text-align:center; font-size:0.7rem; margin-top:2rem; border-top:1px solid #1f1f2a; padding-top:1.5rem;">
+        <i class="fas fa-shield-alt"></i> Plataforma segura · KYC obligatorio · USDC directo a wallet · Remesas internacionales
+    </div>
+</div>
+
+<!-- Botón flotante WhatsApp -->
+<a href="https://wa.me/584125556789?text=Hola%2C%20necesito%20informaci%C3%B3n%20sobre%20remesas%20o%20compra%20de%20cripto" target="_blank" class="whatsapp-float">
+    <i class="fab fa-whatsapp"></i>
+</a>
+
+<script>
+    // ---------- STORAGE KEYS ----------
+    const USERS_STORAGE = "neofx_users";
+    const CURRENT_USER_KEY = "neofx_currentUser";
+
+    // Helper: Obtener usuarios
+    function getUsers() {
+        let users = localStorage.getItem(USERS_STORAGE);
+        return users ? JSON.parse(users) : [];
+    }
+
+    function saveUsers(users) {
+        localStorage.setItem(USERS_STORAGE, JSON.stringify(users));
+    }
+
+    function getCurrentSession() {
+        let session = localStorage.getItem(CURRENT_USER_KEY);
+        return session ? JSON.parse(session) : null;
+    }
+
+    function setCurrentSession(user) {
+        if(user) localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user));
+        else localStorage.removeItem(CURRENT_USER_KEY);
+    }
+
+    // Registro
+    function registerUser(email, password) {
+        let users = getUsers();
+        if(users.find(u => u.email === email)) return { success: false, error: "El correo ya está registrado" };
+        if(!email || !password || password.length < 4) return { success: false, error: "Contraseña mínima 4 caracteres" };
+        const newUser = {
+            email: email,
+            password: password,
+            kycVerified: false,
+            kycData: null,
+            createdAt: new Date().toISOString()
+        };
+        users.push(newUser);
+        saveUsers(users);
+        return { success: true };
+    }
+
+    function loginUser(email, password) {
+        let users = getUsers();
+        let user = users.find(u => u.email === email && u.password === password);
+        if(user) {
+            setCurrentSession({ email: user.email, kycVerified: user.kycVerified });
+            return { success: true, user: { email: user.email, kycVerified: user.kycVerified } };
+        }
+        return { success: false, error: "Credenciales incorrectas" };
+    }
+
+    function updateKycStatus(email, fullName, idNumber) {
+        let users = getUsers();
+        let userIndex = users.findIndex(u => u.email === email);
+        if(userIndex === -1) return false;
+        users[userIndex].kycVerified = true;
+        users[userIndex].kycData = { fullName, idNumber, date: new Date().toISOString() };
+        saveUsers(users);
+        // actualizar sesión actual
+        let session = getCurrentSession();
+        if(session && session.email === email) {
+            session.kycVerified = true;
+            setCurrentSession(session);
+        }
+        return true;
+    }
+
+    function logout() {
+        setCurrentSession(null);
+        location.reload(); // refrescar UI
+    }
+
+    // UI Update según sesión
+    function updateUIBySession() {
+        const session = getCurrentSession();
+        const guestPanel = document.getElementById("guestPanel");
+        const loggedPanel = document.getElementById("loggedPanel");
+        const userEmailSpan = document.getElementById("userEmailDisplay");
+        const openAuthBtn = document.getElementById("openAuthBtn");
+
+        if(session) {
+            guestPanel.style.display = "none";
+            loggedPanel.style.display = "block";
+            userEmailSpan.innerText = session.email.split('@')[0];
+            document.getElementById("loggedEmailUser").innerHTML = `<i class="fas fa-user-astronaut"></i> ${session.email}`;
+            const kycBadge = document.getElementById("kycBadge");
+            if(session.kycVerified) {
+                kycBadge.innerHTML = "✅ KYC Verificado";
+                kycBadge.style.background = "#1e3a2f";
+                kycBadge.style.color = "#4ade80";
+            } else {
+                kycBadge.innerHTML = "⚠️ KYC pendiente - completa para operar";
+                kycBadge.style.background = "#3a2a1f";
+            }
+            openAuthBtn.style.display = "none";
+        } else {
+            guestPanel.style.display = "block";
+            loggedPanel.style.display = "none";
+            userEmailSpan.innerText = "Invitado";
+            openAuthBtn.style.display = "inline-block";
+        }
+    }
+
+    // Calculadora de cambio (USD, EUR, CNY → VES usando tasa premium)
+    function getRateForCurrency(currency) {
+        const usdRate = 590;   // tasa premium estable
+        if(currency === "USD") return usdRate;
+        if(currency === "EUR") return 637;   // 1.08 * 590 aprox
+        if(currency === "CNY") return 82.6;  // 0.14 * 590 aprox
+        return usdRate;
+    }
+
+    function updateCalculator() {
+        let amount = parseFloat(document.getElementById("amountInput").value);
+        if(isNaN(amount)) amount = 0;
+        let currency = document.getElementById("originCurrency").value;
+        let rate = getRateForCurrency(currency);
+        let result = amount * rate;
+        document.getElementById("conversionResult").innerText = result.toLocaleString('es-VE', {minimumFractionDigits:2, maximumFractionDigits:2}) + " Bs";
+        return { amount, currency, result, rate };
+    }
+
+    // simular remesa con mensaje
+    function simulateRemittance() {
+        const session = getCurrentSession();
+        if(!session) {
+            document.getElementById("remittanceMsg").innerHTML = '<span class="error-msg">🔐 Debes iniciar sesión para simular envío real.</span>';
+            return;
+        }
+        if(!session.kycVerified) {
+            document.getElementById("remittanceMsg").innerHTML = '<span class="error-msg">📄 KYC requerido. Completa verificación para enviar remesas.</span>';
+            return;
+        }
+        let { amount, currency, result } = updateCalculator();
+        if(amount <= 0) {
+            document.getElementById("remittanceMsg").innerHTML = '<span class="error-msg">Ingresa un monto válido</span>';
+            return;
+        }
+        let currencyName = {USD:"USD", EUR:"EUR", CNY:"CNY"}[currency];
+        document.getElementById("remittanceMsg").innerHTML = `<i class="fas fa-check-circle"></i> Simulación: Enviar ${amount.toFixed(2)} ${currencyName} → recibes ${result.toLocaleString('es-VE', {minimumFractionDigits:2})} Bs (tasa premium). Paga con PayPal/Zinli/Zelle.`;
+    }
+
+    // compra de cripto USDC
+    function buyCrypto() {
+        const session = getCurrentSession();
+        if(!session) {
+            document.getElementById("cryptoMsg").innerHTML = '<span class="error-msg">🔐 Inicia sesión para comprar USDC.</span>';
+            return;
+        }
+        if(!session.kycVerified) {
+            document.getElementById("cryptoMsg").innerHTML = '<span class="error-msg">📄 Verifica tu KYC antes de comprar criptomonedas.</span>';
+            return;
+        }
+        let usdAmount = parseFloat(document.getElementById("cryptoAmountUSD").value);
+        let wallet = document.getElementById("walletAddress").value.trim();
+        if(isNaN(usdAmount) || usdAmount <= 0) {
+            document.getElementById("cryptoMsg").innerHTML = '<span class="error-msg">Monto en USD inválido.</span>';
+            return;
+        }
+        if(wallet === "") {
+            document.getElementById("cryptoMsg").innerHTML = '<span class="error-msg">Ingresa dirección de wallet (ERC20/BEP20) para recibir USDC.</span>';
+            return;
+        }
+        let usdcAmount = usdAmount; // 1:1
+        // simular envío a wallet
+        document.getElementById("cryptoMsg").innerHTML = `<i class="fas fa-rocket"></i> ✅ ¡Compra simulada! ${usdcAmount.toFixed(2)} USDC enviados a ${wallet.substring(0,8)}... El cripto llegará en minutos a tu wallet. Pago recibido vía PayPal/Zinli/Zelle.`;
+        // reset parcial opcional
+    }
+
+    // evento cambio monto / moneda
+    document.getElementById("amountInput").addEventListener("input", updateCalculator);
+    document.getElementById("originCurrency").addEventListener("change", updateCalculator);
+    document.getElementById("cryptoAmountUSD").addEventListener("input", function() {
+        let val = parseFloat(this.value);
+        if(isNaN(val)) val = 0;
+        document.getElementById("usdcEstimate").innerHTML = `≈ ${val.toFixed(2)} USDC`;
+    });
+
+    // Auth toggles
+    window.onload = () => {
+        updateCalculator();
+        document.getElementById("usdcEstimate").innerHTML = "≈ 50.00 USDC";
+        updateUIBySession();
+
+        // mostrar / ocultar login/register
+        const showLoginBtn = document.getElementById("showLoginBtn");
+        const showRegisterBtn = document.getElementById("showRegisterBtn");
+        const loginDiv = document.getElementById("loginForm");
+        const registerDiv = document.getElementById("registerForm");
+        if(showLoginBtn) {
+            showLoginBtn.onclick = () => { loginDiv.style.display = "block"; registerDiv.style.display = "none"; };
+            showRegisterBtn.onclick = () => { loginDiv.style.display = "none"; registerDiv.style.display = "block"; };
+        }
+        // login action
+        document.getElementById("doLoginBtn")?.addEventListener("click", () => {
+            let email = document.getElementById("loginEmail").value;
+            let pass = document.getElementById("loginPassword").value;
+            let res = loginUser(email, pass);
+            if(res.success) {
+                location.reload();
+            } else {
+                document.getElementById("loginError").innerText = res.error;
+            }
+        });
+        // register
+        document.getElementById("doRegisterBtn")?.addEventListener("click", () => {
+            let email = document.getElementById("regEmail").value;
+            let pass = document.getElementById("regPassword").value;
+            let res = registerUser(email, pass);
+            if(res.success) {
+                alert("Registro exitoso. Ahora inicia sesión.");
+                document.getElementById("showLoginBtn").click();
+                document.getElementById("regError").innerText = "";
+            } else {
+                document.getElementById("regError").innerText = res.error;
+            }
+        });
+        // KYC submit
+        const submitKyc = document.getElementById("submitKycBtn");
+        if(submitKyc) {
+            submitKyc.addEventListener("click", () => {
+                const session = getCurrentSession();
+                if(!session) return;
+                const fullName = document.getElementById("kycFullName").value.trim();
+                const idNumber = document.getElementById("kycIdNumber").value.trim();
+                const fileInput = document.getElementById("kycDocument").files[0];
+                if(!fullName || !idNumber) {
+                    document.getElementById("kycMessage").innerHTML = '<span class="error-msg">Completa nombre y número de identificación.</span>';
+                    return;
+                }
+                if(!fileInput) {
+                    document.getElementById("kycMessage").innerHTML = '<span class="error-msg">Adjunta documento (simulación).</span>';
+                    return;
+                }
+                const updated = updateKycStatus(session.email, fullName, idNumber);
+                if(updated) {
+                    document.getElementById("kycMessage").innerHTML = '<span class="success-msg">✅ KYC aprobado. Ya puedes usar todas las funciones.</span>';
+                    setTimeout(() => location.reload(), 1200);
+                } else {
+                    document.getElementById("kycMessage").innerHTML = '<span class="error-msg">Error al verificar KYC.</span>';
+                }
+            });
+        }
+        // logout
+        const logoutBtn = document.getElementById("logoutBtn");
+        if(logoutBtn) logoutBtn.addEventListener("click", () => logout());
+
+        // botones funcionales
+        document.getElementById("simulateRemittanceBtn")?.addEventListener("click", simulateRemittance);
+        document.getElementById("buyCryptoBtn")?.addEventListener("click", buyCrypto);
+        document.getElementById("whatsappBtn")?.addEventListener("click", () => {
+            window.open("https://wa.me/584125556789?text=Hola%20NeoFX%2C%20necesito%20informaci%C3%B3n", "_blank");
+        });
+        document.getElementById("openAuthBtn")?.addEventListener("click", () => {
+            document.getElementById("authCard").scrollIntoView({ behavior: "smooth" });
+        });
+        // actualizar calculator si cambia monto
+        updateCalculator();
+    };
+</script>
+</body>
+</html>
