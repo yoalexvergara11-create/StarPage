@@ -1,6 +1,32 @@
 <!DOCTYPE html>
-<html>
-<body>
-<h1>Comprar funcionando</h1>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Comprar USD</title>
+</head>
+
+<body style="background:#0b0b10;color:white;font-family:Arial;padding:20px;">
+
+<h2>Comprar USD</h2>
+
+<input type="number" id="monto" placeholder="Monto USD">
+
+<select id="metodo">
+    <option value="600">PayPal</option>
+    <option value="610">Zinli</option>
+</select>
+
+<button onclick="calc()">Calcular</button>
+
+<h3 id="res"></h3>
+
+<script>
+function calc(){
+    let monto = document.getElementById("monto").value;
+    let tasa = document.getElementById("metodo").value;
+    document.getElementById("res").innerText = "Recibirás: " + (monto * tasa) + " Bs";
+}
+</script>
+
 </body>
 </html>
