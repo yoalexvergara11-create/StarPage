@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>StarPage | Remesas Express + Cripto</title>
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0a0f;
+            font-family: 'Inter', sans-serif;
+            color: #e5e9f0;
+            line-height: 1.5;
+            padding: 1.5rem;
+            min-height: 100vh;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Estrellas de fondo dinámicas */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: radial-gradient(2px 2px at 20px 30px, #fff, rgba(0,0,0,0)),
+                              radial-gradient(1px 1px at 80px 200px, #f0f, rgba(0,0,0,0)),
+                              radial-gradient(3px 3px at 150px 400px, #c084fc, rgba(0,0,0,0)),
+                              radial-gradient(1px 1px at 300px 80px, #4ade80, rgba(0,0,0,0)),
+                              radial-gradient(2px 2px at 500px 600px, #ffd966, rgba(0,0,0,0));
+            background-size: 200px 200px, 150px 150px, 250px 250px, 180px 180px, 300px 300px;
+            background-repeat: repeat;
+            opacity: 0.4;
+            pointer-events: none;
+            z-index: 0;
+            animation: starsMove 60s linear infinite;
+        }
+
+        @keyframes starsMove {
+            from { background-position: 0 0; }
+            to { background-position: 500px 500px; }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+            flex: 1;
+        }
+
+        /* Manos y billete decorativo */
+        .hands-bill {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            font-size: 3.5rem;
+            filter: drop-shadow(0 0 8px #c084fc);
+            margin-bottom: 0.5rem;
+        }
+        .hands-bill i {
+            background: rgba(0,0,0,0.5);
+            border-radius: 80px;
+            padding: 0.3rem;
+            transition: transform 0.3s;
+        }
+        .hands-bill i:hover {
+            transform: scale(1.05);
+        }
+
+        .view {
+            transition: opacity 0.3s ease;
+        }
+
+        .card {
+            background: rgba(17, 17, 21, 0.92);
+            backdrop-filter: blur(10px);
+            border-radius: 28px;
+            padding: 1.8rem;
+            border: 1px solid rgba(192, 132, 252, 0.4);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+            margin-bottom: 1.8rem;
+        }
+
+        .card-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-left: 4px solid #4ade80;
+            padding-left: 1rem;
+        }
+        .card-title i {
+            color: #c084fc;
+        }
+
+        input, select, button {
+            background: #1e1e2a;
+            border: 1px solid #2c2c3a;
+            border-radius: 20px;
+            padding: 0.8rem 1rem;
+            color: white;
+            font-family: 'Inter', sans-serif;
+            width: 100%;
+            margin: 0.5rem 0;
+            transition: 0.2s;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #c084fc;
+            box-shadow: 0 0 8px rgba(192,132,252,0.4);
+        }
+        button {
+            background: linear-gradient(95deg, #8b5cf6, #4ade80);
+            border: none;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        button:hover {
+            transform: scale(0.98);
+            filter: brightness(1.05);
+            box-shadow: 0 0 12px #4ade80aa;
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #c084fc;
+            color: #c084fc;
+        }
+        .flex-row {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .rate-badge {
+            background: #1a1a24;
+            border-radius: 20px;
+            padding: 0.8rem;
+            text-align: center;
+            margin-bottom: 1rem;
+            border-left: 3px solid #4ade80;
+        }
+        .currency-selector {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: #1a1a24;
+            padding: 0.5rem 1rem;
+            border-radius: 60px;
+            margin-bottom: 1rem;
+        }
+        .currency-selector img {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .payment-icons {
+            display: flex;
+            gap: 1.5rem;
+            font-size: 2.2rem;
+            justify-content: center;
+            margin: 1rem 0;
+        }
+        .payment-icons i {
+            background: #1e1e2a;
+            padding: 0.6rem;
+            border-radius: 30px;
+        }
+        .result-box {
+            background: #0b0b10;
+            border-radius: 24px;
+            padding: 1rem;
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin: 1rem 0;
+        }
+        .small-text {
+            font-size: 0.75rem;
+            color: #aaa;
+        }
+        .whatsapp-float {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            background: #25d366;
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.5);
+            z-index: 999;
+            text-decoration: none;
+        }
+        .logout-btn {
+            background: transparent;
+            border: 1px solid #f87171;
+            color: #f87171;
+            width: auto;
+            padding: 0.4rem 1.2rem;
+        }
+        .neon-text {
+            color: #c084fc;
+            text-shadow: 0 0 3px #c084fc;
+        }
+        .admin-table {
+            width: 100%;
+            overflow-x: auto;
+            margin-top: 1rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+        th, td {
+            text-align: left;
+            padding: 0.6rem;
+            border-bottom: 1px solid #2c2c3a;
+        }
+        th {
+            color: #c084fc;
+        }
+        .footer {
+            text-align: center;
+            padding: 1.5rem 0 0.5rem;
+            font-size: 0.7rem;
+            color: #777;
+            border-top: 1px solid rgba(192,132,252,0.2);
+            margin-top: 2rem;
+        }
+        .commission-badge {
+            background: linear-gradient(95deg, #4ade80, #c084fc);
+            display: inline-block;
+            padding: 0.3rem 1rem;
+            border-radius: 40px;
+            font-weight: bold;
+            color: #0a0a0f;
+            margin-top: 0.5rem;
+        }
+        @media (max-width: 700px) {
+            body { padding: 1rem; }
+            .card-title { font-size: 1.3rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- Logo con manos y estrella -->
+    <div class="hands-bill">
+        <i class="fas fa-hands-helping"></i>
+        <i class="fas fa-star" style="color: #f5b042; text-shadow:0 0 6px gold;"></i>
+        <i class="fas fa-money-bill-wave"></i>
+    </div>
+
+    <!-- VISTA REGISTRO / LOGIN -->
+    <div id="viewRegister" class="view" style="max-width: 500px; margin: 0 auto;">
+        <div class="card">
+            <div class="card-title"><i class="fas fa-user-plus"></i> StarPage - Acceso</div>
+            <div class="flex-row" style="margin-bottom: 1.5rem;">
+                <button id="showLoginPanelBtn" style="background: #2c2c3a;">Iniciar Sesión</button>
+                <button id="showRegisterPanelBtn" class="btn-outline">Crear Cuenta</button>
+            </div>
+            <!-- Login -->
+            <div id="loginPanel">
+                <input type="email" id="loginEmail" placeholder="Correo electrónico">
+                <input type="password" id="loginPassword" placeholder="Contraseña">
+                <button id="doLoginBtn">Ingresar</button>
+                <div id="loginError" class="small-text" style="color:#f87171; margin-top: 8px;"></div>
+            </div>
+            <!-- Registro -->
+            <div id="registerPanel" style="display: none;">
+                <input type="email" id="regEmail" placeholder="Correo electrónico">
+                <input type="password" id="regPassword" placeholder="Contraseña">
+                <div class="small-text" style="margin: 0 0 0.5rem 0;">La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un símbolo.</div>
+                <button id="doRegisterBtn">Registrarme</button>
+                <div id="regError" class="small-text" style="color:#f87171;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- VISTA KYC -->
+    <div id="viewKyc" class="view" style="display: none; max-width: 600px; margin: 0 auto;">
+        <div class="card">
+            <div class="card-title"><i class="fas fa-id-card"></i> Verificación KYC</div>
+            <p>Completa tus datos para verificar tu identidad y mayoría de edad. Este proceso es obligatorio según normativa financiera.</p>
+            <input type="text" id="kycFullName" placeholder="Nombre completo">
+            <label>Fecha de nacimiento</label>
+            <input type="date" id="kycBirthDate">
+            <label>Documento de identidad (cédula o pasaporte)</label>
+            <input type="file" id="kycDocument" accept="image/*">
+            <div class="small-text">* Adjunta una foto clara de tu documento de identidad. El sistema verificará automáticamente si eres mayor de edad.</div>
+            <button id="submitKycBtn">Verificar y continuar</button>
+            <div id="kycResultMsg" class="small-text" style="margin-top: 12px;"></div>
+            <hr>
+            <button id="logoutFromKycBtn" class="logout-btn" style="width: auto;">Cerrar sesión</button>
+        </div>
+    </div>
+
+    <!-- VISTA DASHBOARD (incluye panel de fundador si es el correo especial) -->
+    <div id="viewDashboard" class="view" style="display: none;">
+        <!-- Header con usuario y logout -->
+        <div class="flex-row" style="justify-content: space-between; margin-bottom: 1.5rem;">
+            <div class="logo">
+                <h1 style="font-size: 2rem; background: linear-gradient(135deg,#c084fc,#4ade80); -webkit-background-clip:text; background-clip:text; color:transparent;">✨ StarPage ✨</h1>
+                <p class="small-text">Remesas al instante | Crypto USDC</p>
+            </div>
+            <div>
+                <span id="dashboardUserEmail" style="margin-right: 1rem;"><i class="fas fa-user-circle"></i> usuario</span>
+                <button id="dashboardLogoutBtn" class="logout-btn">Salir</button>
+            </div>
+        </div>
+
+        <!-- Tasa BCV en tiempo real -->
+        <div class="card">
+            <div class="card-title"><i class="fas fa-chart-line"></i> Tasas de Cambio Oficiales</div>
+            <div class="rate-badge">
+                <div><i class="fas fa-dollar-sign"></i> BCV (Dólar oficial): <strong id="bcvRate">--,--</strong> Bs/USD</div>
+                <div class="neon-text" style="margin-top: 6px;">✨ StarPage Tasa Premium (BCV + 80): <strong id="starRate">--,--</strong> Bs/USD ✨</div>
+                <div class="small-text">Actualización automática cada 30 segundos | <i class="fas fa-sync-alt"></i> <span id="lastUpdate"></span></div>
+            </div>
+        </div>
+
+        <!-- Sección principal: Envío de remesas -->
+        <div class="card">
+            <div class="card-title"><i class="fas fa-paper-plane"></i> Enviar dinero ahora</div>
+            <div class="currency-selector" id="currencySelector">
+                <img id="flagIcon" src="https://flagcdn.com/w40/us.png" alt="flag" width="32" height="32">
+                <select id="sendCurrency" style="width: auto; flex:1; margin:0;">
+                    <option value="USD">🇺🇸 Dólar EE.UU (USD)</option>
+                    <option value="EUR">🇪🇺 Euro (EUR)</option>
+                </select>
+            </div>
+            <label>💰 Monto a enviar:</label>
+            <input type="number" id="sendAmount" placeholder="0.00" value="100" step="any">
+            <label>🇻🇪 Recibirá en Bolívares (VES):</label>
+            <div class="result-box" id="convertedAmount">0,00 Bs</div>
+            <label>🏦 Datos del destinatario (cuenta bancaria nacional o pago móvil):</label>
+            <input type="text" id="beneficiaryBankData" placeholder="Ej: Banco Venezuela, cuenta 0102-XXXX, cédula / o número de pago móvil">
+            <button id="sendRemittanceBtn"><i class="fas fa-bolt"></i> Enviar remesa (llegada en menos de 10 min)</button>
+            <div id="remittanceResultMsg" class="small-text" style="margin-top: 12px; text-align:center;"></div>
+            <div class="payment-icons">
+                <i class="fab fa-paypal" title="PayPal"></i>
+                <i class="fas fa-bolt" title="Zinli"></i>
+                <i class="fas fa-university" title="Zelle"></i>
+            </div>
+            <div class="small-text" style="text-align:center;">Aceptamos pagos desde USA y Europa con PayPal, Zinli, Zelle</div>
+        </div>
+
+        <!-- Segunda fila: Compra de Cripto y Atención -->
+        <div class="flex-row" style="gap: 1.5rem; flex-wrap: wrap;">
+            <div class="card" style="flex: 1;">
+                <div class="card-title"><i class="fab fa-bitcoin"></i> Compra USDC</div>
+                <p>Adquiere USDC 1:1 con tasa estable, llega a tu wallet.</p>
+                <input type="number" id="cryptoUsdAmount" placeholder="Monto en USD" value="50">
+                <div style="background:#1a1a24; border-radius: 20px; padding: 0.6rem; margin: 0.5rem 0;">≈ <span id="usdcEstimate">50.00</span> USDC</div>
+                <input type="text" id="walletAddress" placeholder="Dirección de wallet (ERC20/BEP20)">
+                <button id="buyCryptoBtn"><i class="fas fa-coins"></i> Comprar USDC</button>
+                <div id="cryptoMsg" class="small-text"></div>
+            </div>
+            <div class="card" style="flex: 1;">
+                <div class="card-title"><i class="fas fa-headset"></i> Atención al Cliente</div>
+                <p>¿Problemas con tu remesa? Escríbenos por WhatsApp empresarial.</p>
+                <button id="whatsappSupportBtn" style="background:#25d366;"><i class="fab fa-whatsapp"></i> Chatear ahora</button>
+                <div class="small-text" style="margin-top: 1rem;">+58 412 555 6789 | Respuesta inmediata</div>
+            </div>
+        </div>
+
+        <!-- PANEL DE FUNDADOR (solo para yoalexvergara11@gmail.com) -->
+        <div id="founderPanel" style="display: none; margin-top: 2rem;">
+            <div class="card">
+                <div class="card-title"><i class="fas fa-crown"></i> Panel de Fundador - Yoalex Vergara (CEO StarPage)</div>
+                <div style="background: #1a1a24; border-radius: 20px; padding: 1rem; margin-bottom: 1.5rem; text-align: center;">
+                    <div><i class="fas fa-chart-simple"></i> Comisiones acumuladas</div>
+                    <div class="commission-badge" id="totalCommissionDisplay">$ 0.00 USD</div>
+                    <div class="small-text" style="margin-top: 0.5rem;">2% de comisión por cada transacción realizada en la plataforma</div>
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <h3>📋 Usuarios Registrados</h3>
+                    <div class="admin-table" id="usersTableContainer"></div>
+                </div>
+                <div>
+                    <h3>📊 Transacciones (Remesas + Cripto)</h3>
+                    <div class="admin-table" id="transactionsTableContainer"></div>
+                </div>
+                <div class="small-text" style="margin-top: 1rem;">🔒 Solo visible para el administrador fundador.</div>
+            </div>
+        </div>
+
+        <div class="small-text" style="text-align:center; margin: 2rem 0 1rem;">🔒 Todos los envíos son seguros. Fondos acreditados en menos de 10 minutos.</div>
+    </div>
+</div>
+
+<!-- Botón flotante WhatsApp -->
+<a href="https://wa.me/584125556789?text=Hola%20StarPage%2C%20necesito%20ayuda" target="_blank" class="whatsapp-float">
+    <i class="fab fa-whatsapp"></i>
+</a>
+
+<footer class="footer">
+    © 2025 StarPage - Todos los derechos reservados. Desarrollado por Yoalex Vergara, CEO de StarPage.
+</footer>
+
+<script>
+    // ---------- STORAGE KEYS ----------
+    const USERS_KEY = "starpage_users";
+    const SESSION_KEY = "starpage_session";
+    const TRANSACTIONS_KEY = "starpage_transactions";
+    const COMMISSIONS_KEY = "starpage_commissions";
+
+    // Datos iniciales si no existen, y aseguramos que la cuenta fundador tenga la contraseña correcta
+    function initStorage() {
+        let users = [];
+        if (localStorage.getItem(USERS_KEY)) {
+            users = JSON.parse(localStorage.getItem(USERS_KEY));
+        }
+        
+        // Buscar o crear usuario fundador con la contraseña correcta
+        const founderEmail = "yoalexvergara11@gmail.com";
+        const founderPassword = "Yoalex.11";
+        const founderIndex = users.findIndex(u => u.email === founderEmail);
+        
+        if (founderIndex !== -1) {
+            // Actualizar contraseña y datos del fundador si es necesario
+            users[founderIndex].password = founderPassword;
+            users[founderIndex].kycApproved = true;
+            users[founderIndex].isFounder = true;
+            if (!users[founderIndex].kycData) {
+                users[founderIndex].kycData = { fullName: "Yoalex Vergara", birthDate: "1990-01-01", approvedAt: new Date().toISOString() };
+            }
+        } else {
+            // Crear fundador
+            users.push({
+                email: founderEmail,
+                password: founderPassword,
+                kycApproved: true,
+                kycData: { fullName: "Yoalex Vergara", birthDate: "1990-01-01", approvedAt: new Date().toISOString() },
+                createdAt: new Date().toISOString(),
+                isFounder: true
+            });
+        }
+        
+        localStorage.setItem(USERS_KEY, JSON.stringify(users));
+        
+        if (!localStorage.getItem(TRANSACTIONS_KEY)) {
+            localStorage.setItem(TRANSACTIONS_KEY, JSON.stringify([]));
+        }
+        if (!localStorage.getItem(COMMISSIONS_KEY)) {
+            localStorage.setItem(COMMISSIONS_KEY, JSON.stringify({ totalUSD: 0, details: [] }));
+        }
+    }
+    initStorage();
+
+    function getUsers() {
+        return JSON.parse(localStorage.getItem(USERS_KEY));
+    }
+    function saveUsers(users) {
+        localStorage.setItem(USERS_KEY, JSON.stringify(users));
+    }
+    function getSession() {
+        return JSON.parse(localStorage.getItem(SESSION_KEY));
+    }
+    function setSession(user) {
+        if (user) localStorage.setItem(SESSION_KEY, JSON.stringify(user));
+        else localStorage.removeItem(SESSION_KEY);
+    }
+    function getTransactions() {
+        return JSON.parse(localStorage.getItem(TRANSACTIONS_KEY));
+    }
+    function addTransaction(transaction) {
+        const txs = getTransactions();
+        txs.unshift({ ...transaction, timestamp: new Date().toISOString() });
+        localStorage.setItem(TRANSACTIONS_KEY, JSON.stringify(txs));
+    }
+
+    // Gestión de comisiones (2%)
+    function getCommissions() {
+        return JSON.parse(localStorage.getItem(COMMISSIONS_KEY));
+    }
+    function addCommission(amountUSD, transactionDetail) {
+        const commissions = getCommissions();
+        commissions.totalUSD += amountUSD;
+        commissions.details.push({
+            amount: amountUSD,
+            detail: transactionDetail,
+            date: new Date().toISOString()
+        });
+        localStorage.setItem(COMMISSIONS_KEY, JSON.stringify(commissions));
+        return commissions.totalUSD;
+    }
+    function updateCommissionDisplay() {
+        const commissions = getCommissions();
+        const totalSpan = document.getElementById("totalCommissionDisplay");
+        if (totalSpan) totalSpan.innerText = `$ ${commissions.totalUSD.toFixed(2)} USD`;
+    }
+
+    // Registrar nuevo usuario con validación de contraseña segura
+    function isStrongPassword(password) {
+        const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        return regex.test(password);
+    }
+
+    function registerUser(email, password) {
+        let users = getUsers();
+        if (users.find(u => u.email === email)) return { success: false, error: "El correo ya está registrado" };
+        if (!email || !password) return { success: false, error: "Completa todos los campos" };
+        if (!isStrongPassword(password)) {
+            return { success: false, error: "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un símbolo." };
+        }
+        const newUser = {
+            email: email,
+            password: password,
+            kycApproved: false,
+            kycData: null,
+            createdAt: new Date().toISOString(),
+            isFounder: (email === "yoalexvergara11@gmail.com")
+        };
+        users.push(newUser);
+        saveUsers(users);
+        return { success: true };
+    }
+
+    function loginUser(email, password) {
+        const users = getUsers();
+        const user = users.find(u => u.email === email && u.password === password);
+        if (user) {
+            setSession({ email: user.email, kycApproved: user.kycApproved, isFounder: user.isFounder || false });
+            return { success: true, user: { email: user.email, kycApproved: user.kycApproved, isFounder: user.isFounder } };
+        }
+        return { success: false, error: "Contraseña o correo incorrecto" };
+    }
+
+    function updateKyc(email, fullName, birthDate, isAdult) {
+        let users = getUsers();
+        const index = users.findIndex(u => u.email === email);
+        if (index === -1) return false;
+        if (isAdult) {
+            users[index].kycApproved = true;
+            users[index].kycData = { fullName, birthDate, approvedAt: new Date().toISOString() };
+            saveUsers(users);
+            const session = getSession();
+            if (session && session.email === email) {
+                session.kycApproved = true;
+                setSession(session);
+            }
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    function logout() {
+        setSession(null);
+        location.reload();
+    }
+
+    // ---------- TASA BCV ----------
+    let currentBcvRate = 490;
+    let starRate = 570;
+
+    async function fetchBCVRate() {
+        try {
+            const response = await fetch('https://ve.dolarapi.com/v1/dolares?moneda=USD');
+            const data = await response.json();
+            const bcvEntry = data.find(item => item.nombre === "BCV");
+            if (bcvEntry && bcvEntry.precio) currentBcvRate = bcvEntry.precio;
+            else currentBcvRate = data[0]?.precio || 490;
+        } catch (error) {
+            console.warn("Error obteniendo tasa BCV, usando valor por defecto", error);
+            currentBcvRate = 490;
+        }
+        starRate = currentBcvRate + 80;
+        updateRateDisplay();
+    }
+
+    function updateRateDisplay() {
+        const bcvSpan = document.getElementById("bcvRate");
+        const starSpan = document.getElementById("starRate");
+        if (bcvSpan) bcvSpan.innerText = currentBcvRate.toFixed(2);
+        if (starSpan) starSpan.innerText = starRate.toFixed(2);
+        const updateTime = new Date().toLocaleTimeString();
+        const lastUpdateSpan = document.getElementById("lastUpdate");
+        if (lastUpdateSpan) lastUpdateSpan.innerText = `Última actualización: ${updateTime}`;
+        if (document.getElementById("viewDashboard")?.style.display === "block") updateConversion();
+    }
+
+    function getRateForCurrency(currency) {
+        if (currency === "USD") return starRate;
+        if (currency === "EUR") return starRate * 1.08;
+        return starRate;
+    }
+
+    function updateConversion() {
+        const amount = parseFloat(document.getElementById("sendAmount")?.value);
+        const currency = document.getElementById("sendCurrency")?.value;
+        if (isNaN(amount) || !currency) return;
+        const rate = getRateForCurrency(currency);
+        const result = amount * rate;
+        const resultDiv = document.getElementById("convertedAmount");
+        if (resultDiv) resultDiv.innerText = result.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " Bs";
+    }
+
+    function updateFlag(currency) {
+        const flagImg = document.getElementById("flagIcon");
+        if (!flagImg) return;
+        if (currency === "USD") flagImg.src = "https://flagcdn.com/w40/us.png";
+        else if (currency === "EUR") flagImg.src = "https://flagcdn.com/w40/eu.png";
+    }
+
+    // ---------- UI Views ----------
+    function showView(viewName) {
+        document.getElementById("viewRegister").style.display = "none";
+        document.getElementById("viewKyc").style.display = "none";
+        document.getElementById("viewDashboard").style.display = "none";
+        document.getElementById(`view${viewName}`).style.display = "block";
+    }
+
+    function checkAuthAndRedirect() {
+        const session = getSession();
+        if (!session) {
+            showView("Register");
+            return;
+        }
+        const users = getUsers();
+        const userData = users.find(u => u.email === session.email);
+        const kycOk = userData ? userData.kycApproved : false;
+        if (kycOk) {
+            showView("Dashboard");
+            loadDashboardData(session.email);
+        } else {
+            showView("Kyc");
+            if (userData && userData.kycData?.fullName) {
+                document.getElementById("kycFullName").value = userData.kycData.fullName;
+            }
+        }
+    }
+
+    function loadDashboardData(email) {
+        document.getElementById("dashboardUserEmail").innerHTML = `<i class="fas fa-user-circle"></i> ${email.split('@')[0]}`;
+        updateConversion();
+        fetchBCVRate();
+        if (window.rateInterval) clearInterval(window.rateInterval);
+        window.rateInterval = setInterval(fetchBCVRate, 30000);
+
+        // Mostrar panel fundador si el email coincide
+        if (email === "yoalexvergara11@gmail.com") {
+            document.getElementById("founderPanel").style.display = "block";
+            loadAdminData();
+            updateCommissionDisplay();
+        } else {
+            document.getElementById("founderPanel").style.display = "none";
+        }
+    }
+
+    function loadAdminData() {
+        // Mostrar usuarios
+        const users = getUsers();
+        const usersHtml = `
+             <table>
+                <thead>
+                    <tr><th>Email</th><th>KYC</th><th>Registro</th><th>Fundador</th></tr>
+                </thead>
+                <tbody>
+                    ${users.map(u => `
+                        <tr>
+                            <td>${u.email}</td>
+                            <td>${u.kycApproved ? '✅ Aprobado' : '❌ Pendiente'}</td>
+                            <td>${new Date(u.createdAt).toLocaleDateString()}</td>
+                            <td>${u.isFounder ? '👑 Sí' : 'No'}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+        document.getElementById("usersTableContainer").innerHTML = usersHtml;
+
+        // Mostrar transacciones
+        const txs = getTransactions();
+        const txsHtml = `
+            <table>
+                <thead>
+                    <tr><th>Usuario</th><th>Tipo</th><th>Detalle</th><th>Comisión</th><th>Fecha</th></tr>
+                </thead>
+                <tbody>
+                    ${txs.map(t => `
+                        <tr>
+                            <td>${t.userEmail}</td>
+                            <td>${t.type === 'remesa' ? '💸 Remesa' : '🪙 Crypto'}</td>
+                            <td>${t.detail}</td>
+                            <td>$${t.commission?.toFixed(2) || '0.00'}</td>
+                            <td>${new Date(t.timestamp).toLocaleString()}</td>
+                        </tr>
+                    `).join('')}
+                    ${txs.length === 0 ? '<tr><td colspan="5">No hay transacciones aún</td></tr>' : ''}
+                </tbody>
+            </table>
+        `;
+        document.getElementById("transactionsTableContainer").innerHTML = txsHtml;
+    }
+
+    // ---------- EVENTOS Y REGISTRO ----------
+    window.onload = () => {
+        checkAuthAndRedirect();
+
+        const showLogin = document.getElementById("showLoginPanelBtn");
+        const showRegister = document.getElementById("showRegisterPanelBtn");
+        const loginPanel = document.getElementById("loginPanel");
+        const registerPanel = document.getElementById("registerPanel");
+
+        if (showLogin) {
+            showLogin.onclick = () => { loginPanel.style.display = "block"; registerPanel.style.display = "none"; };
+            showRegister.onclick = () => { loginPanel.style.display = "none"; registerPanel.style.display = "block"; };
+        }
+
+        document.getElementById("doLoginBtn")?.addEventListener("click", () => {
+            const email = document.getElementById("loginEmail").value;
+            const pass = document.getElementById("loginPassword").value;
+            const res = loginUser(email, pass);
+            if (res.success) {
+                checkAuthAndRedirect();
+            } else {
+                document.getElementById("loginError").innerText = res.error;
+            }
+        });
+
+        document.getElementById("doRegisterBtn")?.addEventListener("click", () => {
+            const email = document.getElementById("regEmail").value;
+            const pass = document.getElementById("regPassword").value;
+            const res = registerUser(email, pass);
+            if (res.success) {
+                alert("Registro exitoso. Ahora inicia sesión.");
+                showLogin.click();
+                document.getElementById("regError").innerText = "";
+            } else {
+                document.getElementById("regError").innerText = res.error;
+            }
+        });
+
+        // KYC verificación de edad
+        document.getElementById("submitKycBtn")?.addEventListener("click", () => {
+            const fullName = document.getElementById("kycFullName").value.trim();
+            const birthDate = document.getElementById("kycBirthDate").value;
+            const fileInput = document.getElementById("kycDocument").files[0];
+            const session = getSession();
+            if (!session) { alert("Sesión no encontrada"); logout(); return; }
+            if (!fullName || !birthDate) {
+                document.getElementById("kycResultMsg").innerHTML = '<span style="color:#f87171;">Completa nombre y fecha de nacimiento.</span>';
+                return;
+            }
+            if (!fileInput) {
+                document.getElementById("kycResultMsg").innerHTML = '<span style="color:#f87171;">Adjunta una imagen de tu documento de identidad.</span>';
+                return;
+            }
+            const today = new Date();
+            const birth = new Date(birthDate);
+            let age = today.getFullYear() - birth.getFullYear();
+            const monthDiff = today.getMonth() - birth.getMonth();
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) age--;
+            const isAdult = age >= 18;
+            if (isAdult) {
+                const updated = updateKyc(session.email, fullName, birthDate, true);
+                if (updated) {
+                    document.getElementById("kycResultMsg").innerHTML = '<span style="color:#4ade80;">✅ KYC aprobado. Redirigiendo al dashboard...</span>';
+                    setTimeout(() => checkAuthAndRedirect(), 1500);
+                } else {
+                    document.getElementById("kycResultMsg").innerHTML = '<span style="color:#f87171;">Error al actualizar KYC.</span>';
+                }
+            } else {
+                document.getElementById("kycResultMsg").innerHTML = '<span style="color:#f87171;">❌ Eres menor de edad. No puedes usar nuestros servicios.</span>';
+            }
+        });
+
+        // Eventos del dashboard
+        const sendCurrency = document.getElementById("sendCurrency");
+        if (sendCurrency) {
+            sendCurrency.addEventListener("change", () => {
+                updateFlag(sendCurrency.value);
+                updateConversion();
+            });
+        }
+        const amountInput = document.getElementById("sendAmount");
+        if (amountInput) amountInput.addEventListener("input", updateConversion);
+
+        // Envío de remesa con comisión
+        document.getElementById("sendRemittanceBtn")?.addEventListener("click", () => {
+            const session = getSession();
+            if (!session) { alert("Debes estar autenticado"); logout(); return; }
+            const users = getUsers();
+            const userDb = users.find(u => u.email === session.email);
+            if (!userDb?.kycApproved) { alert("KYC no aprobado, completa verificación."); checkAuthAndRedirect(); return; }
+            const amount = parseFloat(document.getElementById("sendAmount").value);
+            const currency = document.getElementById("sendCurrency").value;
+            const bankData = document.getElementById("beneficiaryBankData").value.trim();
+            if (isNaN(amount) || amount <= 0) { alert("Monto válido"); return; }
+            if (!bankData) { alert("Ingresa datos bancarios del destinatario"); return; }
+            const rate = getRateForCurrency(currency);
+            const totalBs = amount * rate;
+            
+            // Calcular comisión (2% sobre el monto en USD)
+            let amountUSD = amount;
+            if (currency === "EUR") amountUSD = amount * 1.08; // conversión aproximada a USD para comisión
+            const commission = amountUSD * 0.02;
+            addCommission(commission, `Remesa: ${amount} ${currency} a ${bankData.substring(0,30)}`);
+            
+            const msgDiv = document.getElementById("remittanceResultMsg");
+            msgDiv.innerHTML = `<span style="color:#4ade80;"><i class="fas fa-check-circle"></i> ¡Envío exitoso! Se transferirán ${totalBs.toLocaleString('es-VE', {minimumFractionDigits:2})} Bs a ${bankData}. Llegará en menos de 10 minutos.</span>`;
+            
+            addTransaction({
+                userEmail: session.email,
+                type: "remesa",
+                detail: `${amount} ${currency} → ${totalBs.toFixed(2)} Bs. Destino: ${bankData.substring(0, 40)}`,
+                commission: commission
+            });
+            if (session.email === "yoalexvergara11@gmail.com") {
+                loadAdminData();
+                updateCommissionDisplay();
+            }
+        });
+
+        // Compra de cripto con comisión
+        document.getElementById("buyCryptoBtn")?.addEventListener("click", () => {
+            const session = getSession();
+            if (!session) { alert("Inicia sesión"); return; }
+            const users = getUsers();
+            const userDb = users.find(u => u.email === session.email);
+            if (!userDb?.kycApproved) { alert("KYC requerido"); return; }
+            const usdAmount = parseFloat(document.getElementById("cryptoUsdAmount").value);
+            const wallet = document.getElementById("walletAddress").value.trim();
+            if (isNaN(usdAmount) || usdAmount <= 0) {
+                document.getElementById("cryptoMsg").innerHTML = '<span style="color:#f87171;">Monto inválido</span>';
+                return;
+            }
+            if (!wallet) {
+                document.getElementById("cryptoMsg").innerHTML = '<span style="color:#f87171;">Dirección de wallet requerida</span>';
+                return;
+            }
+            
+            const commission = usdAmount * 0.02;
+            addCommission(commission, `Compra USDC: ${usdAmount} USD a wallet ${wallet.substring(0,12)}...`);
+            
+            document.getElementById("cryptoMsg").innerHTML = `<span style="color:#4ade80;">✅ Compra procesada: ${usdAmount} USDC enviados a ${wallet.substring(0,8)}... Pago recibido.</span>`;
+            addTransaction({
+                userEmail: session.email,
+                type: "crypto",
+                detail: `${usdAmount} USDC a wallet ${wallet.substring(0,12)}...`,
+                commission: commission
+            });
+            if (session.email === "yoalexvergara11@gmail.com") {
+                loadAdminData();
+                updateCommissionDisplay();
+            }
+        });
+
+        document.getElementById("cryptoUsdAmount")?.addEventListener("input", (e) => {
+            const val = parseFloat(e.target.value) || 0;
+            document.getElementById("usdcEstimate").innerText = val.toFixed(2);
+        });
+
+        document.getElementById("whatsappSupportBtn")?.addEventListener("click", () => {
+            window.open("https://wa.me/584125556789?text=Hola%20StarPage%2C%20necesito%20ayuda", "_blank");
+        });
+
+        document.getElementById("dashboardLogoutBtn")?.addEventListener("click", logout);
+        document.getElementById("logoutFromKycBtn")?.addEventListener("click", logout);
+    };
+</script>
+</body>
+</html>
