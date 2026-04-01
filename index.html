@@ -1,176 +1,237 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>StarPage | Acceso Seguro</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StarPage | Registro y Acceso</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: #0b0b10;
+            color: white;
+            overflow-x: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+        /* Luces Púrpuras en Movimiento */
+        .bg-glow {
+            position: absolute;
+            width: 40vw;
+            height: 40vw;
+            background: radial-gradient(circle, rgba(147, 51, 234, 0.4) 0%, rgba(0,0,0,0) 70%);
+            border-radius: 50%;
+            filter: blur(60px);
+            animation: float 10s infinite alternate ease-in-out;
+            z-index: -1;
+        }
+        .glow-2 {
+            background: radial-gradient(circle, rgba(192, 132, 252, 0.3) 0%, rgba(0,0,0,0) 70%);
+            top: 20%;
+            right: 10%;
+            animation-delay: -5s;
+        }
 
-<style>
-body{
-    font-family: 'Inter', sans-serif;
-    background: #0b0b10;
-    color: white;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    height:100vh;
-    margin: 0;
-}
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(50px, 50px) scale(1.2); }
+        }
 
-.container{
-    width:350px;
-    background:#111;
-    padding:30px;
-    border-radius:20px;
-    box-shadow:0 0 30px rgba(192,132,252,0.2);
-}
+        /* Contenedor Principal */
+        .container {
+            background: rgba(17, 17, 17, 0.85);
+            backdrop-filter: blur(15px);
+            padding: 40px 30px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 0 40px rgba(147, 51, 234, 0.2);
+        }
 
-h2{
-    text-align:center;
-    margin-bottom:20px;
-    font-weight: 700;
-}
+        h2 { text-align: center; margin-bottom: 25px; }
 
-input{
-    width:100%;
-    padding:12px;
-    margin:10px 0;
-    border-radius:10px;
-    border: 1px solid #2e2e3a;
-    background:#1e1e2a;
-    color:white;
-    box-sizing: border-box;
-}
+        /* Campos del Formulario */
+        .input-group {
+            position: relative;
+            margin-bottom: 15px;
+        }
 
-input:focus {
-    outline: 2px solid #9333ea;
-    border: none;
-}
+        .input-group i.icon {
+            position: absolute;
+            left: 15px;
+            top: 15px;
+            color: #c084fc;
+        }
 
-button{
-    width:100%;
-    padding:12px;
-    margin-top: 15px;
-    background:linear-gradient(90deg,#9333ea,#4ade80);
-    border:none;
-    border-radius:10px;
-    color:white;
-    font-weight:bold;
-    cursor:pointer;
-    transition: transform 0.2s;
-}
+        input, select {
+            width: 100%;
+            padding: 12px 12px 12px 45px;
+            background: #1e1e2a;
+            border: 1px solid #2e2e3a;
+            border-radius: 10px;
+            color: white;
+            box-sizing: border-box;
+            outline: none;
+            transition: border 0.3s;
+        }
 
-button:active {
-    transform: scale(0.98);
-}
+        input:focus, select:focus { border-color: #9333ea; }
 
-.switch{
-    text-align:center;
-    margin-top:20px;
-    cursor:pointer;
-    color:#c084fc;
-    font-size: 14px;
-    text-decoration: underline;
-}
-</style>
+        .phone-group { display: flex; gap: 10px; }
+        .phone-group select { width: 40%; padding-left: 10px; }
+        .phone-group input { width: 60%; padding-left: 15px; }
+
+        /* Botón de ver contraseña */
+        .eye-btn {
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            cursor: pointer;
+            color: #888;
+        }
+
+        /* Archivos KYC */
+        .file-upload {
+            padding: 10px;
+            background: #1e1e2a;
+            border: 1px dashed #c084fc;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 14px;
+            color: #aaa;
+            cursor: pointer;
+            margin-bottom: 15px;
+        }
+
+        button.btn-main {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(90deg, #9333ea, #4ade80);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .toggle-text {
+            text-align: center;
+            margin-top: 20px;
+            color: #aaa;
+            font-size: 14px;
+        }
+        .toggle-text span {
+            color: #4ade80;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* Ocultar secciones */
+        .hidden { display: none; }
+    </style>
 </head>
-
 <body>
 
-<div class="container">
-    <h2 id="title">Iniciar sesión</h2>
+    <div class="bg-glow"></div>
+    <div class="bg-glow glow-2"></div>
 
-    <input type="email" id="email" placeholder="Correo electrónico">
-    <input type="password" id="password" placeholder="Contraseña">
+    <div class="container">
+        <div id="register-section">
+            <h2>Crear Cuenta StarPage</h2>
+            
+            <div class="input-group">
+                <i class="fa-solid fa-envelope icon"></i>
+                <input type="email" id="reg-email" placeholder="Correo electrónico">
+            </div>
 
-    <button id="mainBtn" onclick="ejecutarAccion()">Entrar</button>
+            <div class="input-group phone-group">
+                <select id="country-code">
+                    <option value="+58">🇻🇪 +58</option>
+                    <option value="+1">🇺🇸 +1</option>
+                    <option value="+57">🇨🇴 +57</option>
+                    <option value="+34">🇪🇸 +34</option>
+                </select>
+                <input type="tel" id="reg-phone" placeholder="Número celular">
+            </div>
 
-    <p class="switch" id="toggleLink" onclick="toggle()">¿No tienes cuenta? Crear cuenta</p>
-</div>
+            <div class="input-group">
+                <i class="fa-solid fa-id-card icon"></i>
+                <input type="text" id="reg-id" placeholder="Cédula o Pasaporte">
+            </div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+            <div class="file-upload" onclick="document.getElementById('kyc-img').click()">
+                <i class="fa-solid fa-camera"></i> Subir foto de documento (KYC)
+                <input type="file" id="kyc-img" class="hidden" accept="image/*">
+            </div>
 
-// Credenciales oficiales de StarPage
-const firebaseConfig = {
-    apiKey: "AIzaSyCH9EghFUhATPScF0KFPP78RhhOaRXw7w4",
-    authDomain: "starpage-aad7e.firebaseapp.com",
-    projectId: "starpage-aad7e",
-    storageBucket: "starpage-aad7e.firebasestorage.app",
-    messagingSenderId: "68878211023",
-    appId: "1:68878211023:web:81015ce98366639003e4ba",
-    measurementId: "G-G5L12SKLRS"
-};
+            <div class="input-group">
+                <i class="fa-solid fa-lock icon"></i>
+                <input type="password" id="reg-pass" placeholder="Crea una contraseña">
+                <i class="fa-solid fa-eye eye-btn" onclick="togglePassword('reg-pass')"></i>
+            </div>
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+            <button class="btn-main" onclick="registrarUsuario()">Completar Registro</button>
+            <p class="toggle-text">¿Ya tienes cuenta verificada? <span onclick="switchForm('login')">Inicia Sesión</span></p>
+        </div>
 
-window.isLogin = true;
+        <div id="login-section" class="hidden">
+            <h2>Bienvenido de vuelta</h2>
+            
+            <div class="input-group">
+                <i class="fa-solid fa-envelope icon"></i>
+                <input type="email" id="log-email" placeholder="Correo electrónico">
+            </div>
 
-window.toggle = function(){
-    isLogin = !isLogin;
-    document.getElementById("title").innerText = isLogin ? "Iniciar sesión" : "Crear cuenta";
-    document.getElementById("mainBtn").innerText = isLogin ? "Entrar" : "Registrarme";
-    document.getElementById("toggleLink").innerText = isLogin ? "¿No tienes cuenta? Crear cuenta" : "¿Ya tienes cuenta? Inicia sesión";
-}
+            <div class="input-group">
+                <i class="fa-solid fa-lock icon"></i>
+                <input type="password" id="log-pass" placeholder="Tu contraseña">
+                <i class="fa-solid fa-eye eye-btn" onclick="togglePassword('log-pass')"></i>
+            </div>
 
-window.ejecutarAccion = function(){
-    let email = document.getElementById("email").value;
-    let pass = document.getElementById("password").value;
+            <button class="btn-main" onclick="iniciarSesion()">Entrar a StarPage</button>
+            <p class="toggle-text">¿Eres nuevo? <span onclick="switchForm('register')">Regístrate aquí</span></p>
+        </div>
+    </div>
 
-    if(email === "" || pass === "") {
-        alert("Por favor, llena todos los campos");
-        return;
-    }
-
-    if(isLogin){
-        signInWithEmailAndPassword(auth, email, pass)
-        .then((userCredential) => {
-            const user = userCredential.user;
-            // Si eres tú (CEO), vas al Dashboard. Si es cliente, va a Vender.
-            if(user.email === "yoalexvergara11@gmail.com") {
-                window.location.href = "dashboard.html";
+    <script>
+        // Función para cambiar entre Registro y Login
+        function switchForm(form) {
+            if(form === 'login') {
+                document.getElementById('register-section').classList.add('hidden');
+                document.getElementById('login-section').classList.remove('hidden');
             } else {
-                window.location.href = "vender.html";
+                document.getElementById('login-section').classList.add('hidden');
+                document.getElementById('register-section').classList.remove('hidden');
             }
-        })
-        .catch((error) => {
-            manejarErrores(error.code);
-        });
-    } else {
-        createUserWithEmailAndPassword(auth, email, pass)
-        .then((userCredential) => {
-            alert("¡Cuenta creada exitosamente! Bienvenido a StarPage.");
-            window.location.href = "vender.html";
-        })
-        .catch((error) => {
-            manejarErrores(error.code);
-        });
-    }
-}
+        }
 
-function manejarErrores(code) {
-    switch(code) {
-        case 'auth/email-already-in-use':
-            alert("Este correo ya está registrado.");
-            break;
-        case 'auth/weak-password':
-            alert("La contraseña debe tener al menos 6 caracteres.");
-            break;
-        case 'auth/user-not-found':
-            alert("No existe una cuenta con este correo.");
-            break;
-        case 'auth/wrong-password':
-            alert("Contraseña incorrecta.");
-            break;
-        default:
-            alert("Error: " + code);
-    }
-}
-</script>
+        // Función para ver la contraseña
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            if (input.type === "password") {
+                input.type = "text";
+            } else {
+                input.type = "password";
+            }
+        }
 
+        // Lógica de validación (El programador conectará esto a Firebase)
+        function registrarUsuario() {
+            alert("Nota para programador: Aquí se conectará Firebase Auth y Storage para guardar el KYC.");
+        }
+
+        function iniciarSesion() {
+            alert("Nota para programador: Aquí se validará el correo para entrar al Lobby.");
+        }
+    </script>
 </body>
 </html>
