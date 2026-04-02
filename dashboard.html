@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StarPage | Admin Panel</title>
+    <title>StarPage | Admin Central</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -43,10 +43,11 @@
         }
         .tabs {
             display: flex;
-            gap: 1rem;
+            gap: 0.5rem;
             border-bottom: 1px solid #2a2a2a;
             margin-bottom: 1.5rem;
             flex-wrap: wrap;
+            overflow-x: auto;
         }
         .tab {
             padding: 0.6rem 1.2rem;
@@ -54,6 +55,7 @@
             color: #aaa;
             border-bottom: 2px solid transparent;
             font-weight: 500;
+            white-space: nowrap;
         }
         .tab.active {
             color: #c084fc;
@@ -98,6 +100,7 @@
             border-radius: 30px;
             color: white;
             cursor: pointer;
+            font-size: 0.75rem;
         }
         .config-group {
             margin-bottom: 1rem;
@@ -107,7 +110,7 @@
             margin-bottom: 0.4rem;
             font-weight: 500;
         }
-        .config-group input {
+        .config-group input, .config-group select {
             background: #1e1e2a;
             border: 1px solid #2e2e3a;
             padding: 0.7rem;
@@ -130,8 +133,55 @@
             padding: 2rem;
             color: #888;
         }
+        /* Chat */
+        .chat-message {
+            background: #1e1e2a;
+            border-radius: 16px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        .chat-message .user {
+            font-weight: bold;
+            color: #c084fc;
+        }
+        .chat-message .time {
+            font-size: 0.7rem;
+            color: #888;
+            margin-left: 0.5rem;
+        }
+        .chat-message .content {
+            margin: 0.5rem 0;
+        }
+        .chat-message .reply {
+            background: #2a2a2a;
+            padding: 0.5rem;
+            border-radius: 12px;
+            margin-top: 0.5rem;
+        }
+        .reply-input {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        .reply-input input {
+            flex: 1;
+            background: #0a0a0f;
+            border: 1px solid #2e2e3a;
+            padding: 0.5rem;
+            border-radius: 20px;
+            color: white;
+        }
+        /* Vista previa */
+        .preview-frame {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #2e2e3a;
+            border-radius: 16px;
+            background: white;
+        }
         @media (max-width: 700px) {
             th, td { font-size: 0.75rem; padding: 0.6rem; }
+            .preview-frame { height: 400px; }
         }
     </style>
 </head>
@@ -145,35 +195,39 @@
     <div class="tab active" data-tab="kyc">Usuarios KYC</div>
     <div class="tab" data-tab="pedidos">Pedidos</div>
     <div class="tab" data-tab="config">Configuración</div>
+    <div class="tab" data-tab="chat">Chat Soporte</div>
+    <div class="tab" data-tab="preview">Vista previa</div>
 </div>
 
-<!-- Sección KYC -->
+<!-- KYC -->
 <div id="kyc" class="section active">
     <div class="card">
         <h3><i class="fas fa-id-card"></i> Usuarios pendientes de verificación</h3>
         <div style="overflow-x: auto;">
-            <table>
-                <thead><tr><th>Email</th><th>Cédula</th><th>WhatsApp</th><th>Estado</th><th>Acción</th></tr></thead>
+             <table>
+                <thead><tr><th>Email</th><th>Cédula</th><th>WhatsApp</th><th>Estado</th><th>Acción</th></thead>
                 <tbody id="kyc-list"></tbody>
             </table>
         </div>
     </div>
 </div>
 
-<!-- Sección Pedidos -->
+<!-- Pedidos -->
 <div id="pedidos" class="section">
     <div class="card">
         <h3><i class="fas fa-exchange-alt"></i> Solicitudes de cambio</h3>
         <div style="overflow-x: auto;">
             <table>
-                <thead><tr><th>Usuario</th><th>Monto USD</th><th>Monto VES</th><th>Método</th><th>Datos Pago</th><th>Comprobante</th><th>Estado</th><th>Acción</th></tr></thead>
+                <thead>
+                    <tr><th>Usuario</th><th>Monto USD</th><th>Monto VES</th><th>Método</th><th>Datos Pago</th><th>Comprobante</th><th>Estado</th><th>Acción</th></tr>
+                </thead>
                 <tbody id="pedidos-list"></tbody>
             </table>
         </div>
     </div>
 </div>
 
-<!-- Sección Configuración -->
+<!-- Configuración (tasas + personalización) -->
 <div id="config" class="section">
     <div class="card">
         <h3><i class="fas fa-sliders-h"></i> Configuración de tasas y comisiones</h3>
@@ -189,13 +243,52 @@
             <label>Comisión (%)</label>
             <input type="number" id="comisionInput" step="0.1" placeholder="Ej: 2.0">
         </div>
-        <button id="saveConfigBtn">Guardar cambios</button>
+        <button id="saveRatesBtn">Guardar tasas</button>
+    </div>
+
+    <div class="card">
+        <h3><i class="fas fa-palette"></i> Personalización de la interfaz (vender.html)</h3>
+        <div class="config-group">
+            <label>Color primario (gradiente inicio)</label>
+            <input type="color" id="primaryColor" value="#9333ea">
+        </div>
+        <div class="config-group">
+            <label>Color secundario (gradiente fin)</label>
+            <input type="color" id="secondaryColor" value="#4ade80">
+        </div>
+        <div class="config-group">
+            <label>Texto del encabezado (junto al logo)</label>
+            <input type="text" id="headerText" placeholder="Ej: Cambio Seguro">
+        </div>
+        <div class="config-group">
+            <label>Frase de bienvenida (opcional)</label>
+            <input type="text" id="welcomeText" placeholder="Bienvenido a StarPage">
+        </div>
+        <button id="saveUiConfigBtn">Guardar personalización</button>
+    </div>
+</div>
+
+<!-- Chat de soporte -->
+<div id="chat" class="section">
+    <div class="card">
+        <h3><i class="fas fa-headset"></i> Mensajes de usuarios</h3>
+        <div id="chat-messages-list"></div>
+    </div>
+</div>
+
+<!-- Vista previa de la interfaz de usuario -->
+<div id="preview" class="section">
+    <div class="card">
+        <h3><i class="fas fa-eye"></i> Vista previa de vender.html</h3>
+        <p style="margin-bottom: 1rem;">Los cambios de personalización se verán reflejados al recargar la página. Para verlos aquí, actualice el iframe manualmente o guarde cambios y luego haga clic en "Recargar vista".</p>
+        <button id="reloadPreviewBtn" style="margin-bottom: 1rem;">Recargar vista previa</button>
+        <iframe id="previewIframe" class="preview-frame" src="vender.html" title="Vista previa de la página de usuario"></iframe>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore, collection, onSnapshot, doc, updateDoc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getFirestore, collection, onSnapshot, doc, updateDoc, getDoc, setDoc, addDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
     const firebaseConfig = {
@@ -218,12 +311,14 @@
         }
     });
 
-    // Tabs
+    // --- Tabs ---
     const tabs = document.querySelectorAll('.tab');
     const sections = {
         kyc: document.getElementById('kyc'),
         pedidos: document.getElementById('pedidos'),
-        config: document.getElementById('config')
+        config: document.getElementById('config'),
+        chat: document.getElementById('chat'),
+        preview: document.getElementById('preview')
     };
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
@@ -235,7 +330,7 @@
         });
     });
 
-    // Funciones globales
+    // --- Funciones globales para botones en tablas ---
     window.aprobarUsuario = async (id) => {
         await updateDoc(doc(db, "users", id), { status: 'approved' });
     };
@@ -243,7 +338,7 @@
         await updateDoc(doc(db, "pedidos", id), { status: 'completed' });
     };
 
-    // Cargar usuarios pendientes
+    // --- KYC ---
     onSnapshot(collection(db, "users"), (snapshot) => {
         const tbody = document.getElementById('kyc-list');
         tbody.innerHTML = '';
@@ -266,7 +361,7 @@
         if (pendientes === 0) tbody.innerHTML = '<tr><td colspan="5" class="empty-msg">✅ No hay usuarios pendientes</td></tr>';
     });
 
-    // Cargar pedidos
+    // --- Pedidos ---
     onSnapshot(collection(db, "pedidos"), (snapshot) => {
         const tbody = document.getElementById('pedidos-list');
         tbody.innerHTML = '';
@@ -294,8 +389,8 @@
         if (tbody.innerHTML === '') tbody.innerHTML = '<tr><td colspan="8" class="empty-msg">📭 No hay pedidos</td></tr>';
     });
 
-    // Cargar configuración actual
-    async function loadConfig() {
+    // --- Configuración: tasas ---
+    async function loadRates() {
         const configRef = doc(db, "config", "rates");
         const docSnap = await getDoc(configRef);
         if (docSnap.exists()) {
@@ -309,10 +404,9 @@
             document.getElementById('comisionInput').value = '2.0';
         }
     }
-    loadConfig();
+    loadRates();
 
-    // Guardar configuración
-    document.getElementById('saveConfigBtn').addEventListener('click', async () => {
+    document.getElementById('saveRatesBtn').addEventListener('click', async () => {
         const paypalRate = parseFloat(document.getElementById('paypalRateInput').value);
         const zinliRate = parseFloat(document.getElementById('zinliRateInput').value);
         const comision = parseFloat(document.getElementById('comisionInput').value);
@@ -326,10 +420,97 @@
             comision: comision,
             updatedAt: new Date()
         });
-        alert("Configuración guardada correctamente");
+        alert("Tasas guardadas correctamente");
     });
 
-    // Cerrar sesión
+    // --- Configuración: personalización UI ---
+    async function loadUiConfig() {
+        const uiRef = doc(db, "config", "ui");
+        const docSnap = await getDoc(uiRef);
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            document.getElementById('primaryColor').value = data.primaryColor || '#9333ea';
+            document.getElementById('secondaryColor').value = data.secondaryColor || '#4ade80';
+            document.getElementById('headerText').value = data.headerText || '';
+            document.getElementById('welcomeText').value = data.welcomeText || '';
+        } else {
+            document.getElementById('primaryColor').value = '#9333ea';
+            document.getElementById('secondaryColor').value = '#4ade80';
+            document.getElementById('headerText').value = '';
+            document.getElementById('welcomeText').value = '';
+        }
+    }
+    loadUiConfig();
+
+    document.getElementById('saveUiConfigBtn').addEventListener('click', async () => {
+        const uiData = {
+            primaryColor: document.getElementById('primaryColor').value,
+            secondaryColor: document.getElementById('secondaryColor').value,
+            headerText: document.getElementById('headerText').value,
+            welcomeText: document.getElementById('welcomeText').value,
+            updatedAt: new Date()
+        };
+        await setDoc(doc(db, "config", "ui"), uiData);
+        alert("Personalización guardada. La vista previa se actualizará al recargar.");
+        // Recargar el iframe para que muestre cambios (opcional)
+        document.getElementById('previewIframe').contentWindow.location.reload();
+    });
+
+    // --- Chat de soporte ---
+    // Escuchar mensajes de soporte ordenados por fecha descendente
+    const chatContainer = document.getElementById('chat-messages-list');
+    const messagesQuery = query(collection(db, "soporte"), orderBy("createdAt", "desc"));
+    onSnapshot(messagesQuery, (snapshot) => {
+        chatContainer.innerHTML = '';
+        snapshot.forEach(docSnap => {
+            const msg = docSnap.data();
+            const date = msg.createdAt ? new Date(msg.createdAt.toDate()).toLocaleString() : 'Fecha desconocida';
+            const replyHtml = msg.respuestaAdmin ? `
+                <div class="reply">
+                    <strong>✍️ Respuesta del admin:</strong><br>${msg.respuestaAdmin}
+                </div>
+            ` : '';
+            const replyForm = `
+                <div class="reply-input">
+                    <input type="text" id="reply-${docSnap.id}" placeholder="Escribe tu respuesta...">
+                    <button class="btn-action" onclick="sendReply('${docSnap.id}', '${msg.userId}')">Responder</button>
+                </div>
+            `;
+            chatContainer.innerHTML += `
+                <div class="chat-message">
+                    <div><span class="user">${msg.userEmail || 'Usuario'}</span> <span class="time">${date}</span></div>
+                    <div class="content">${msg.mensaje}</div>
+                    ${replyHtml}
+                    ${replyForm}
+                </div>
+            `;
+        });
+        if (snapshot.empty) {
+            chatContainer.innerHTML = '<div class="empty-msg">💬 No hay mensajes de soporte aún.</div>';
+        }
+    });
+
+    // Función global para responder
+    window.sendReply = async (messageId, userId) => {
+        const input = document.getElementById(`reply-${messageId}`);
+        const respuesta = input.value.trim();
+        if (!respuesta) return alert("Escribe una respuesta");
+        await updateDoc(doc(db, "soporte", messageId), {
+            respuestaAdmin: respuesta,
+            respondidoAt: new Date(),
+            respondidoPor: auth.currentUser?.email
+        });
+        input.value = '';
+        alert("Respuesta enviada");
+    };
+
+    // --- Vista previa ---
+    const previewIframe = document.getElementById('previewIframe');
+    document.getElementById('reloadPreviewBtn').addEventListener('click', () => {
+        previewIframe.src = previewIframe.src; // recargar
+    });
+
+    // --- Cerrar sesión ---
     document.getElementById('logoutBtn').addEventListener('click', () => {
         signOut(auth).then(() => window.location.href = "index.html");
     });
