@@ -3,69 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StarPage | Admin Central</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>StarPage | Admin Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
+            background: #0a0a0f;
             font-family: 'Inter', sans-serif;
-            background: #0b0b10;
-            color: white;
-            padding: 1.5rem;
+            color: #fff;
+            padding: 1rem;
         }
-        .header {
+        .admin-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 1rem;
             margin-bottom: 2rem;
             padding-bottom: 1rem;
-            border-bottom: 1px solid #2e2e3a;
+            border-bottom: 1px solid #2a2a2a;
+            flex-wrap: wrap;
+            gap: 1rem;
         }
         .logo {
-            font-size: 1.7rem;
+            font-size: 1.8rem;
             font-weight: 800;
-            background: linear-gradient(90deg, #9333ea, #4ade80);
+            background: linear-gradient(135deg, #fff, #c084fc);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
         }
-        .nav-buttons {
-            display: flex;
-            gap: 0.8rem;
-        }
-        .btn {
+        .logout-btn {
+            background: #dc2626;
             padding: 0.5rem 1.2rem;
             border-radius: 40px;
-            font-weight: 600;
-            font-size: 0.85rem;
-            cursor: pointer;
-            text-decoration: none;
-            transition: all 0.2s;
             border: none;
-        }
-        .btn-outline {
-            background: transparent;
-            border: 1px solid #4ade80;
-            color: #4ade80;
-        }
-        .btn-outline:hover {
-            background: #4ade8020;
-        }
-        .btn-danger {
-            background: #dc2626;
             color: white;
-        }
-        .btn-danger:hover {
-            background: #b91c1c;
+            font-weight: 600;
+            cursor: pointer;
         }
         .tabs {
             display: flex;
             gap: 1rem;
+            border-bottom: 1px solid #2a2a2a;
             margin-bottom: 1.5rem;
-            border-bottom: 1px solid #2e2e3a;
+            flex-wrap: wrap;
         }
         .tab {
             padding: 0.6rem 1.2rem;
@@ -80,15 +61,19 @@
         }
         .section {
             display: none;
-            animation: fade 0.2s ease;
+            animation: fade 0.2s;
         }
         .section.active { display: block; }
         @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+        .card {
+            background: #12121a;
+            border-radius: 28px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
         table {
             width: 100%;
             border-collapse: collapse;
-            background: #111;
-            border-radius: 20px;
             overflow-x: auto;
             display: block;
         }
@@ -96,200 +81,258 @@
             padding: 1rem;
             text-align: left;
             border-bottom: 1px solid #2a2a2a;
-            font-size: 0.85rem;
         }
-        th {
-            background: #1a1a24;
-            color: #c084fc;
-            font-weight: 600;
-        }
+        th { color: #c084fc; }
         .status-badge {
             padding: 0.2rem 0.6rem;
             border-radius: 30px;
             font-size: 0.7rem;
             font-weight: 600;
-            text-transform: uppercase;
-            display: inline-block;
         }
         .pending { background: #f59e0b20; color: #f59e0b; }
         .completed { background: #4ade8020; color: #4ade80; }
         .btn-action {
             background: #9333ea;
-            color: white;
             border: none;
-            padding: 0.4rem 1rem;
+            padding: 0.4rem 0.8rem;
             border-radius: 30px;
+            color: white;
             cursor: pointer;
-            font-size: 0.75rem;
-            font-weight: 600;
         }
-        .btn-action:hover { background: #7e22ce; }
+        .config-group {
+            margin-bottom: 1rem;
+        }
+        .config-group label {
+            display: block;
+            margin-bottom: 0.4rem;
+            font-weight: 500;
+        }
+        .config-group input {
+            background: #1e1e2a;
+            border: 1px solid #2e2e3a;
+            padding: 0.7rem;
+            border-radius: 16px;
+            color: white;
+            width: 100%;
+            max-width: 300px;
+        }
+        button {
+            background: #9333ea;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 40px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+        }
         .empty-msg {
             text-align: center;
             padding: 2rem;
             color: #888;
         }
         @media (max-width: 700px) {
-            th, td { padding: 0.7rem; font-size: 0.75rem; }
-            .header { flex-direction: column; align-items: stretch; }
-            .nav-buttons { justify-content: flex-end; }
+            th, td { font-size: 0.75rem; padding: 0.6rem; }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="logo">StarPage Admin</div>
-        <div class="nav-buttons">
-            <a href="vender.html" class="btn btn-outline">Lobby Usuario</a>
-            <button class="btn btn-danger" id="btn-logout">Cerrar Sesión</button>
-        </div>
-    </div>
+<div class="admin-header">
+    <div class="logo">StarPage Admin</div>
+    <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</button>
+</div>
 
-    <div class="tabs">
-        <div class="tab active" data-tab="kyc">Verificación (KYC)</div>
-        <div class="tab" data-tab="pedidos">Pedidos de Cambio</div>
-    </div>
+<div class="tabs">
+    <div class="tab active" data-tab="kyc">Usuarios KYC</div>
+    <div class="tab" data-tab="pedidos">Pedidos</div>
+    <div class="tab" data-tab="config">Configuración</div>
+</div>
 
-    <div id="kyc" class="section active">
-        <h3>📋 Usuarios pendientes de verificación</h3>
+<!-- Sección KYC -->
+<div id="kyc" class="section active">
+    <div class="card">
+        <h3><i class="fas fa-id-card"></i> Usuarios pendientes de verificación</h3>
         <div style="overflow-x: auto;">
             <table>
-                <thead>
-                    <tr><th>Email</th><th>Cédula</th><th>WhatsApp</th><th>Estado</th><th>Acción</th></tr>
-                </thead>
+                <thead><tr><th>Email</th><th>Cédula</th><th>WhatsApp</th><th>Estado</th><th>Acción</th></tr></thead>
                 <tbody id="kyc-list"></tbody>
             </table>
         </div>
     </div>
+</div>
 
-    <div id="pedidos" class="section">
-        <h3>💱 Solicitudes de cambio</h3>
+<!-- Sección Pedidos -->
+<div id="pedidos" class="section">
+    <div class="card">
+        <h3><i class="fas fa-exchange-alt"></i> Solicitudes de cambio</h3>
         <div style="overflow-x: auto;">
             <table>
-                <thead>
-                    <tr><th>Usuario</th><th>Envía</th><th>Recibe</th><th>Comprobante</th><th>Estado</th><th>Acción</th></tr>
-                </thead>
+                <thead><tr><th>Usuario</th><th>Monto USD</th><th>Monto VES</th><th>Método</th><th>Datos Pago</th><th>Comprobante</th><th>Estado</th><th>Acción</th></tr></thead>
                 <tbody id="pedidos-list"></tbody>
             </table>
         </div>
     </div>
+</div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+<!-- Sección Configuración -->
+<div id="config" class="section">
+    <div class="card">
+        <h3><i class="fas fa-sliders-h"></i> Configuración de tasas y comisiones</h3>
+        <div class="config-group">
+            <label>Tasa PayPal (USD → VES)</label>
+            <input type="number" id="paypalRateInput" step="0.01" placeholder="Ej: 40.00">
+        </div>
+        <div class="config-group">
+            <label>Tasa Zinli (USD → VES)</label>
+            <input type="number" id="zinliRateInput" step="0.01" placeholder="Ej: 39.50">
+        </div>
+        <div class="config-group">
+            <label>Comisión (%)</label>
+            <input type="number" id="comisionInput" step="0.1" placeholder="Ej: 2.0">
+        </div>
+        <button id="saveConfigBtn">Guardar cambios</button>
+    </div>
+</div>
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyCH9EghFUhATPScF0KFPP78RhhOaRXw7w4",
-            authDomain: "starpage-aad7e.firebaseapp.com",
-            projectId: "starpage-aad7e",
-            storageBucket: "starpage-aad7e.firebasestorage.app",
-            messagingSenderId: "68878211023",
-            appId: "1:68878211023:web:81015ce98366639003e4ba"
-        };
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, onSnapshot, doc, updateDoc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
+    const firebaseConfig = {
+        apiKey: "AIzaSyCH9EghFUhATPScF0KFPP78RhhOaRXw7w4",
+        authDomain: "starpage-aad7e.firebaseapp.com",
+        projectId: "starpage-aad7e",
+        storageBucket: "starpage-aad7e.firebasestorage.app",
+        messagingSenderId: "68878211023",
+        appId: "1:68878211023:web:81015ce98366639003e4ba"
+    };
 
-        // Control de acceso: solo el admin puede ver esto
-        onAuthStateChanged(auth, (user) => {
-            if(!user || user.email.toLowerCase() !== "yoalexvergara11@gmail.com") {
-                alert("Acceso no autorizado. Redirigiendo...");
-                window.location.href = "index.html";
-            } else {
-                document.body.style.visibility = "visible";
-            }
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    onAuthStateChanged(auth, (user) => {
+        if (!user || user.email.toLowerCase() !== "yoalexvergara11@gmail.com") {
+            alert("Acceso no autorizado");
+            window.location.href = "index.html";
+        }
+    });
+
+    // Tabs
+    const tabs = document.querySelectorAll('.tab');
+    const sections = {
+        kyc: document.getElementById('kyc'),
+        pedidos: document.getElementById('pedidos'),
+        config: document.getElementById('config')
+    };
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const target = tab.getAttribute('data-tab');
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            Object.values(sections).forEach(s => s.classList.remove('active'));
+            sections[target].classList.add('active');
         });
+    });
 
-        // Tabs dinámicos
-        const tabs = document.querySelectorAll('.tab');
-        const sections = {
-            kyc: document.getElementById('kyc'),
-            pedidos: document.getElementById('pedidos')
-        };
-        tabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                const target = tab.getAttribute('data-tab');
-                tabs.forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                Object.values(sections).forEach(s => s.classList.remove('active'));
-                sections[target].classList.add('active');
-            });
-        });
+    // Funciones globales
+    window.aprobarUsuario = async (id) => {
+        await updateDoc(doc(db, "users", id), { status: 'approved' });
+    };
+    window.completarPedido = async (id) => {
+        await updateDoc(doc(db, "pedidos", id), { status: 'completed' });
+    };
 
-        // Función global para aprobar usuario
-        window.aprobarUsuario = async (userId) => {
-            try {
-                await updateDoc(doc(db, "users", userId), { status: 'approved' });
-            } catch(e) {
-                alert("Error: " + e.message);
-            }
-        };
-
-        window.completarPedido = async (pedidoId) => {
-            try {
-                await updateDoc(doc(db, "pedidos", pedidoId), { status: 'completed' });
-            } catch(e) {
-                alert("Error: " + e.message);
-            }
-        };
-
-        // Cargar usuarios pendientes (KYC)
-        onSnapshot(collection(db, "users"), (snapshot) => {
-            const tbody = document.getElementById('kyc-list');
-            tbody.innerHTML = '';
-            let pendientes = 0;
-            snapshot.forEach(docSnap => {
-                const user = docSnap.data();
-                if(user.status === 'pending') {
-                    pendientes++;
-                    tbody.innerHTML += `
-                        <tr>
-                            <td>${user.email || '—'}</td>
-                            <td>${user.dni || '—'}</td>
-                            <td>${user.phone || '—'}</td>
-                            <td><span class="status-badge pending">${user.status}</span></td>
-                            <td><button class="btn-action" onclick="aprobarUsuario('${docSnap.id}')">Aprobar</button></td>
-                        </tr>
-                    `;
-                }
-            });
-            if(pendientes === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" class="empty-msg">✅ No hay usuarios pendientes</td></tr>';
-            }
-        });
-
-        // Cargar pedidos
-        onSnapshot(collection(db, "pedidos"), (snapshot) => {
-            const tbody = document.getElementById('pedidos-list');
-            tbody.innerHTML = '';
-            let count = 0;
-            snapshot.forEach(docSnap => {
-                const p = docSnap.data();
-                count++;
+    // Cargar usuarios pendientes
+    onSnapshot(collection(db, "users"), (snapshot) => {
+        const tbody = document.getElementById('kyc-list');
+        tbody.innerHTML = '';
+        let pendientes = 0;
+        snapshot.forEach(docSnap => {
+            const user = docSnap.data();
+            if (user.status === 'pending') {
+                pendientes++;
                 tbody.innerHTML += `
                     <tr>
-                        <td>${p.userEmail || '—'}</td>
-                        <td>${p.montoIn || '0'} ${p.monedaIn || ''}</td>
-                        <td>${p.montoOut || '0'} ${p.monedaOut || ''}</td>
-                        <td><a href="${p.comprobanteURL}" target="_blank" style="color:#4ade80;">Ver</a></td>
-                        <td><span class="status-badge ${p.status}">${p.status}</span></td>
-                        <td>
-                            ${p.status === 'pending' ? `<button class="btn-action" onclick="completarPedido('${docSnap.id}')">Completar</button>` : '✔️ Finalizado'}
-                        </td>
+                        <td>${user.email}</td>
+                        <td>${user.dni || '—'}</td>
+                        <td>${user.phone || '—'}</td>
+                        <td><span class="status-badge pending">pendiente</span></td>
+                        <td><button class="btn-action" onclick="aprobarUsuario('${docSnap.id}')">Aprobar</button></td>
                     </tr>
                 `;
-            });
-            if(count === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="empty-msg">📭 No hay pedidos aún</td></tr>';
             }
         });
+        if (pendientes === 0) tbody.innerHTML = '<tr><td colspan="5" class="empty-msg">✅ No hay usuarios pendientes</td></tr>';
+    });
 
-        // Cerrar sesión
-        document.getElementById('btn-logout').addEventListener('click', () => {
-            signOut(auth).then(() => window.location.href = "index.html");
+    // Cargar pedidos
+    onSnapshot(collection(db, "pedidos"), (snapshot) => {
+        const tbody = document.getElementById('pedidos-list');
+        tbody.innerHTML = '';
+        snapshot.forEach(docSnap => {
+            const p = docSnap.data();
+            let datosPagoHtml = '';
+            if (p.datosPago.tipo === 'pago_movil') {
+                datosPagoHtml = `📱 ${p.datosPago.banco}<br>Cédula: ${p.datosPago.cedula}<br>Tel: ${p.datosPago.telefono}`;
+            } else {
+                datosPagoHtml = `🏦 ${p.datosPago.banco}<br>Cuenta: ${p.datosPago.numeroCuenta}<br>${p.datosPago.nombre}<br>Cédula: ${p.datosPago.cedula}`;
+            }
+            tbody.innerHTML += `
+                <tr>
+                    <td>${p.userEmail}</td>
+                    <td>$${p.montoUSD}</td>
+                    <td>Bs ${p.montoVES}</td>
+                    <td>${p.metodoEnvio === 'paypal' ? 'PayPal' : 'Zinli'}</td>
+                    <td>${datosPagoHtml}</td>
+                    <td><a href="${p.comprobanteURL}" target="_blank" style="color:#4ade80;">Ver captura</a></td>
+                    <td><span class="status-badge ${p.status}">${p.status}</span></td>
+                    <td>${p.status === 'pending' ? `<button class="btn-action" onclick="completarPedido('${docSnap.id}')">Completar</button>` : '✔️'}</td>
+                </tr>
+            `;
         });
-    </script>
+        if (tbody.innerHTML === '') tbody.innerHTML = '<tr><td colspan="8" class="empty-msg">📭 No hay pedidos</td></tr>';
+    });
+
+    // Cargar configuración actual
+    async function loadConfig() {
+        const configRef = doc(db, "config", "rates");
+        const docSnap = await getDoc(configRef);
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            document.getElementById('paypalRateInput').value = data.paypalRate || '';
+            document.getElementById('zinliRateInput').value = data.zinliRate || '';
+            document.getElementById('comisionInput').value = data.comision || '2.0';
+        } else {
+            document.getElementById('paypalRateInput').value = '40.00';
+            document.getElementById('zinliRateInput').value = '39.50';
+            document.getElementById('comisionInput').value = '2.0';
+        }
+    }
+    loadConfig();
+
+    // Guardar configuración
+    document.getElementById('saveConfigBtn').addEventListener('click', async () => {
+        const paypalRate = parseFloat(document.getElementById('paypalRateInput').value);
+        const zinliRate = parseFloat(document.getElementById('zinliRateInput').value);
+        const comision = parseFloat(document.getElementById('comisionInput').value);
+        if (isNaN(paypalRate) || isNaN(zinliRate) || isNaN(comision)) {
+            alert("Ingresa valores numéricos válidos");
+            return;
+        }
+        await setDoc(doc(db, "config", "rates"), {
+            paypalRate: paypalRate,
+            zinliRate: zinliRate,
+            comision: comision,
+            updatedAt: new Date()
+        });
+        alert("Configuración guardada correctamente");
+    });
+
+    // Cerrar sesión
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+        signOut(auth).then(() => window.location.href = "index.html");
+    });
+</script>
 </body>
 </html>
