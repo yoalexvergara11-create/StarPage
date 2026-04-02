@@ -123,11 +123,20 @@
         const db = getFirestore(app);
         const storage = getStorage(app);
 
-        // --- VERIFICACIÓN DE SESIÓN AUTOMÁTICA ---
+        // --- SISTEMA ANTI-BLOQUEO: QUITA EL LOADER A LOS 4 SEGUNDOS ---
+        const timeout = setTimeout(() => {
+            const loader = document.getElementById('loader');
+            const logForm = document.getElementById('log-form');
+            if (loader) loader.classList.add('hidden');
+            if (logForm) logForm.classList.remove('hidden');
+        }, 4000);
+
+        // --- VERIFICACIÓN DE SESIÓN ---
         onAuthStateChanged(auth, (user) => {
+            clearTimeout(timeout); // Si Firebase responde, cancelamos el reloj de 4 segundos
+            
             if (user) {
                 const userEmail = user.email.toLowerCase();
-                // Redirigir según el rol si ya está logueado
                 if (userEmail === "yoalexvergara11@gmail.com") {
                     window.location.href = "dashboard.html";
                 } else {
@@ -138,6 +147,12 @@
                 document.getElementById('loader').classList.add('hidden');
                 document.getElementById('log-form').classList.remove('hidden');
             }
+        }, (error) => {
+            // Si hay un error de conexión, también quitamos el loader
+            clearTimeout(timeout);
+            document.getElementById('loader').classList.add('hidden');
+            document.getElementById('log-form').classList.remove('hidden');
+            console.error("Error validando sesión:", error);
         });
 
         window.toggleView = () => {
