@@ -2,125 +2,725 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StarPage | Vender Divisas</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>StarPage | Cambio Divisas</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { margin: 0; font-family: 'Inter', sans-serif; background-color: #0b0b10; color: white; display: flex; justify-content: center; padding: 20px; }
-        .trade-container { width: 100%; max-width: 450px; background: #1a1a24; padding: 30px; border-radius: 24px; border: 1px solid #2e2e3a; }
-        .input-box { background: #0b0b10; padding: 15px; border-radius: 16px; margin-bottom: 15px; border: 1px solid #2e2e3a; }
-        .input-box label { color: #888; font-size: 12px; display: block; margin-bottom: 8px; }
-        .input-box input { background: transparent; border: none; color: white; font-size: 20px; font-weight: 600; width: 100%; outline: none; }
-        .bank-preview { background: rgba(147, 51, 234, 0.1); border: 1px solid #9333ea; padding: 15px; border-radius: 14px; margin: 15px 0; font-size: 13px; }
-        .upload-area { border: 2px dashed #444; padding: 20px; text-align: center; border-radius: 16px; margin: 20px 0; cursor: pointer; }
-        .btn-trade { width: 100%; padding: 18px; background: linear-gradient(135deg, #9333ea, #4ade80); border: none; border-radius: 14px; color: white; font-weight: 700; cursor: pointer; }
-        .hidden { display: none; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0a0f;
+            font-family: 'Inter', sans-serif;
+            color: #fff;
+            line-height: 1.5;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            background: rgba(10, 10, 15, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff, #c084fc);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .country-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #1f1f2e;
+            padding: 5px 12px;
+            border-radius: 40px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .flag-icon {
+            font-size: 1.2rem;
+        }
+
+        .logout-btn {
+            background: rgba(220, 38, 38, 0.2);
+            border: 1px solid #dc2626;
+            color: #ff8a8a;
+            padding: 8px 18px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: #dc2626;
+            color: white;
+        }
+
+        /* Main content */
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+        }
+
+        /* Precios cards */
+        .price-grid {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .price-card {
+            flex: 1;
+            background: #12121a;
+            border-radius: 24px;
+            padding: 1.2rem;
+            border: 1px solid rgba(255,255,255,0.05);
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .price-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(192,132,252,0.3);
+        }
+
+        .price-logo {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .price-label {
+            font-weight: 500;
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+
+        .price-value {
+            font-size: 1.7rem;
+            font-weight: 800;
+            color: #c084fc;
+        }
+
+        /* Selector método de pago */
+        .payment-method {
+            background: #12121a;
+            border-radius: 28px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .method-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #2a2a2a;
+        }
+
+        .method-tab {
+            padding: 0.7rem 1rem;
+            cursor: pointer;
+            font-weight: 600;
+            color: #aaa;
+            border-bottom: 2px solid transparent;
+        }
+
+        .method-tab.active {
+            color: #c084fc;
+            border-bottom-color: #c084fc;
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            font-size: 0.85rem;
+            color: #ccc;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            background: #1e1e2a;
+            border: 1px solid #2e2e3a;
+            border-radius: 16px;
+            color: white;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #c084fc;
+        }
+
+        .cedula-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .cedula-prefix {
+            width: 80px;
+        }
+
+        /* Calculadora */
+        .calculator {
+            background: #12121a;
+            border-radius: 28px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .calc-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+
+        .calc-field {
+            flex: 1;
+        }
+
+        .result {
+            background: #1e1e2a;
+            border-radius: 20px;
+            padding: 1rem;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .result span {
+            color: #4ade80;
+            font-size: 1.5rem;
+        }
+
+        /* Acciones */
+        .actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 1rem;
+            border-radius: 40px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #9333ea, #4ade80);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #2a2a2a;
+            color: white;
+        }
+
+        .btn-primary:active { transform: scale(0.98); }
+        .btn-secondary:active { transform: scale(0.98); }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e1e2a;
+            border-left: 4px solid #4ade80;
+            padding: 12px 24px;
+            border-radius: 40px;
+            color: white;
+            font-size: 0.9rem;
+            z-index: 1000;
+            animation: fadeInOut 3s forwards;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            15% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            85% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            100% { opacity: 0; transform: translateX(-50%) translateY(20px); visibility: hidden; }
+        }
+
+        @media (max-width: 640px) {
+            .header { padding: 0.8rem 1rem; }
+            .logo { font-size: 1.4rem; }
+            .price-grid { flex-direction: column; }
+        }
     </style>
 </head>
 <body>
 
-    <div class="trade-container">
-        <div style="display:flex; justify-content:space-between; margin-bottom:20px">
-            <span style="font-weight:bold; color:#4ade80">STARPAGE EXCHANGE</span>
-            <a href="lobby.html" style="color:#888; text-decoration:none; font-size:12px">Volver</a>
+<div class="header">
+    <div class="logo-area">
+        <div class="logo">StarPage</div>
+        <div class="country-badge">
+            <span class="flag-icon">🇻🇪</span>
+            <span>VE</span>
         </div>
+    </div>
+    <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</button>
+</div>
 
-        <div class="input-box">
-            <label>Tú envías (USD)</label>
-            <input type="number" id="send-amount" placeholder="0.00" oninput="calculate()">
+<div class="container">
+    <!-- Precios dinámicos -->
+    <div class="price-grid">
+        <div class="price-card">
+            <div class="price-logo"><i class="fab fa-paypal"></i> PayPal</div>
+            <div class="price-label">Tasa de compra (USD → VES)</div>
+            <div class="price-value" id="paypalRate">--.--</div>
         </div>
-
-        <div class="input-box">
-            <label>Recibes en Bolívares (VES)</label>
-            <input type="number" id="receive-amount" readonly placeholder="0.00">
+        <div class="price-card">
+            <div class="price-logo"><img src="https://zinli.com/favicon.ico" style="width: 28px; vertical-align: middle;"> Zinli</div>
+            <div class="price-label">Tasa de compra (USD → VES)</div>
+            <div class="price-value" id="zinliRate">--.--</div>
         </div>
-
-        <div id="bank-info" class="bank-preview hidden">
-            <span style="color:#c084fc; font-weight:bold">Depósito en:</span>
-            <p id="bank-text" style="margin:5px 0 0;"></p>
-        </div>
-
-        <div class="upload-area" onclick="document.getElementById('receipt').click()">
-            <i class="fa-solid fa-camera"></i>
-            <p id="file-status">Subir comprobante de pago</p>
-            <input type="file" id="receipt" class="hidden" accept="image/*" onchange="document.getElementById('file-status').innerText=this.files[0].name">
-        </div>
-
-        <button class="btn-trade" id="btn-submit" onclick="enviarPedido()">Confirmar Venta</button>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getFirestore, doc, getDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+    <!-- Método de pago (selección y formulario) -->
+    <div class="payment-method">
+        <div class="method-tabs">
+            <div class="method-tab active" data-method="movil">📱 Pago Móvil</div>
+            <div class="method-tab" data-method="transfer">🏦 Transferencia Bancaria</div>
+        </div>
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyCH9EghFUhATPScF0KFPP78RhhOaRXw7w4",
-            authDomain: "starpage-aad7e.firebaseapp.com",
-            projectId: "starpage-aad7e",
-            storageBucket: "starpage-aad7e.firebasestorage.app",
-            messagingSenderId: "68878211023",
-            appId: "1:68878211023:web:81015ce98366639003e4ba"
+        <!-- Formulario Pago Móvil -->
+        <div id="form-movil" class="payment-form">
+            <div class="form-group">
+                <label>Banco</label>
+                <select id="bancoMovil">
+                    <option value="Banesco">Banesco</option>
+                    <option value="Mercantil">Mercantil</option>
+                    <option value="Provincial">Provincial</option>
+                    <option value="Venezuela">Banco de Venezuela</option>
+                    <option value="BOD">BOD</option>
+                    <option value="Banco Caroní">Banco Caroní</option>
+                    <option value="Banco Exterior">Banco Exterior</option>
+                    <option value="Banco Plaza">Banco Plaza</option>
+                    <option value="Banco Del Tesoro">Banco Del Tesoro</option>
+                    <option value="Otro">Otro</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Cédula / Pasaporte</label>
+                <div class="cedula-row">
+                    <select id="tipoDocMovil" class="cedula-prefix">
+                        <option value="V">V</option>
+                        <option value="E">E</option>
+                        <option value="J">J</option>
+                    </select>
+                    <input type="text" id="docMovil" placeholder="Número de cédula" style="flex:1">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Teléfono (para Pago Móvil)</label>
+                <input type="tel" id="telefonoMovil" placeholder="0412-1234567">
+            </div>
+        </div>
+
+        <!-- Formulario Transferencia -->
+        <div id="form-transfer" class="payment-form" style="display:none;">
+            <div class="form-group">
+                <label>Banco</label>
+                <select id="bancoTransfer">
+                    <option value="Banesco">Banesco</option>
+                    <option value="Mercantil">Mercantil</option>
+                    <option value="Provincial">Provincial</option>
+                    <option value="Venezuela">Banco de Venezuela</option>
+                    <option value="BOD">BOD</option>
+                    <option value="Otro">Otro</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Número de cuenta</label>
+                <input type="text" id="numeroCuenta" placeholder="0000-0000-00-0000000000">
+            </div>
+            <div class="form-group">
+                <label>Cédula / Pasaporte</label>
+                <div class="cedula-row">
+                    <select id="tipoDocTransfer" class="cedula-prefix">
+                        <option value="V">V</option>
+                        <option value="E">E</option>
+                        <option value="J">J</option>
+                    </select>
+                    <input type="text" id="docTransfer" placeholder="Número de cédula" style="flex:1">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Nombre y apellido completos</label>
+                <input type="text" id="nombreTransfer" placeholder="Juan Pérez">
+            </div>
+        </div>
+
+        <div style="margin-top: 12px;">
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem;">
+                <input type="checkbox" id="savePaymentMethod"> Guardar estos datos para futuras transacciones
+            </label>
+        </div>
+    </div>
+
+    <!-- Calculadora de remesa -->
+    <div class="calculator">
+        <h3 style="margin-bottom: 1rem;">Calculadora de remesa</h3>
+        <div class="calc-group">
+            <div class="calc-field">
+                <label>Monto en USD que envías</label>
+                <input type="number" id="montoUSD" placeholder="0.00" step="0.01" value="0">
+            </div>
+            <div class="calc-field">
+                <label>Método de envío</label>
+                <select id="metodoEnvio">
+                    <option value="paypal">PayPal</option>
+                    <option value="zinli">Zinli</option>
+                </select>
+            </div>
+        </div>
+        <div class="result">
+            <i class="fas fa-bs"></i> Recibirás aproximadamente: <span id="resultadoVES">0.00</span> VES
+        </div>
+        <div style="font-size: 0.75rem; color: #aaa; text-align: center; margin-top: 0.5rem;">
+            * Comisión del 2% incluida en la tasa
+        </div>
+    </div>
+
+    <!-- Botones finales -->
+    <div class="actions">
+        <button class="btn btn-secondary" id="subirCapturaBtn"><i class="fas fa-upload"></i> Subir captura</button>
+        <button class="btn btn-primary" id="finalizarPedidoBtn"><i class="fas fa-check-circle"></i> Finalizar pedido</button>
+    </div>
+</div>
+
+<!-- Elemento oculto para input file -->
+<input type="file" id="capturaInput" accept="image/*" style="display:none">
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCH9EghFUhATPScF0KFPP78RhhOaRXw7w4",
+        authDomain: "starpage-aad7e.firebaseapp.com",
+        projectId: "starpage-aad7e",
+        storageBucket: "starpage-aad7e.firebasestorage.app",
+        messagingSenderId: "68878211023",
+        appId: "1:68878211023:web:81015ce98366639003e4ba"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const storage = getStorage(app);
+
+    let currentUser = null;
+    let paymentMethodSaved = null; // objeto con datos guardados
+    let selectedMethod = "movil"; // movil o transfer
+
+    // Referencias DOM
+    const paypalRateSpan = document.getElementById('paypalRate');
+    const zinliRateSpan = document.getElementById('zinliRate');
+    const montoUSDInput = document.getElementById('montoUSD');
+    const metodoEnvioSelect = document.getElementById('metodoEnvio');
+    const resultadoSpan = document.getElementById('resultadoVES');
+    const saveCheckbox = document.getElementById('savePaymentMethod');
+
+    // Formularios
+    const formMovilDiv = document.getElementById('form-movil');
+    const formTransferDiv = document.getElementById('form-transfer');
+    const tabs = document.querySelectorAll('.method-tab');
+
+    // Campos específicos
+    const bancoMovil = document.getElementById('bancoMovil');
+    const tipoDocMovil = document.getElementById('tipoDocMovil');
+    const docMovil = document.getElementById('docMovil');
+    const telefonoMovil = document.getElementById('telefonoMovil');
+
+    const bancoTransfer = document.getElementById('bancoTransfer');
+    const numeroCuenta = document.getElementById('numeroCuenta');
+    const tipoDocTransfer = document.getElementById('tipoDocTransfer');
+    const docTransfer = document.getElementById('docTransfer');
+    const nombreTransfer = document.getElementById('nombreTransfer');
+
+    // Variables para la captura
+    let capturaFile = null;
+
+    // --- Cargar configuración de tasas desde Firestore ---
+    async function loadRates() {
+        try {
+            const configRef = doc(db, "config", "rates");
+            const configSnap = await getDoc(configRef);
+            if (configSnap.exists()) {
+                const data = configSnap.data();
+                paypalRateSpan.innerText = data.paypalRate?.toFixed(2) || "0.00";
+                zinliRateSpan.innerText = data.zinliRate?.toFixed(2) || "0.00";
+            } else {
+                // Valores por defecto
+                paypalRateSpan.innerText = "40.00";
+                zinliRateSpan.innerText = "39.50";
+            }
+        } catch (e) {
+            console.error("Error cargando tasas:", e);
+        }
+    }
+
+    // --- Cargar método de pago guardado del usuario ---
+    async function loadUserPaymentMethod() {
+        if (!currentUser) return;
+        const userRef = doc(db, "users", currentUser.uid);
+        const userSnap = await getDoc(userRef);
+        if (userSnap.exists() && userSnap.data().paymentMethod) {
+            paymentMethodSaved = userSnap.data().paymentMethod;
+            // Rellenar formularios según el método guardado
+            if (paymentMethodSaved.type === "movil") {
+                selectedMethod = "movil";
+                bancoMovil.value = paymentMethodSaved.banco || "";
+                tipoDocMovil.value = paymentMethodSaved.tipoDoc || "V";
+                docMovil.value = paymentMethodSaved.doc || "";
+                telefonoMovil.value = paymentMethodSaved.telefono || "";
+                // Activar tab movil
+                document.querySelector('.method-tab[data-method="movil"]').click();
+            } else if (paymentMethodSaved.type === "transfer") {
+                selectedMethod = "transfer";
+                bancoTransfer.value = paymentMethodSaved.banco || "";
+                numeroCuenta.value = paymentMethodSaved.cuenta || "";
+                tipoDocTransfer.value = paymentMethodSaved.tipoDoc || "V";
+                docTransfer.value = paymentMethodSaved.doc || "";
+                nombreTransfer.value = paymentMethodSaved.nombre || "";
+                document.querySelector('.method-tab[data-method="transfer"]').click();
+            }
+            saveCheckbox.checked = true;
+        } else {
+            // Si no hay guardado, checkbox desmarcado y formularios vacíos
+            saveCheckbox.checked = false;
+        }
+    }
+
+    // --- Guardar método de pago en Firestore ---
+    async function savePaymentMethodToUser() {
+        if (!currentUser) return;
+        let paymentData = { type: selectedMethod };
+        if (selectedMethod === "movil") {
+            paymentData.banco = bancoMovil.value;
+            paymentData.tipoDoc = tipoDocMovil.value;
+            paymentData.doc = docMovil.value;
+            paymentData.telefono = telefonoMovil.value;
+        } else {
+            paymentData.banco = bancoTransfer.value;
+            paymentData.cuenta = numeroCuenta.value;
+            paymentData.tipoDoc = tipoDocTransfer.value;
+            paymentData.doc = docTransfer.value;
+            paymentData.nombre = nombreTransfer.value;
+        }
+        await updateDoc(doc(db, "users", currentUser.uid), { paymentMethod: paymentData });
+    }
+
+    // --- Calcular VES ---
+    function calcularVES() {
+        const montoUSD = parseFloat(montoUSDInput.value) || 0;
+        const metodo = metodoEnvioSelect.value;
+        let tasa = metodo === "paypal" ? parseFloat(paypalRateSpan.innerText) : parseFloat(zinliRateSpan.innerText);
+        if (isNaN(tasa)) tasa = 0;
+        const comision = 0.02; // 2%
+        const montoNeto = montoUSD * (1 - comision);
+        const resultado = montoNeto * tasa;
+        resultadoSpan.innerText = resultado.toFixed(2);
+    }
+
+    // --- Eventos calculadora ---
+    montoUSDInput.addEventListener('input', calcularVES);
+    metodoEnvioSelect.addEventListener('change', calcularVES);
+    // También cuando cambien las tasas (si se actualizan en tiempo real)
+    function watchRatesChanges() {
+        // Si quieres, puedes escuchar cambios en tiempo real con onSnapshot
+        // Pero para simplificar, recalculamos al cambiar inputs.
+    }
+
+    // --- Subir captura ---
+    document.getElementById('subirCapturaBtn').addEventListener('click', () => {
+        document.getElementById('capturaInput').click();
+    });
+    document.getElementById('capturaInput').addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            capturaFile = e.target.files[0];
+            mostrarToast("✅ Captura seleccionada: " + capturaFile.name);
+        }
+    });
+
+    // --- Finalizar pedido ---
+    async function finalizarPedido() {
+        if (!currentUser) return;
+
+        // Validar campos según método seleccionado
+        if (selectedMethod === "movil") {
+            if (!bancoMovil.value || !docMovil.value || !telefonoMovil.value) {
+                alert("Por favor completa todos los campos de Pago Móvil.");
+                return;
+            }
+        } else {
+            if (!bancoTransfer.value || !numeroCuenta.value || !docTransfer.value || !nombreTransfer.value) {
+                alert("Por favor completa todos los campos de Transferencia.");
+                return;
+            }
+        }
+
+        const montoUSD = parseFloat(montoUSDInput.value);
+        if (!montoUSD || montoUSD <= 0) {
+            alert("Ingresa un monto válido en USD.");
+            return;
+        }
+
+        if (!capturaFile) {
+            alert("Debes subir la captura de pago.");
+            return;
+        }
+
+        // Guardar método si el checkbox está marcado
+        if (saveCheckbox.checked) {
+            await savePaymentMethodToUser();
+        }
+
+        // Subir captura a Storage
+        const storageRef = ref(storage, `comprobantes/${currentUser.uid}/${Date.now()}_${capturaFile.name}`);
+        await uploadBytes(storageRef, capturaFile);
+        const comprobanteURL = await getDownloadURL(storageRef);
+
+        // Obtener datos del método seleccionado
+        let datosPago = {};
+        if (selectedMethod === "movil") {
+            datosPago = {
+                tipo: "pago_movil",
+                banco: bancoMovil.value,
+                cedula: tipoDocMovil.value + docMovil.value,
+                telefono: telefonoMovil.value
+            };
+        } else {
+            datosPago = {
+                tipo: "transferencia",
+                banco: bancoTransfer.value,
+                numeroCuenta: numeroCuenta.value,
+                cedula: tipoDocTransfer.value + docTransfer.value,
+                nombre: nombreTransfer.value
+            };
+        }
+
+        // Crear pedido en Firestore
+        const pedido = {
+            userId: currentUser.uid,
+            userEmail: currentUser.email,
+            metodoEnvio: metodoEnvioSelect.value,
+            montoUSD: montoUSD,
+            montoVES: parseFloat(resultadoSpan.innerText),
+            tasaUsada: metodoEnvioSelect.value === "paypal" ? parseFloat(paypalRateSpan.innerText) : parseFloat(zinliRateSpan.innerText),
+            datosPago: datosPago,
+            comprobanteURL: comprobanteURL,
+            status: "pending",
+            createdAt: new Date()
         };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-        const storage = getStorage(app);
+        try {
+            await addDoc(collection(db, "pedidos"), pedido);
+            mostrarToast("✅ Pedido enviado correctamente. Revisa el estado en tu perfil.");
+            // Limpiar campos (opcional)
+            montoUSDInput.value = "";
+            resultadoSpan.innerText = "0.00";
+            capturaFile = null;
+            document.getElementById('capturaInput').value = "";
+        } catch (e) {
+            console.error(e);
+            alert("Error al enviar el pedido: " + e.message);
+        }
+    }
 
-        let myBank = null;
-        const TASA = 45.00; // Ajusta esto según el día
+    document.getElementById('finalizarPedidoBtn').addEventListener('click', finalizarPedido);
 
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                const docSnap = await getDoc(doc(db, "bank_accounts", user.uid));
-                if (docSnap.exists()) {
-                    myBank = docSnap.data();
-                    document.getElementById('bank-info').classList.remove('hidden');
-                    document.getElementById('bank-text').innerText = `${myBank.banco} - ${myBank.telefono}`;
-                } else {
-                    alert("Por favor, configura tu Pago Móvil en el Lobby antes de vender.");
-                    window.location.href = 'lobby.html';
-                }
+    // --- Manejo de tabs ---
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            const method = tab.getAttribute('data-method');
+            selectedMethod = method;
+            if (method === 'movil') {
+                formMovilDiv.style.display = 'block';
+                formTransferDiv.style.display = 'none';
+            } else {
+                formMovilDiv.style.display = 'none';
+                formTransferDiv.style.display = 'block';
             }
         });
+    });
 
-        window.calculate = () => {
-            const val = document.getElementById('send-amount').value;
-            document.getElementById('receive-amount').value = (val * TASA).toFixed(2);
-        };
+    // --- Cerrar sesión ---
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+        signOut(auth).then(() => {
+            window.location.href = "index.html";
+        });
+    });
 
-        window.enviarPedido = async () => {
-            const user = auth.currentUser;
-            const file = document.getElementById('receipt').files[0];
-            const amountIn = document.getElementById('send-amount').value;
+    // --- Helper toast ---
+    function mostrarToast(mensaje) {
+        let toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.innerText = mensaje;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
 
-            if(!file || !amountIn) return alert("Monto y comprobante obligatorios");
-
-            document.getElementById('btn-submit').innerText = "Procesando...";
-            
-            try {
-                const sRef = ref(storage, `pedidos/${Date.now()}_${user.uid}`);
-                await uploadBytes(sRef, file);
-                const url = await getDownloadURL(sRef);
-
-                await addDoc(collection(db, "pedidos"), {
-                    userEmail: user.email,
-                    montoIn: amountIn,
-                    montoOut: (amountIn * TASA),
-                    bancoDestino: myBank.banco,
-                    pagoMovil: myBank.telefono,
-                    comprobanteURL: url,
-                    status: "pending",
-                    date: new Date()
-                });
-
-                alert("¡Pedido enviado! Revisa tu cuenta en unos minutos.");
-                window.location.href = 'lobby.html';
-            } catch (e) { alert("Error: " + e.message); }
-        };
-    </script>
+    // --- Inicialización con usuario autenticado ---
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            currentUser = user;
+            // Si el usuario es admin, redirigir a admin.html? (opcional)
+            if (user.email.toLowerCase() === "yoalexvergara11@gmail.com") {
+                window.location.href = "admin.html";
+                return;
+            }
+            await loadRates();
+            await loadUserPaymentMethod();
+            calcularVES(); // recalc inicial
+        } else {
+            window.location.href = "index.html";
+        }
+    });
+</script>
 </body>
 </html>
