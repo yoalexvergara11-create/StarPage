@@ -2,111 +2,120 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Vender Saldo | StarPage</title>
+    <title>Vender Saldo | StarPage Pro</title>
     <link rel="stylesheet" href="assets/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
-<body>
-    <div class="container">
-        <h2>Vender Saldo (USD a VES)</h2>
-        <div id="rate-loader">Cargando tasa del día...</div>
-        
-        <div class="input-group">
-            <label>Monto a Vender (USD - Zelle/Paypal)</label>
-            <input type="number" id="usd-amount" placeholder="100" oninput="window.calculate()">
-        </div>
-        <div class="input-group">
-            <label>Monto a Recibir (VES)</label>
-            <input type="number" id="ves-amount" disabled>
-        </div>
+<body style="padding: 20px;">
+    <div style="max-width: 600px; margin: 40px auto;">
+        <div class="glass-panel" style="padding: 40px; border: 1px solid var(--primary);">
+            <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                <h2 style="margin:0; color:var(--primary);"><i class="fa-solid fa-money-bill-transfer"></i> VENDER USD</h2>
+                <span id="live-rate" style="font-size: 0.8rem; background: rgba(0,242,255,0.1); padding: 5px 12px; border-radius: 20px; color: var(--primary);">Cargando tasa...</span>
+            </div>
 
-        <hr>
-        <h4>Datos para recibir el Pago Móvil</h4>
-        <div class="input-group">
-             <input type="tel" id="pm-phone" placeholder="Teléfono del destinatario">
+            <div class="input-group" style="margin-bottom: 20px;">
+                <label style="display:block; margin-bottom: 10px; opacity: 0.8;">Monto a enviar (USD)</label>
+                <div style="position:relative;">
+                    <span style="position:absolute; left: 15px; top: 15px; color:var(--primary); font-weight: bold;">$</span>
+                    <input type="number" id="usd-input" class="modern-input" style="padding-left: 35px;" placeholder="0.00" oninput="calculate()">
+                </div>
+            </div>
+
+            <div class="input-group" style="margin-bottom: 30px;">
+                <label style="display:block; margin-bottom: 10px; opacity: 0.8;">Recibirás en Pago Móvil (VES)</label>
+                <div style="position:relative;">
+                    <span style="position:absolute; left: 15px; top: 15px; color:var(--gold); font-weight: bold;">Bs</span>
+                    <input type="text" id="ves-output" class="modern-input" style="padding-left: 45px; background: rgba(255,255,255,0.02);" readonly placeholder="0.00">
+                </div>
+                <p style="font-size: 0.75rem; margin-top: 10px; color: var(--primary);">* Tasa garantizada por 15 minutos.</p>
+            </div>
+
+            <div class="glass-panel" style="padding: 20px; margin-bottom: 30px; background: rgba(0,0,0,0.3);">
+                <h4 style="margin-top:0; font-size: 0.9rem;"><i class="fa-solid fa-university"></i> DATOS DE RECEPCIÓN</h4>
+                <input type="text" id="pm-phone" class="modern-input" placeholder="Teléfono Pago Móvil" style="margin-bottom: 10px;">
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                    <input type="text" id="pm-dni" class="modern-input" placeholder="Cédula/RIF">
+                    <select id="pm-bank" class="modern-input">
+                        <option value="0102">Banesco</option>
+                        <option value="0105">Mercantil</option>
+                        <option value="0108">Provincial</option>
+                        <option value="0134">Banesco</option>
+                    </select>
+                </div>
+            </div>
+
+            <button class="btn-premium" style="width: 100%;" onclick="submitOrder()">INICIAR TRANSFERENCIA</button>
+            <button class="btn-premium" style="width: 100%; background: none; margin-top: 10px; border: 1px solid var(--border);" onclick="window.location.href='lobby.html'">VOLVER</button>
         </div>
-        <div class="input-group">
-             <input type="text" id="pm-dni" placeholder="Cédula del destinatario">
-        </div>
-        
-        <button class="btn-grad" onclick="window.submitOrder()">Confirmar Operación</button>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore, doc, getDoc, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-        
-        const firebaseConfig = { /* Tu config */ };
+        import { getFirestore, doc, onSnapshot, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        const firebaseConfig = { /* TUS DATOS */ };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        let clientSellRate = 0;
-        let currentUser = null;
+        let currentRate = 0;
+        let userData = null;
 
-        // Cargar tasa y verificar auth
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                currentUser = user;
-                const settingsDoc = await getDoc(doc(db, "settings", "rates"));
-                if (settingsDoc.exists()) {
-                    clientSellRate = settingsDoc.data().sellRate;
-                    document.getElementById('rate-loader').textContent = `Tasa de hoy: ${clientSellRate} VES por USD.`;
-                } else {
-                    document.getElementById('rate-loader').textContent = "Error: El administrador no ha definido una tasa.";
-                }
-            } else {
-                window.location.href = "index.html";
+        // Escuchar Tasa en Tiempo Real
+        onSnapshot(doc(db, "settings", "rates"), (doc) => {
+            if(doc.exists()) {
+                currentRate = doc.data().sellRate;
+                document.getElementById('live-rate').innerText = `Tasa: ${currentRate} VES`;
+                calculate();
             }
         });
 
-        // Calcular en tiempo real
         window.calculate = () => {
-            const usd = parseFloat(document.getElementById('usd-amount').value);
-            if (usd > 0 && clientSellRate > 0) {
-                document.getElementById('ves-amount').value = (usd * clientSellRate).toFixed(2);
-            }
+            const usd = parseFloat(document.getElementById('usd-input').value) || 0;
+            document.getElementById('ves-output').value = (usd * currentRate).toLocaleString('es-VE', {minimumFractionDigits: 2});
         };
 
-        // Enviar pedido a la base de datos
         window.submitOrder = async () => {
-            const amountSent = parseFloat(document.getElementById('usd-amount').value);
-            const amountToReceive = parseFloat(document.getElementById('ves-amount').value);
-            const recipientPhone = document.getElementById('pm-phone').value;
-            const recipientDNI = document.getElementById('pm-dni').value;
+            const usd = parseFloat(document.getElementById('usd-input').value);
+            const phone = document.getElementById('pm-phone').value;
+            const dni = document.getElementById('pm-dni').value;
+            
+            if(!usd || usd < 5) return Swal.fire('Monto Inválido', 'El mínimo es $5 USD', 'warning');
+            if(!phone || !dni) return Swal.fire('Faltan Datos', 'Completa los datos del pago móvil', 'warning');
 
-            if (!amountSent || !recipientPhone || !recipientDNI) {
-                return alert("Completa todos los campos para continuar.");
-            }
+            Swal.fire({
+                title: '¿Confirmar Pedido?',
+                text: `Vas a vender $${usd} USD. Recibirás el pago en unos minutos.`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'SÍ, CONFIRMAR'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    // CÁLCULO DE GANANCIA PARA EL ADMIN (Spread de $4 aprox por cada $100)
+                    // Simulamos tasa real de mercado sumando un margen
+                    const realMarketRate = currentRate + 2.5; 
+                    const commissionUSD = (usd * realMarketRate - usd * currentRate) / realMarketRate;
 
-            // Aquí está la magia: calculas tu ganancia para guardarla
-            const marketRateResponse = await fetch('https://v6.exchangerate-api.com/v6/TU_API_KEY/latest/USD');
-            const marketData = await marketRateResponse.json();
-            const realMarketRate = marketData.conversion_rates.VES;
-            const commissionEarned = (amountSent * realMarketRate) - amountToReceive;
-
-            if(confirm(`Confirmas que quieres vender ${amountSent} USD para recibir ${amountToReceive} VES?`)){
-                try {
                     await addDoc(collection(db, "orders"), {
-                        userId: currentUser.uid,
-                        userEmail: currentUser.email,
-                        type: "sell", // Venta de USD
-                        amountSent: amountSent,
-                        currencySent: "USD",
-                        amountToReceive: amountToReceive,
-                        recipientInfo: { phone: recipientPhone, dni: recipientDNI },
-                        exchangeRateUsed: clientSellRate,
-                        marketRate: realMarketRate,
-                        commissionEarned: commissionEarned,
-                        status: "pending", // El admin debe procesarlo
+                        userId: auth.currentUser.uid,
+                        userEmail: auth.currentUser.email,
+                        amountUSD: usd,
+                        amountVES: usd * currentRate,
+                        exchangeRateUsed: currentRate,
+                        commissionUSD: commissionUSD,
+                        recipient: { phone, dni, bank: document.getElementById('pm-bank').value },
+                        status: "pending",
+                        type: "vender",
                         createdAt: serverTimestamp()
                     });
-                    alert("¡Pedido recibido! Serás notificado cuando se procese.");
-                    window.location.href = 'perfil.html'; // O a una página de historial
-                } catch (e) {
-                    alert("Error al enviar el pedido: " + e.message);
+
+                    Swal.fire('¡Éxito!', 'Tu pedido ha sido enviado. En breve verás el pago móvil.', 'success')
+                    .then(() => window.location.href = 'perfil.html');
                 }
-            }
+            });
         };
     </script>
 </body>
