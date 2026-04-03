@@ -3,517 +3,174 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StarPage | Admin Central</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Dashboard Administrador | StarPage</title>
+    <link rel="stylesheet" href="assets/style.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            background: #0a0a0f;
-            font-family: 'Inter', sans-serif;
-            color: #fff;
-            padding: 1rem;
-        }
-        .admin-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid #2a2a2a;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-        .logo {
-            font-size: 1.8rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #fff, #c084fc);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-        .logout-btn {
-            background: #dc2626;
-            padding: 0.5rem 1.2rem;
-            border-radius: 40px;
-            border: none;
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-        }
-        .tabs {
-            display: flex;
-            gap: 0.5rem;
-            border-bottom: 1px solid #2a2a2a;
-            margin-bottom: 1.5rem;
-            flex-wrap: wrap;
-            overflow-x: auto;
-        }
-        .tab {
-            padding: 0.6rem 1.2rem;
-            cursor: pointer;
-            color: #aaa;
-            border-bottom: 2px solid transparent;
-            font-weight: 500;
-            white-space: nowrap;
-        }
-        .tab.active {
-            color: #c084fc;
-            border-bottom-color: #c084fc;
-        }
-        .section {
-            display: none;
-            animation: fade 0.2s;
-        }
-        .section.active { display: block; }
-        @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
-        .card {
-            background: #12121a;
-            border-radius: 28px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            overflow-x: auto;
-            display: block;
-        }
-        th, td {
-            padding: 1rem;
-            text-align: left;
-            border-bottom: 1px solid #2a2a2a;
-        }
-        th { color: #c084fc; }
-        .status-badge {
-            padding: 0.2rem 0.6rem;
-            border-radius: 30px;
-            font-size: 0.7rem;
-            font-weight: 600;
-        }
-        .pending { background: #f59e0b20; color: #f59e0b; }
-        .completed { background: #4ade8020; color: #4ade80; }
-        .btn-action {
-            background: #9333ea;
-            border: none;
-            padding: 0.4rem 0.8rem;
-            border-radius: 30px;
-            color: white;
-            cursor: pointer;
-            font-size: 0.75rem;
-        }
-        .config-group {
-            margin-bottom: 1rem;
-        }
-        .config-group label {
-            display: block;
-            margin-bottom: 0.4rem;
-            font-weight: 500;
-        }
-        .config-group input, .config-group select {
-            background: #1e1e2a;
-            border: 1px solid #2e2e3a;
-            padding: 0.7rem;
-            border-radius: 16px;
-            color: white;
-            width: 100%;
-            max-width: 300px;
-        }
-        button {
-            background: #9333ea;
-            border: none;
-            padding: 0.6rem 1.2rem;
-            border-radius: 40px;
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-        }
-        .empty-msg {
-            text-align: center;
-            padding: 2rem;
-            color: #888;
-        }
-        /* Chat */
-        .chat-message {
-            background: #1e1e2a;
-            border-radius: 16px;
-            padding: 1rem;
-            margin-bottom: 1rem;
-        }
-        .chat-message .user {
-            font-weight: bold;
-            color: #c084fc;
-        }
-        .chat-message .time {
-            font-size: 0.7rem;
-            color: #888;
-            margin-left: 0.5rem;
-        }
-        .chat-message .content {
-            margin: 0.5rem 0;
-        }
-        .chat-message .reply {
-            background: #2a2a2a;
-            padding: 0.5rem;
-            border-radius: 12px;
-            margin-top: 0.5rem;
-        }
-        .reply-input {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 0.5rem;
-        }
-        .reply-input input {
-            flex: 1;
-            background: #0a0a0f;
-            border: 1px solid #2e2e3a;
-            padding: 0.5rem;
-            border-radius: 20px;
-            color: white;
-        }
-        /* Vista previa */
-        .preview-frame {
-            width: 100%;
-            height: 600px;
-            border: 1px solid #2e2e3a;
-            border-radius: 16px;
-            background: white;
-        }
-        @media (max-width: 700px) {
-            th, td { font-size: 0.75rem; padding: 0.6rem; }
-            .preview-frame { height: 400px; }
-        }
+        body { background-color: #f4f7f6; }
+        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .panel { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .panel h3 { margin-top: 0; }
+        .user-table, .orders-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .user-table th, .user-table td, .orders-table th, .orders-table td { border: 1px solid #ddd; padding: 8px; }
+        .btn-view-as { background-color: #f0ad4e; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; }
     </style>
 </head>
 <body>
-<div class="admin-header">
-    <div class="logo">StarPage Admin</div>
-    <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</button>
-</div>
+    <div class="container">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h2>Centro de Comando</h2>
+            <button class="btn-view-as" onclick="window.location.href='vender.html'">Ver como Cliente</button>
+        </div>
 
-<div class="tabs">
-    <div class="tab active" data-tab="kyc">Usuarios KYC</div>
-    <div class="tab" data-tab="pedidos">Pedidos</div>
-    <div class="tab" data-tab="config">Configuración</div>
-    <div class="tab" data-tab="chat">Chat Soporte</div>
-    <div class="tab" data-tab="preview">Vista previa</div>
-</div>
+        <div class="dashboard-grid">
+            <!-- PANEL DE CONFIGURACIÓN -->
+            <div class="panel">
+                <h3>Configuración de Tasas</h3>
+                <div class="input-group">
+                    <label for="rate-sell">Tasa para Venta (Cliente vende USD)</label>
+                    <input type="number" id="rate-sell" step="0.01">
+                </div>
+                <div class="input-group">
+                    <label for="rate-buy">Tasa para Compra (Cliente compra USD)</label>
+                    <input type="number" id="rate-buy" step="0.01">
+                </div>
+                <button class="btn-grad" onclick="window.saveSettings()">Guardar Tasas</button>
+            </div>
 
-<!-- KYC -->
-<div id="kyc" class="section active">
-    <div class="card">
-        <h3><i class="fas fa-id-card"></i> Usuarios pendientes de verificación</h3>
-        <div style="overflow-x: auto;">
-             <table>
-                <thead><tr><th>Email</th><th>Cédula</th><th>WhatsApp</th><th>Estado</th><th>Acción</th></thead>
-                <tbody id="kyc-list"></tbody>
+            <!-- PANEL DE GANANCIAS -->
+            <div class="panel">
+                <h3>Resumen de Ganancias</h3>
+                <p>Ganancia Total (VES): <strong id="total-profit">Calculando...</strong></p>
+                <p>Pedidos Completados: <strong id="completed-orders">Calculando...</strong></p>
+            </div>
+        </div>
+
+        <!-- PANEL DE GESTIÓN DE ROLES -->
+        <div class="panel" style="margin-top: 20px;">
+            <h3>Asignar Roles a Trabajadores</h3>
+            <div class="input-group">
+                <input type="email" id="user-email-role" placeholder="Correo del usuario">
+            </div>
+            <select id="user-role-select">
+                <option value="worker">Trabajador (Puede procesar pedidos)</option>
+                <option value="admin">Administrador (Control total)</option>
+                <option value="client">Cliente</option>
+            </select>
+            <button class="btn-grad" onclick="window.assignRole()">Asignar Rol</button>
+        </div>
+
+        <!-- PANEL DE PEDIDOS -->
+        <div class="panel" style="margin-top: 20px;">
+            <h3>Pedidos Pendientes</h3>
+            <table class="orders-table">
+                <thead><tr><th>Cliente</th><th>Monto</th><th>Tasa Usada</th><th>Ganancia</th><th>Estado</th><th>Acción</th></tr></thead>
+                <tbody id="orders-tbody">
+                    <!-- Los pedidos se cargarán aquí -->
+                </tbody>
             </table>
         </div>
     </div>
-</div>
 
-<!-- Pedidos -->
-<div id="pedidos" class="section">
-    <div class="card">
-        <h3><i class="fas fa-exchange-alt"></i> Solicitudes de cambio</h3>
-        <div style="overflow-x: auto;">
-            <table>
-                <thead>
-                    <tr><th>Usuario</th><th>Monto USD</th><th>Monto VES</th><th>Método</th><th>Datos Pago</th><th>Comprobante</th><th>Estado</th><th>Acción</th></tr>
-                </thead>
-                <tbody id="pedidos-list"></tbody>
-            </table>
-        </div>
-    </div>
-</div>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        
+        const firebaseConfig = { /* Tu config */ };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
 
-<!-- Configuración (tasas + personalización) -->
-<div id="config" class="section">
-    <div class="card">
-        <h3><i class="fas fa-sliders-h"></i> Configuración de tasas y comisiones</h3>
-        <div class="config-group">
-            <label>Tasa PayPal (USD → VES)</label>
-            <input type="number" id="paypalRateInput" step="0.01" placeholder="Ej: 40.00">
-        </div>
-        <div class="config-group">
-            <label>Tasa Zinli (USD → VES)</label>
-            <input type="number" id="zinliRateInput" step="0.01" placeholder="Ej: 39.50">
-        </div>
-        <div class="config-group">
-            <label>Comisión (%)</label>
-            <input type="number" id="comisionInput" step="0.1" placeholder="Ej: 2.0">
-        </div>
-        <button id="saveRatesBtn">Guardar tasas</button>
-    </div>
+        // Cargar datos del dashboard
+        async function loadDashboardData() {
+            // Cargar configuración actual
+            const settingsDoc = await getDoc(doc(db, "settings", "rates"));
+            if (settingsDoc.exists()) {
+                const rates = settingsDoc.data();
+                document.getElementById('rate-sell').value = rates.sellRate;
+                document.getElementById('rate-buy').value = rates.buyRate;
+            }
 
-    <div class="card">
-        <h3><i class="fas fa-palette"></i> Personalización de la interfaz (vender.html)</h3>
-        <div class="config-group">
-            <label>Color primario (gradiente inicio)</label>
-            <input type="color" id="primaryColor" value="#9333ea">
-        </div>
-        <div class="config-group">
-            <label>Color secundario (gradiente fin)</label>
-            <input type="color" id="secondaryColor" value="#4ade80">
-        </div>
-        <div class="config-group">
-            <label>Texto del encabezado (junto al logo)</label>
-            <input type="text" id="headerText" placeholder="Ej: Cambio Seguro">
-        </div>
-        <div class="config-group">
-            <label>Frase de bienvenida (opcional)</label>
-            <input type="text" id="welcomeText" placeholder="Bienvenido a StarPage">
-        </div>
-        <button id="saveUiConfigBtn">Guardar personalización</button>
-    </div>
-</div>
+            // Cargar pedidos y calcular ganancias
+            const ordersQuery = query(collection(db, "orders"));
+            const ordersSnapshot = await getDocs(ordersQuery);
+            const ordersTbody = document.getElementById('orders-tbody');
+            ordersTbody.innerHTML = '';
+            let totalProfit = 0;
+            let completedOrders = 0;
 
-<!-- Chat de soporte -->
-<div id="chat" class="section">
-    <div class="card">
-        <h3><i class="fas fa-headset"></i> Mensajes de usuarios</h3>
-        <div id="chat-messages-list"></div>
-    </div>
-</div>
-
-<!-- Vista previa de la interfaz de usuario -->
-<div id="preview" class="section">
-    <div class="card">
-        <h3><i class="fas fa-eye"></i> Vista previa de vender.html</h3>
-        <p style="margin-bottom: 1rem;">Los cambios de personalización se verán reflejados al recargar la página. Para verlos aquí, actualice el iframe manualmente o guarde cambios y luego haga clic en "Recargar vista".</p>
-        <button id="reloadPreviewBtn" style="margin-bottom: 1rem;">Recargar vista previa</button>
-        <iframe id="previewIframe" class="preview-frame" src="vender.html" title="Vista previa de la página de usuario"></iframe>
-    </div>
-</div>
-
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore, collection, onSnapshot, doc, updateDoc, getDoc, setDoc, addDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-
-    const firebaseConfig = {
-        apiKey: "AIzaSyCH9EghFUhATPScF0KFPP78RhhOaRXw7w4",
-        authDomain: "starpage-aad7e.firebaseapp.com",
-        projectId: "starpage-aad7e",
-        storageBucket: "starpage-aad7e.firebasestorage.app",
-        messagingSenderId: "68878211023",
-        appId: "1:68878211023:web:81015ce98366639003e4ba"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
-
-    onAuthStateChanged(auth, (user) => {
-        if (!user || user.email.toLowerCase() !== "yoalexvergara11@gmail.com") {
-            alert("Acceso no autorizado");
-            window.location.href = "index.html";
-        }
-    });
-
-    // --- Tabs ---
-    const tabs = document.querySelectorAll('.tab');
-    const sections = {
-        kyc: document.getElementById('kyc'),
-        pedidos: document.getElementById('pedidos'),
-        config: document.getElementById('config'),
-        chat: document.getElementById('chat'),
-        preview: document.getElementById('preview')
-    };
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            const target = tab.getAttribute('data-tab');
-            tabs.forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-            Object.values(sections).forEach(s => s.classList.remove('active'));
-            sections[target].classList.add('active');
-        });
-    });
-
-    // --- Funciones globales para botones en tablas ---
-    window.aprobarUsuario = async (id) => {
-        await updateDoc(doc(db, "users", id), { status: 'approved' });
-    };
-    window.completarPedido = async (id) => {
-        await updateDoc(doc(db, "pedidos", id), { status: 'completed' });
-    };
-
-    // --- KYC ---
-    onSnapshot(collection(db, "users"), (snapshot) => {
-        const tbody = document.getElementById('kyc-list');
-        tbody.innerHTML = '';
-        let pendientes = 0;
-        snapshot.forEach(docSnap => {
-            const user = docSnap.data();
-            if (user.status === 'pending') {
-                pendientes++;
-                tbody.innerHTML += `
-                    <tr>
-                        <td>${user.email}</td>
-                        <td>${user.dni || '—'}</td>
-                        <td>${user.phone || '—'}</td>
-                        <td><span class="status-badge pending">pendiente</span></td>
-                        <td><button class="btn-action" onclick="aprobarUsuario('${docSnap.id}')">Aprobar</button></td>
-                    </tr>
+            for (const orderDoc of ordersSnapshot.docs) {
+                const order = orderDoc.data();
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${order.userEmail}</td>
+                    <td>${order.amountSent} ${order.currencySent}</td>
+                    <td>${order.exchangeRateUsed.toFixed(2)}</td>
+                    <td>${order.commissionEarned.toFixed(2)} VES</td>
+                    <td>${order.status}</td>
+                    <td>${order.status === 'pending' ? `<button onclick="window.processOrder('${orderDoc.id}')">Procesar</button>` : 'Completado'}</td>
                 `;
+                ordersTbody.appendChild(tr);
+
+                if(order.status === 'completed') {
+                    totalProfit += order.commissionEarned;
+                    completedOrders++;
+                }
             }
-        });
-        if (pendientes === 0) tbody.innerHTML = '<tr><td colspan="5" class="empty-msg">✅ No hay usuarios pendientes</td></tr>';
-    });
-
-    // --- Pedidos ---
-    onSnapshot(collection(db, "pedidos"), (snapshot) => {
-        const tbody = document.getElementById('pedidos-list');
-        tbody.innerHTML = '';
-        snapshot.forEach(docSnap => {
-            const p = docSnap.data();
-            let datosPagoHtml = '';
-            if (p.datosPago.tipo === 'pago_movil') {
-                datosPagoHtml = `📱 ${p.datosPago.banco}<br>Cédula: ${p.datosPago.cedula}<br>Tel: ${p.datosPago.telefono}`;
-            } else {
-                datosPagoHtml = `🏦 ${p.datosPago.banco}<br>Cuenta: ${p.datosPago.numeroCuenta}<br>${p.datosPago.nombre}<br>Cédula: ${p.datosPago.cedula}`;
-            }
-            tbody.innerHTML += `
-                <tr>
-                    <td>${p.userEmail}</td>
-                    <td>$${p.montoUSD}</td>
-                    <td>Bs ${p.montoVES}</td>
-                    <td>${p.metodoEnvio === 'paypal' ? 'PayPal' : 'Zinli'}</td>
-                    <td>${datosPagoHtml}</td>
-                    <td><a href="${p.comprobanteURL}" target="_blank" style="color:#4ade80;">Ver captura</a></td>
-                    <td><span class="status-badge ${p.status}">${p.status}</span></td>
-                    <td>${p.status === 'pending' ? `<button class="btn-action" onclick="completarPedido('${docSnap.id}')">Completar</button>` : '✔️'}</td>
-                </tr>
-            `;
-        });
-        if (tbody.innerHTML === '') tbody.innerHTML = '<tr><td colspan="8" class="empty-msg">📭 No hay pedidos</td></tr>';
-    });
-
-    // --- Configuración: tasas ---
-    async function loadRates() {
-        const configRef = doc(db, "config", "rates");
-        const docSnap = await getDoc(configRef);
-        if (docSnap.exists()) {
-            const data = docSnap.data();
-            document.getElementById('paypalRateInput').value = data.paypalRate || '';
-            document.getElementById('zinliRateInput').value = data.zinliRate || '';
-            document.getElementById('comisionInput').value = data.comision || '2.0';
-        } else {
-            document.getElementById('paypalRateInput').value = '40.00';
-            document.getElementById('zinliRateInput').value = '39.50';
-            document.getElementById('comisionInput').value = '2.0';
+            document.getElementById('total-profit').innerText = totalProfit.toFixed(2);
+            document.getElementById('completed-orders').innerText = completedOrders;
         }
-    }
-    loadRates();
 
-    document.getElementById('saveRatesBtn').addEventListener('click', async () => {
-        const paypalRate = parseFloat(document.getElementById('paypalRateInput').value);
-        const zinliRate = parseFloat(document.getElementById('zinliRateInput').value);
-        const comision = parseFloat(document.getElementById('comisionInput').value);
-        if (isNaN(paypalRate) || isNaN(zinliRate) || isNaN(comision)) {
-            alert("Ingresa valores numéricos válidos");
-            return;
-        }
-        await setDoc(doc(db, "config", "rates"), {
-            paypalRate: paypalRate,
-            zinliRate: zinliRate,
-            comision: comision,
-            updatedAt: new Date()
-        });
-        alert("Tasas guardadas correctamente");
-    });
-
-    // --- Configuración: personalización UI ---
-    async function loadUiConfig() {
-        const uiRef = doc(db, "config", "ui");
-        const docSnap = await getDoc(uiRef);
-        if (docSnap.exists()) {
-            const data = docSnap.data();
-            document.getElementById('primaryColor').value = data.primaryColor || '#9333ea';
-            document.getElementById('secondaryColor').value = data.secondaryColor || '#4ade80';
-            document.getElementById('headerText').value = data.headerText || '';
-            document.getElementById('welcomeText').value = data.welcomeText || '';
-        } else {
-            document.getElementById('primaryColor').value = '#9333ea';
-            document.getElementById('secondaryColor').value = '#4ade80';
-            document.getElementById('headerText').value = '';
-            document.getElementById('welcomeText').value = '';
-        }
-    }
-    loadUiConfig();
-
-    document.getElementById('saveUiConfigBtn').addEventListener('click', async () => {
-        const uiData = {
-            primaryColor: document.getElementById('primaryColor').value,
-            secondaryColor: document.getElementById('secondaryColor').value,
-            headerText: document.getElementById('headerText').value,
-            welcomeText: document.getElementById('welcomeText').value,
-            updatedAt: new Date()
+        // Guardar configuración de tasas
+        window.saveSettings = async () => {
+            const sellRate = parseFloat(document.getElementById('rate-sell').value);
+            const buyRate = parseFloat(document.getElementById('rate-buy').value);
+            if (!sellRate || !buyRate) return alert("Define ambas tasas.");
+            
+            await setDoc(doc(db, "settings", "rates"), { sellRate, buyRate });
+            alert("¡Tasas actualizadas con éxito!");
         };
-        await setDoc(doc(db, "config", "ui"), uiData);
-        alert("Personalización guardada. La vista previa se actualizará al recargar.");
-        // Recargar el iframe para que muestre cambios (opcional)
-        document.getElementById('previewIframe').contentWindow.location.reload();
-    });
 
-    // --- Chat de soporte ---
-    // Escuchar mensajes de soporte ordenados por fecha descendente
-    const chatContainer = document.getElementById('chat-messages-list');
-    const messagesQuery = query(collection(db, "soporte"), orderBy("createdAt", "desc"));
-    onSnapshot(messagesQuery, (snapshot) => {
-        chatContainer.innerHTML = '';
-        snapshot.forEach(docSnap => {
-            const msg = docSnap.data();
-            const date = msg.createdAt ? new Date(msg.createdAt.toDate()).toLocaleString() : 'Fecha desconocida';
-            const replyHtml = msg.respuestaAdmin ? `
-                <div class="reply">
-                    <strong>✍️ Respuesta del admin:</strong><br>${msg.respuestaAdmin}
-                </div>
-            ` : '';
-            const replyForm = `
-                <div class="reply-input">
-                    <input type="text" id="reply-${docSnap.id}" placeholder="Escribe tu respuesta...">
-                    <button class="btn-action" onclick="sendReply('${docSnap.id}', '${msg.userId}')">Responder</button>
-                </div>
-            `;
-            chatContainer.innerHTML += `
-                <div class="chat-message">
-                    <div><span class="user">${msg.userEmail || 'Usuario'}</span> <span class="time">${date}</span></div>
-                    <div class="content">${msg.mensaje}</div>
-                    ${replyHtml}
-                    ${replyForm}
-                </div>
-            `;
+        // Asignar rol a un usuario por email
+        window.assignRole = async () => {
+            const email = document.getElementById('user-email-role').value;
+            const role = document.getElementById('user-role-select').value;
+            if (!email) return alert("Ingresa un correo.");
+
+            const usersRef = collection(db, "users");
+            const q = query(usersRef, where("email", "==", email));
+            const querySnapshot = await getDocs(q);
+            
+            if (querySnapshot.empty) {
+                return alert("Usuario no encontrado con ese correo.");
+            }
+            const userDoc = querySnapshot.docs[0];
+            await updateDoc(doc(db, "users", userDoc.id), { role: role });
+            alert(`Rol "${role}" asignado a ${email}.`);
+        };
+        
+        // Procesar un pedido
+        window.processOrder = async (orderId) => {
+            if(confirm("¿Confirmas que ya has realizado la transferencia y quieres marcar este pedido como 'completado'?")){
+                await updateDoc(doc(db, "orders", orderId), { status: 'completed' });
+                alert("Pedido completado.");
+                loadDashboardData(); // Recargar datos
+            }
+        };
+
+        // Auth check
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const userDoc = await getDoc(doc(db, "users", user.uid));
+                if (userDoc.exists() && userDoc.data().role === 'admin') {
+                    loadDashboardData();
+                } else {
+                    window.location.href = "index.html";
+                }
+            } else {
+                window.location.href = "index.html";
+            }
         });
-        if (snapshot.empty) {
-            chatContainer.innerHTML = '<div class="empty-msg">💬 No hay mensajes de soporte aún.</div>';
-        }
-    });
-
-    // Función global para responder
-    window.sendReply = async (messageId, userId) => {
-        const input = document.getElementById(`reply-${messageId}`);
-        const respuesta = input.value.trim();
-        if (!respuesta) return alert("Escribe una respuesta");
-        await updateDoc(doc(db, "soporte", messageId), {
-            respuestaAdmin: respuesta,
-            respondidoAt: new Date(),
-            respondidoPor: auth.currentUser?.email
-        });
-        input.value = '';
-        alert("Respuesta enviada");
-    };
-
-    // --- Vista previa ---
-    const previewIframe = document.getElementById('previewIframe');
-    document.getElementById('reloadPreviewBtn').addEventListener('click', () => {
-        previewIframe.src = previewIframe.src; // recargar
-    });
-
-    // --- Cerrar sesión ---
-    document.getElementById('logoutBtn').addEventListener('click', () => {
-        signOut(auth).then(() => window.location.href = "index.html");
-    });
-</script>
+    </script>
 </body>
 </html>
