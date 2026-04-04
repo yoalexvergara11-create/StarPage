@@ -79,7 +79,8 @@
   // ==================== CONFIGURACIÓN SUPABASE ====================
   const SUPABASE_URL = 'https://drdlldpcyeaavjdqrzec.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_38DviMPudTo2uM1QdzCh5g_7B1cyEmx';
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  // Usamos un nombre diferente para evitar conflicto con la variable global "supabase"
+  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   // Estado global
   let currentUser = null;       // { id, email, role, ... }
@@ -95,7 +96,7 @@
   }
 
   async function loadCurrencies() {
-    const { data, error } = await supabase.from('currencies').select('*');
+    const { data, error } = await supabaseClient.from('currencies').select('*');
     if (error) {
       console.error(error);
       showToast('Error al cargar tasas');
@@ -116,7 +117,7 @@
 
   // Obtener perfil del usuario actual desde tabla `users`
   async function fetchUserProfile(userId) {
-    const { data, error } = await supabase.from('users').select('*').eq('id', userId).single();
+    const { data, error } = await supabaseClient.from('users').select('*').eq('id', userId).single();
     if (error) throw error;
     return data;
   }
@@ -134,7 +135,7 @@
   }
 
   async function logout() {
-    await supabase.auth.signOut();
+    await supabaseClient.auth.signOut();
     currentUser = null;
     updateNavButtons();
     renderView('landing');
@@ -184,13 +185,13 @@
   async function renderDashboard() {
     if (!currentUser) return '<p>Debes iniciar sesión.</p>';
     // Obtener órdenes del usuario
-    const { data: userOrders, error } = await supabase.from('orders').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false });
+    const { data: userOrders, error } = await supabaseClient.from('orders').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false });
     if (error) console.error(error);
     
     // Crear opciones del select de monedas
     let currencyOptions = '';
     currencies.forEach(c => {
-      currencyOptions += `<option value="${c.name}" data-rate="${c.rate}" data-comm="${c.commission}" data-dest="${c.destination_account}">${c.name} (Tasa: ${c.rate.toLocaleString()} Bs/USD - Comisión ${c.commission}%)</option>`;
+      currencyOptions += `<option value="${c.name}" data-rate="${c.rate}" data-comm="${c.commission}" data-dest="${c.destination_account.replace(/"/g, '&quot;')}">${c.name} (Tasa: ${c.rate.toLocaleString()} Bs/USD - Comisión ${c.commission}%)</option>`;
     });
     
     return `<div class="dashboard-grid">
@@ -248,7 +249,7 @@
   window.showAdminOrders = async function() {
     const container = document.getElementById('adminContent');
     if (!container) return;
-    const { data: orders, error } = await supabase.from('orders').select('*, users(email)');
+    const { data: orders, error } = await supabaseClient.from('orders').select('*, users(email)');
     if (error) return showToast('Error al cargar órdenes');
     container.innerHTML = `<h3>📦 Órdenes</h3>
       ${orders.map(o => `<div class="order-item">
@@ -267,7 +268,7 @@
 
   window.updateOrderStatus = async function(orderId) {
     const newStatus = document.getElementById(`status-${orderId}`).value;
-    const { error } = await supabase.from('orders').update({ status: newStatus }).eq('id', orderId);
+    const { error } = await supabaseClient.from('orders').update({ status: newStatus }).eq('id', orderId);
     if (error) showToast('Error al actualizar');
     else showToast('Estado actualizado');
     showAdminOrders();
@@ -275,7 +276,7 @@
 
   window.showAdminUsers = async function() {
     const container = document.getElementById('adminContent');
-    const { data: users, error } = await supabase.from('users').select('*');
+    const { data: users, error } = await supabaseClient.from('users').select('*');
     if (error) return;
     container.innerHTML = `<h3>👥 Usuarios</h3>
       ${users.map(u => `<div class="order-item">
@@ -285,7 +286,7 @@
   };
 
   window.approveKYC = async function(userId) {
-    const { error } = await supabase.from('users').update({ kyc_status: 'verified' }).eq('id', userId);
+    const { error } = await supabaseClient.from('users').update({ kyc_status: 'verified' }).eq('id', userId);
     if (error) showToast('Error');
     else showToast('KYC aprobado');
     showAdminUsers();
@@ -310,7 +311,7 @@
     const newRate = parseFloat(document.getElementById(`rate-${currencyId}`).value);
     const newComm = parseFloat(document.getElementById(`comm-${currencyId}`).value);
     const newDest = document.getElementById(`dest-${currencyId}`).value;
-    const { error } = await supabase.from('currencies').update({ rate: newRate, commission: newComm, destination_account: newDest }).eq('id', currencyId);
+    const { error } = await supabaseClient.from('currencies').update({ rate: newRate, commission: newComm, destination_account: newDest }).eq('id', currencyId);
     if (error) showToast('Error al guardar');
     else {
       showToast('Actualizado correctamente');
@@ -321,7 +322,7 @@
 
   window.showAdminManageAdmins = async function() {
     const container = document.getElementById('adminContent');
-    const { data: admins, error } = await supabase.from('users').select('*').in('role', ['admin', 'founder']);
+    const { data: admins, error } = await supabaseClient.from('users').select('*').in('role', ['admin', 'founder']);
     if (error) return;
     container.innerHTML = `<h3>🔐 Administradores</h3>
       <div>${admins.map(a => `<div class="order-item">${a.full_name} - ${a.email} (${a.role}) <button class="btn-outline" onclick="deleteAdmin('${a.id}')">Eliminar</button></div>`).join('')}</div>
@@ -336,10 +337,10 @@
       const pass = document.getElementById('newAdminPass').value;
       if (!name || !email || !pass) return showToast('Complete todos los campos');
       // Registrar en auth
-      const { data: authData, error: signUpError } = await supabase.auth.signUp({ email, password: pass });
+      const { data: authData, error: signUpError } = await supabaseClient.auth.signUp({ email, password: pass });
       if (signUpError) return showToast(signUpError.message);
       // Insertar perfil
-      const { error: profileError } = await supabase.from('users').insert({
+      const { error: profileError } = await supabaseClient.from('users').insert({
         id: authData.user.id,
         full_name: name,
         email: email,
@@ -353,8 +354,7 @@
   };
 
   window.deleteAdmin = async function(userId) {
-    // Nota: eliminar usuario de auth requiere funciones de servidor; aquí solo eliminamos de la tabla users (pierde acceso)
-    const { error } = await supabase.from('users').delete().eq('id', userId);
+    const { error } = await supabaseClient.from('users').delete().eq('id', userId);
     if (error) showToast('Error al eliminar');
     else showToast('Admin eliminado');
     showAdminManageAdmins();
@@ -374,11 +374,11 @@
     const role = isFounderEmail ? 'founder' : 'user';
     
     // 1. Registrar en Supabase Auth
-    const { data: authData, error: signUpError } = await supabase.auth.signUp({ email, password });
+    const { data: authData, error: signUpError } = await supabaseClient.auth.signUp({ email, password });
     if (signUpError) return showToast(signUpError.message);
     
     // 2. Crear perfil en tabla users
-    const { error: profileError } = await supabase.from('users').insert({
+    const { error: profileError } = await supabaseClient.from('users').insert({
       id: authData.user.id,
       full_name,
       cedula,
@@ -401,7 +401,7 @@
     e.preventDefault();
     const email = document.getElementById('login_email').value.trim();
     const password = document.getElementById('login_password').value;
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
     if (error) return showToast('Email o contraseña incorrectos');
     
     // Obtener perfil completo
@@ -424,7 +424,7 @@
     
     const gross = amount * currency.rate;
     const net = gross * (1 - currency.commission / 100);
-    const { error } = await supabase.from('orders').insert({
+    const { error } = await supabaseClient.from('orders').insert({
       user_id: currentUser.id,
       amount_usd: amount,
       net_bs: net,
@@ -448,10 +448,10 @@
       if (!file) return;
       const fileExt = file.name.split('.').pop();
       const fileName = `proof_${orderId}_${Date.now()}.${fileExt}`;
-      const { data, error } = await supabase.storage.from('proofs').upload(fileName, file);
+      const { data, error } = await supabaseClient.storage.from('proofs').upload(fileName, file);
       if (error) return showToast('Error al subir: ' + error.message);
-      const { data: publicUrlData } = supabase.storage.from('proofs').getPublicUrl(fileName);
-      const { error: updateError } = await supabase.from('orders').update({ proof_url: publicUrlData.publicUrl }).eq('id', orderId);
+      const { data: publicUrlData } = supabaseClient.storage.from('proofs').getPublicUrl(fileName);
+      const { error: updateError } = await supabaseClient.from('orders').update({ proof_url: publicUrlData.publicUrl }).eq('id', orderId);
       if (updateError) showToast('Error al guardar URL');
       else showToast('Comprobante subido correctamente');
       renderView('dashboard');
@@ -461,7 +461,7 @@
 
   // ==================== CHAT ====================
   async function loadChatMessages() {
-    const { data, error } = await supabase.from('chat_messages').select('*, users(full_name)').order('created_at', { ascending: true });
+    const { data, error } = await supabaseClient.from('chat_messages').select('*, users(full_name)').order('created_at', { ascending: true });
     if (error) return;
     const chatContainer = document.getElementById('chatMessages');
     if (!chatContainer) return;
@@ -472,7 +472,7 @@
     const input = document.getElementById('chatInput');
     if (!input.value.trim()) return showToast('Escribe un mensaje');
     if (!currentUser) return showToast('Inicia sesión para chatear');
-    const { error } = await supabase.from('chat_messages').insert({
+    const { error } = await supabaseClient.from('chat_messages').insert({
       user_id: currentUser.id,
       message: input.value,
       is_admin: (currentUser.role === 'admin' || currentUser.role === 'founder')
@@ -560,7 +560,7 @@
   // Inicio de la aplicación: cargar monedas, comprobar sesión activa
   (async function init() {
     await loadCurrencies();
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await supabaseClient.auth.getSession();
     if (session?.user) {
       const profile = await fetchUserProfile(session.user.id);
       currentUser = { ...session.user, ...profile };
