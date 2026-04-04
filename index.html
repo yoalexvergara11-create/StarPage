@@ -257,7 +257,6 @@
       const container = document.getElementById('adminContent');
       if (!container) return;
       try {
-        // Usamos una consulta con join explícito usando la sintaxis de Supabase
         const { data: orders, error } = await supabaseClient
           .from('orders')
           .select(`
@@ -269,7 +268,6 @@
           .order('created_at', { ascending: false });
         if (error) throw error;
         
-        // Calcular comisiones totales (solo órdenes completadas)
         let totalCommission = 0;
         if (orders && orders.length) {
           orders.forEach(o => {
@@ -382,16 +380,35 @@
         `).join('')}`;
     };
 
+    // ========== FUNCIÓN UPDATE CURRENCY CORREGIDA ==========
     window.updateCurrency = async function(currencyId) {
       const newRate = parseFloat(document.getElementById(`rate-${currencyId}`).value);
       const newComm = parseFloat(document.getElementById(`comm-${currencyId}`).value);
       const newDest = document.getElementById(`dest-${currencyId}`).value;
-      const { error } = await supabaseClient.from('currencies').update({ rate: newRate, commission: newComm, destination_account: newDest }).eq('id', currencyId);
-      if (error) showToast('Error al guardar', true);
-      else {
-        showToast('Actualizado correctamente');
-        await loadCurrencies();
-        window.showAdminCurrencies();
+      
+      console.log('Actualizando moneda ID:', currencyId);
+      console.log('Nueva tasa:', newRate, 'Nueva comisión:', newComm, 'Nueva cuenta destino:', newDest);
+      
+      showToast('Guardando cambios...', false);
+      
+      const { data, error } = await supabaseClient
+        .from('currencies')
+        .update({ 
+          rate: newRate, 
+          commission: newComm, 
+          destination_account: newDest 
+        })
+        .eq('id', currencyId)
+        .select();
+      
+      if (error) {
+        console.error('Error detallado de Supabase:', error);
+        showToast('❌ Error al guardar: ' + error.message, true);
+      } else {
+        console.log('Actualización exitosa:', data);
+        showToast('✅ Tasa, comisión y cuenta destino actualizadas correctamente');
+        await loadCurrencies();  // Recargar monedas en memoria
+        window.showAdminCurrencies(); // Refrescar panel de admin
       }
     };
 
@@ -460,7 +477,7 @@
         else {
           input.value = '';
           loadUserChat(currentChatUserId);
-          loadChatMessages(); // refrescar chat flotante
+          loadChatMessages();
         }
       });
     };
@@ -657,7 +674,6 @@
       }
       input.value = '';
       
-      // Mensaje automático para usuarios normales
       if (currentUser.role !== 'admin' && currentUser.role !== 'founder') {
         setTimeout(async () => {
           await supabaseClient.from('chat_messages').insert({
