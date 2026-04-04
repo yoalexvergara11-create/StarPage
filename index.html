@@ -1,196 +1,119 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>StarPage VE · Sistema de Remesas</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    /* TU ESTÉTICA ORIGINAL */
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-    body { background: radial-gradient(circle at 10% 20%, #03050b, #000000); color: #eef5ff; min-height: 100vh; }
-    .glass-card { background: rgba(8,18,28,0.75); backdrop-filter: blur(12px); border: 1px solid rgba(0,240,255,0.25); border-radius: 28px; padding: 1.5rem; margin-bottom: 1rem; }
-    .neon-text { color: #00f0ff; text-shadow: 0 0 10px #00f0ff; }
-    .btn-neon { background: linear-gradient(95deg, #00c3ff, #ff6bd6); border: none; color: #010101; font-weight: bold; padding: 12px 24px; border-radius: 60px; cursor: pointer; transition: 0.3s; width: 100%; }
-    .btn-neon:hover { transform: scale(1.02); box-shadow: 0 0 15px #00c3ff; }
-    .btn-outline { background: transparent; border: 1px solid #00f0ff; color: #00f0ff; border-radius: 40px; padding: 8px 18px; cursor: pointer; margin-left: 10px; }
-    input, select { background: #0b1018; border: 1px solid #2a3a48; padding: 12px; border-radius: 15px; color: white; width: 100%; margin: 8px 0; outline: none; }
-    input:focus { border-color: #00f0ff; }
-    header { display: flex; justify-content: space-between; align-items: center; padding: 20px 5%; border-bottom: 1px solid rgba(0,240,255,0.2); }
-    .main-container { max-width: 1200px; margin: 20px auto; padding: 0 20px; }
-    .grid { display: grid; grid-template-columns: 1fr 380px; gap: 25px; }
-    @media (max-width: 850px) { .grid { grid-template-columns: 1fr; } }
-    .loading-screen { position: fixed; top:0; left:0; width:100%; height:100%; background:#000; display:flex; justify-content:center; align-items:center; z-index:9999; }
-  </style>
+<meta charset="UTF-8">
+<title>StarPage</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+body{background:#000;color:#fff;font-family:sans-serif;text-align:center}
+input,button{padding:10px;margin:5px;border-radius:10px}
+button{background:#00f0ff;color:#000;font-weight:bold}
+</style>
 </head>
+
 <body>
 
-<div id="loader" class="loading-screen">
-    <h2 class="neon-text">StarPage - Conectando...</h2>
+<h1>🚀 StarPage</h1>
+
+<div id="auth">
+  <h2>Login</h2>
+  <input id="email" placeholder="Correo">
+  <input id="password" type="password" placeholder="Contraseña">
+  <button onclick="login()">Entrar</button>
 </div>
 
-<header>
-  <div class="logo"><i class="fas fa-rocket" style="color:#00f0ff"></i> StarPage<span style="background:#ff6bd6; color:black; font-size:0.7rem; border-radius:30px; padding:2px 10px; margin-left:8px;">VE</span></div>
-  <div id="navButtons">
-    <button class="btn-outline" onclick="location.reload()">Inicio</button>
-    <button class="btn-outline" id="logoutBtn" style="display:none;" onclick="handleLogout()">Salir</button>
-  </div>
-</header>
+<div id="app" style="display:none">
+  <h2>Calculadora</h2>
+  <input id="usd" placeholder="USD">
+  <p id="result">0 Bs</p>
 
-<main class="main-container" id="appRoot"></main>
+  <h3>Crear Orden</h3>
+  <input id="amount" placeholder="Monto USD">
+  <button onclick="crearOrden()">Crear</button>
+
+  <h3>Mis órdenes</h3>
+  <div id="orders"></div>
+
+  <button onclick="logout()">Salir</button>
+</div>
 
 <script>
-// 1. CONFIGURACIÓN DE SUPABASE (Tus claves)
-const SUPABASE_URL = "https://drdlldpcyeaavjdqrzec.supabase.co";
-const SUPABASE_KEY = "sb_publishable_38DviMPudTo2uM1QdzCh5g_7B1cyEmx"; 
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabase = window.supabase.createClient(
+  "https://drdlldpcyeaavjdqrzec.supabase.co",
+  "sb_publishable_38DviMPudTo2uM1QdzCh5g_7B1cyEmx"
+);
 
-let currentRates = {}; // Aquí guardaremos Zelle, Zinli, etc.
-let currentUser = null;
+// LOGIN
+async function login(){
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
 
-// 2. INICIALIZACIÓN
-async function init() {
-    try {
-        // Traer tasas de la DB
-        const { data, error } = await supabase.from('rates').select('*');
-        if (error) throw error;
-        
-        data.forEach(r => currentRates[r.id] = r);
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email, password
+  });
 
-        // Verificar si hay sesión activa
-        const { data: { session } } = await supabase.auth.getSession();
-        currentUser = session ? session.user : null;
+  if(error){
+    alert("Error login");
+    return;
+  }
 
-        document.getElementById('loader').style.display = 'none';
-        
-        if (currentUser) {
-            document.getElementById('logoutBtn').style.display = 'inline-block';
-            renderDashboard();
-        } else {
-            renderLogin();
-        }
-    } catch (err) {
-        document.getElementById('loader').innerHTML = `<h3 style="color:red">Error de conexión: ${err.message}</h3>`;
-    }
+  document.getElementById('auth').style.display="none";
+  document.getElementById('app').style.display="block";
+
+  cargarDatos();
 }
 
-// 3. VISTA: LOGIN (FUNDADOR)
-function renderLogin() {
-    document.getElementById('appRoot').innerHTML = `
-        <div class="glass-card" style="max-width:450px; margin: 60px auto;">
-            <h2 class="neon-text" style="text-align:center; margin-bottom:20px;">Acceso Fundador</h2>
-            <form id="loginForm">
-                <label>Correo Electrónico</label>
-                <input type="email" id="email" placeholder="yoalexvergara11@gmail.com" required>
-                <label>Contraseña</label>
-                <input type="password" id="password" placeholder="12345678" required>
-                <button type="submit" class="btn-neon" style="margin-top:15px;">ENTRAR AL SISTEMA</button>
-            </form>
-        </div>
-    `;
-    document.getElementById('loginForm').addEventListener('submit', handleLogin);
+// LOGOUT
+async function logout(){
+  await supabase.auth.signOut();
+  location.reload();
 }
 
-// 4. VISTA: DASHBOARD (ADMIN + CALCULADORA)
-function renderDashboard() {
-    document.getElementById('appRoot').innerHTML = `
-        <div class="grid">
-            <div class="glass-card">
-                <h2 class="neon-text"><i class="fas fa-calculator"></i> Calculadora de Cambio</h2>
-                <p style="font-size:0.9rem; color:#aaa; margin-bottom:15px;">Selecciona la moneda y el monto que deseas vender.</p>
-                
-                <label>Moneda a entregar:</label>
-                <select id="coinSelect" onchange="calculate()">
-                    <option value="zelle">Zelle (USD)</option>
-                    <option value="zinli">Zinli (USD)</option>
-                    <option value="paypal">PayPal (USD)</option>
-                </select>
+// CALCULO AUTOMATICO
+document.getElementById('usd').addEventListener('input', async ()=>{
+  const usd = parseFloat(document.getElementById('usd').value)||0;
 
-                <label>Monto en USD:</label>
-                <input type="number" id="usdAmount" placeholder="Ej: 100" oninput="calculate()">
+  const { data } = await supabase.from('settings').select('*').single();
 
-                <div style="background: rgba(0,240,255,0.1); padding: 20px; border-radius: 20px; margin-top: 20px; border: 1px dashed #00f0ff;">
-                    <p style="margin-bottom:5px;">Recibirás en Bolívares:</p>
-                    <h1 class="neon-text" id="vesResult">0.00 Bs</h1>
-                    <small id="rateInfo" style="color:#00f0ff;"></small>
-                </div>
-            </div>
+  const result = usd * data.rate * (1 - data.commission/100);
 
-            <div class="glass-card">
-                <h3 style="margin-bottom:15px;"><i class="fas fa-user-shield"></i> Admin: ${currentUser.email}</h3>
-                <hr style="border:0; border-top:1px solid #2a3a48; margin-bottom:15px;">
-                
-                <p><strong>Ajustar Tasas (Bs/USD):</strong></p>
-                <label>Zelle:</label>
-                <input type="number" id="edit_zelle" value="${currentRates.zelle.rate_value}">
-                
-                <label>Zinli:</label>
-                <input type="number" id="edit_zinli" value="${currentRates.zinli.rate_value}">
-                
-                <label>PayPal:</label>
-                <input type="number" id="edit_paypal" value="${currentRates.paypal.rate_value}">
+  document.getElementById('result').innerText = result.toLocaleString() + " Bs";
+});
 
-                <button class="btn-neon" onclick="saveNewRates()" style="margin-top:10px;">GUARDAR CAMBIOS</button>
-            </div>
-        </div>
-    `;
-    calculate();
+// CREAR ORDEN
+async function crearOrden(){
+  const user = (await supabase.auth.getUser()).data.user;
+  const amount = parseFloat(document.getElementById('amount').value);
+
+  const { data:settings } = await supabase.from('settings').select('*').single();
+
+  const net = amount * settings.rate * (1 - settings.commission/100);
+
+  await supabase.from('orders').insert({
+    user_id: user.id,
+    amount_usd: amount,
+    net_bs: net
+  });
+
+  alert("Orden creada");
+  cargarDatos();
 }
 
-// 5. FUNCIONES LÓGICAS
-async function handleLogin(e) {
-    e.preventDefault();
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
+// CARGAR ORDENES
+async function cargarDatos(){
+  const user = (await supabase.auth.getUser()).data.user;
 
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data } = await supabase
+    .from('orders')
+    .select('*')
+    .eq('user_id', user.id);
 
-    if (error) {
-        alert("Error: " + error.message);
-    } else {
-        location.reload();
-    }
+  document.getElementById('orders').innerHTML =
+    data.map(o=>`<p>$${o.amount_usd} → ${o.net_bs}</p>`).join('');
 }
-
-function calculate() {
-    const coin = document.getElementById('coinSelect').value;
-    const amount = document.getElementById('usdAmount').value || 0;
-    const rateData = currentRates[coin];
-
-    // Cálculo: (Monto - Comisión%) * Tasa
-    const amountAfterComm = amount * (1 - (rateData.commission / 100));
-    const totalVes = amountAfterComm * rateData.rate_value;
-
-    document.getElementById('vesResult').innerText = totalVes.toLocaleString('es-VE', { minimumFractionDigits: 2 }) + " Bs";
-    document.getElementById('rateInfo').innerText = `Tasa: ${rateData.rate_value} Bs | Comisión: ${rateData.commission}%`;
-}
-
-async function saveNewRates() {
-    const rZelle = document.getElementById('edit_zelle').value;
-    const rZinli = document.getElementById('edit_zinli').value;
-    const rPaypal = document.getElementById('edit_paypal').value;
-
-    const updates = [
-        { id: 'zelle', rate_value: parseFloat(rZelle) },
-        { id: 'zinli', rate_value: parseFloat(rZinli) },
-        { id: 'paypal', rate_value: parseFloat(rPaypal) }
-    ];
-
-    for (let item of updates) {
-        await supabase.from('rates').update({ rate_value: item.rate_value }).eq('id', item.id);
-    }
-
-    alert("¡Tasas actualizadas globalmente!");
-    location.reload();
-}
-
-async function handleLogout() {
-    await supabase.auth.signOut();
-    location.reload();
-}
-
-init();
 </script>
+
 </body>
 </html>
