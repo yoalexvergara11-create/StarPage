@@ -3,430 +3,194 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>StarPage VE · Con Supabase</title>
+  <title>StarPage VE · Sistema de Remesas</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
-    body { background: radial-gradient(circle at 10% 20%, #03050b, #000000); color: #eef5ff; line-height: 1.5; }
+    /* TU ESTÉTICA ORIGINAL */
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+    body { background: radial-gradient(circle at 10% 20%, #03050b, #000000); color: #eef5ff; min-height: 100vh; }
     .glass-card { background: rgba(8,18,28,0.75); backdrop-filter: blur(12px); border: 1px solid rgba(0,240,255,0.25); border-radius: 28px; padding: 1.5rem; margin-bottom: 1rem; }
-    .neon-text { color: #00f0ff; text-shadow: 0 0 5px #00f0ff, 0 0 12px #ff6bd6; }
-    .btn-neon { background: linear-gradient(95deg, #00c3ff, #ff6bd6); border: none; color: #010101; font-weight: bold; padding: 10px 24px; border-radius: 60px; cursor: pointer; transition: 0.2s; }
-    .btn-neon:hover { transform: scale(1.02); opacity: 0.9; }
-    .btn-outline { background: transparent; border: 1px solid #00f0ff; color: #00f0ff; border-radius: 40px; padding: 8px 18px; cursor: pointer; transition: 0.2s; }
-    .btn-outline:hover { background: #00f0ff20; }
-    input, select { background: #0b1018; border: 1px solid #2a3a48; padding: 12px; border-radius: 20px; color: white; width: 100%; margin: 6px 0 12px; outline: none; }
-    header { display: flex; justify-content: space-between; align-items: center; padding: 18px 5%; border-bottom: 1px solid rgba(0,240,255,0.3); flex-wrap: wrap; gap: 15px; }
-    .logo { font-size: 1.7rem; font-weight: 800; }
-    .badge-ve { background: #ff6bd6; color: black; border-radius: 30px; padding: 2px 10px; margin-left: 8px; }
-    .nav-buttons { display: flex; gap: 12px; flex-wrap: wrap; }
-    .main-container { max-width: 1400px; margin: 20px auto; padding: 0 20px 40px; }
-    .dashboard-grid { display: grid; grid-template-columns: 1fr 360px; gap: 24px; }
-    .order-item { background: #0f1722; border-left: 5px solid #00f0ff; border-radius: 20px; padding: 16px; margin-bottom: 12px; }
-    .toast { position: fixed; bottom: 30px; left: 20px; background: #1e2a3a; border-left: 6px solid #00f0ff; padding: 12px 20px; border-radius: 16px; z-index: 2000; animation: fadein 0.3s; }
-    @keyframes fadein { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-    footer { text-align: center; padding: 28px 20px; border-top: 1px solid rgba(0,240,255,0.15); margin-top: 40px; font-size: 13px; }
-    @media (max-width: 800px) { .dashboard-grid { grid-template-columns: 1fr; } }
-    .status-pending { color: #f0b400; }
-    .status-processing { color: #00aaff; }
-    .status-completed { color: #00cc88; }
-    .status-cancelled { color: #ff4466; }
-    a { color: #00f0ff; cursor: pointer; text-decoration: none; }
+    .neon-text { color: #00f0ff; text-shadow: 0 0 10px #00f0ff; }
+    .btn-neon { background: linear-gradient(95deg, #00c3ff, #ff6bd6); border: none; color: #010101; font-weight: bold; padding: 12px 24px; border-radius: 60px; cursor: pointer; transition: 0.3s; width: 100%; }
+    .btn-neon:hover { transform: scale(1.02); box-shadow: 0 0 15px #00c3ff; }
+    .btn-outline { background: transparent; border: 1px solid #00f0ff; color: #00f0ff; border-radius: 40px; padding: 8px 18px; cursor: pointer; margin-left: 10px; }
+    input, select { background: #0b1018; border: 1px solid #2a3a48; padding: 12px; border-radius: 15px; color: white; width: 100%; margin: 8px 0; outline: none; }
+    input:focus { border-color: #00f0ff; }
+    header { display: flex; justify-content: space-between; align-items: center; padding: 20px 5%; border-bottom: 1px solid rgba(0,240,255,0.2); }
+    .main-container { max-width: 1200px; margin: 20px auto; padding: 0 20px; }
+    .grid { display: grid; grid-template-columns: 1fr 380px; gap: 25px; }
+    @media (max-width: 850px) { .grid { grid-template-columns: 1fr; } }
+    .loading-screen { position: fixed; top:0; left:0; width:100%; height:100%; background:#000; display:flex; justify-content:center; align-items:center; z-index:9999; }
   </style>
 </head>
 <body>
 
+<div id="loader" class="loading-screen">
+    <h2 class="neon-text">StarPage - Conectando...</h2>
+</div>
+
 <header>
-  <div class="logo"><i class="fas fa-rocket" style="color:#00f0ff"></i> StarPage<span class="badge-ve">VE</span></div>
-  <div class="nav-buttons" id="navButtons">
-    <button class="btn-outline" data-view="landing">Inicio</button>
-    <button class="btn-outline" data-view="register">Registro</button>
-    <button class="btn-outline" data-view="login">Acceso</button>
-    <button class="btn-outline" data-view="dashboard" style="display:none;" id="dashboardNavBtn">Dashboard</button>
-    <button class="btn-outline" data-view="admin" style="display:none;" id="adminNavBtn">Admin</button>
-    <button class="btn-outline" id="logoutBtn" style="display:none;">Salir</button>
+  <div class="logo"><i class="fas fa-rocket" style="color:#00f0ff"></i> StarPage<span style="background:#ff6bd6; color:black; font-size:0.7rem; border-radius:30px; padding:2px 10px; margin-left:8px;">VE</span></div>
+  <div id="navButtons">
+    <button class="btn-outline" onclick="location.reload()">Inicio</button>
+    <button class="btn-outline" id="logoutBtn" style="display:none;" onclick="handleLogout()">Salir</button>
   </div>
 </header>
 
 <main class="main-container" id="appRoot"></main>
 
-<footer>© StarPage - <span id="rateFooter">Cargando tasas...</span></footer>
-
 <script>
-  // ==================== CONFIGURACIÓN ====================
-  const SUPABASE_URL = 'https://drdlldpcyeaavjdqrzec.supabase.co';
-  const SUPABASE_ANON_KEY = 'sb_publishable_38DviMPudTo2uM1QdzCh5g_7B1cyEmx';
-  const supabase = supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// 1. CONFIGURACIÓN DE SUPABASE (Tus claves)
+const SUPABASE_URL = "https://drdlldpcyeaavjdqrzec.supabase.co";
+const SUPABASE_KEY = "sb_publishable_38DviMPudTo2uM1QdzCh5g_7B1cyEmx"; 
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  let currentUser = null;
-  let currencies = [];
+let currentRates = {}; // Aquí guardaremos Zelle, Zinli, etc.
+let currentUser = null;
 
-  // ==================== UTILIDADES ====================
-  function showToast(msg, isError = false) {
-    const toast = document.createElement('div');
-    toast.className = 'toast';
-    toast.style.borderLeftColor = isError ? '#ff4466' : '#00f0ff';
-    toast.innerText = msg;
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 4000);
-  }
+// 2. INICIALIZACIÓN
+async function init() {
+    try {
+        // Traer tasas de la DB
+        const { data, error } = await supabase.from('rates').select('*');
+        if (error) throw error;
+        
+        data.forEach(r => currentRates[r.id] = r);
 
-  async function loadCurrencies() {
-    const { data, error } = await supabase
-      .from('platform_settings')
-      .select('*')
-      .eq('type', 'currency');
-    if (error) {
-      console.error('Error cargando tasas:', error);
-      showToast('Error al cargar tasas', true);
-      return;
+        // Verificar si hay sesión activa
+        const { data: { session } } = await supabase.auth.getSession();
+        currentUser = session ? session.user : null;
+
+        document.getElementById('loader').style.display = 'none';
+        
+        if (currentUser) {
+            document.getElementById('logoutBtn').style.display = 'inline-block';
+            renderDashboard();
+        } else {
+            renderLogin();
+        }
+    } catch (err) {
+        document.getElementById('loader').innerHTML = `<h3 style="color:red">Error de conexión: ${err.message}</h3>`;
     }
-    if (data && data.length) {
-      currencies = data.map(c => ({
-        code: c.key,
-        rate: Number(c.rate_value),
-        commission: Number(c.commission_value),
-        receiving_account: c.receiving_account
-      }));
-      const footerSpan = document.getElementById('rateFooter');
-      if (footerSpan) {
-        footerSpan.innerHTML = currencies.map(c => `${c.code}: ${c.rate.toLocaleString()} Bs (${c.commission}%)`).join(' · ');
-      }
-    } else {
-      showToast('No hay tasas configuradas', true);
-    }
-  }
+}
 
-  // ==================== VISTAS ====================
-  function renderLanding() {
-    return `<div class="glass-card" style="text-align:center">
-      <h1 class="neon-text">⚡ StarPage VE</h1>
-      <p>Intercambio de monedas digitales a Bolívares.</p>
-      <button class="btn-neon" data-view="register">Crear cuenta ahora</button>
-    </div>`;
-  }
-
-  function renderRegister() {
-    return `<div class="glass-card" style="max-width:600px;margin:auto">
-      <h2>Registro completo</h2>
-      <form id="registerForm">
-        <input type="text" id="reg_name" placeholder="Nombre completo" required>
-        <input type="text" id="reg_cedula" placeholder="Cédula">
-        <input type="email" id="reg_email" placeholder="Email" required>
-        <input type="tel" id="reg_phone" placeholder="Teléfono">
-        <input type="text" id="reg_address" placeholder="Dirección">
-        <input type="password" id="reg_password" placeholder="Contraseña" required>
-        <input type="text" id="reg_bank" placeholder="Banco">
-        <input type="text" id="reg_account" placeholder="Número de cuenta">
-        <input type="text" id="reg_pagomovil" placeholder="Teléfono Pago Móvil">
-        <button type="submit" class="btn-neon">Registrarme</button>
-      </form>
-      <p>¿Ya tienes cuenta? <a href="#" data-view="login">Inicia sesión</a></p>
-    </div>`;
-  }
-
-  function renderLogin() {
-    return `<div class="glass-card" style="max-width:450px;margin:auto">
-      <h2>Acceso</h2>
-      <form id="loginForm">
-        <input type="email" id="login_email" placeholder="Email" required>
-        <input type="password" id="login_password" placeholder="Contraseña" required>
-        <button type="submit" class="btn-neon">Entrar</button>
-      </form>
-      <p>¿Sin cuenta? <a href="#" data-view="register">Regístrate</a></p>
-    </div>`;
-  }
-
-  async function renderDashboard() {
-    if (!currentUser) return '<p>Debes iniciar sesión.</p>';
-    const { data: orders } = await supabase
-      .from('orders')
-      .select('*')
-      .eq('user_id', currentUser.id)
-      .order('created_at', { ascending: false });
-    return `<div class="dashboard-grid">
-      <div class="glass-card">
-        <h2>💰 Calculadora de cambio</h2>
-        <label>Moneda:</label>
-        <select id="calcCurrency">${currencies.map(c => `<option value="${c.code}">${c.code}</option>`).join('')}</select>
-        <label>Monto USD:</label>
-        <input type="number" id="calcAmount" value="100">
-        <p><strong>Recibirás: <span id="calcResult">0</span> Bs</strong></p>
-        <p>Cuenta para pagar: <strong id="receiveAccount"></strong></p>
-        <hr>
-        <h3>Crear orden</h3>
-        <form id="createOrderForm">
-          <select id="orderSource">${currencies.map(c => `<option value="${c.code}">${c.code}</option>`).join('')}</select>
-          <input type="number" id="orderAmount" placeholder="Monto USD" required>
-          <input type="text" id="orderDestination" placeholder="Tu cuenta destino" required>
-          <button type="submit" class="btn-neon">Generar orden</button>
-        </form>
-      </div>
-      <div class="glass-card">
-        <h3>📋 Mis órdenes</h3>
-        <div id="myOrdersList">
-          ${orders?.map(o => `<div class="order-item">
-            <strong>${o.id}</strong> - $${o.amount_usd} → ${Number(o.net_bs).toLocaleString()} Bs<br>
-            Estado: <span class="status-${o.status}">${o.status}</span><br>
-            <button class="btn-outline" onclick="uploadProof('${o.id}')">Subir comprobante</button>
-          </div>`).join('') || '<p>No hay órdenes</p>'}
+// 3. VISTA: LOGIN (FUNDADOR)
+function renderLogin() {
+    document.getElementById('appRoot').innerHTML = `
+        <div class="glass-card" style="max-width:450px; margin: 60px auto;">
+            <h2 class="neon-text" style="text-align:center; margin-bottom:20px;">Acceso Fundador</h2>
+            <form id="loginForm">
+                <label>Correo Electrónico</label>
+                <input type="email" id="email" placeholder="yoalexvergara11@gmail.com" required>
+                <label>Contraseña</label>
+                <input type="password" id="password" placeholder="12345678" required>
+                <button type="submit" class="btn-neon" style="margin-top:15px;">ENTRAR AL SISTEMA</button>
+            </form>
         </div>
-      </div>
-    </div>`;
-  }
+    `;
+    document.getElementById('loginForm').addEventListener('submit', handleLogin);
+}
 
-  async function renderAdmin() {
-    if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'founder')) return '<p>Acceso denegado.</p>';
-    const { data: allOrders } = await supabase.from('orders').select('*, users(full_name, email)');
-    return `<div class="glass-card">
-      <h2>Panel Admin</h2>
-      <div style="display:flex;gap:20px;">
-        <button id="adminOrdersBtn" class="btn-outline">Órdenes</button>
-        <button id="adminRatesBtn" class="btn-outline">Tasas</button>
-      </div>
-      <div id="adminContent"></div>
-    </div>`;
-  }
+// 4. VISTA: DASHBOARD (ADMIN + CALCULADORA)
+function renderDashboard() {
+    document.getElementById('appRoot').innerHTML = `
+        <div class="grid">
+            <div class="glass-card">
+                <h2 class="neon-text"><i class="fas fa-calculator"></i> Calculadora de Cambio</h2>
+                <p style="font-size:0.9rem; color:#aaa; margin-bottom:15px;">Selecciona la moneda y el monto que deseas vender.</p>
+                
+                <label>Moneda a entregar:</label>
+                <select id="coinSelect" onchange="calculate()">
+                    <option value="zelle">Zelle (USD)</option>
+                    <option value="zinli">Zinli (USD)</option>
+                    <option value="paypal">PayPal (USD)</option>
+                </select>
 
-  // ==================== RENDER PRINCIPAL ====================
-  async function renderView(view) {
-    const container = document.getElementById('appRoot');
-    if (!container) return;
+                <label>Monto en USD:</label>
+                <input type="number" id="usdAmount" placeholder="Ej: 100" oninput="calculate()">
 
-    if (view === 'landing') {
-      container.innerHTML = renderLanding();
-    } else if (view === 'register') {
-      container.innerHTML = renderRegister();
-      document.getElementById('registerForm')?.addEventListener('submit', handleRegister);
-    } else if (view === 'login') {
-      container.innerHTML = renderLogin();
-      document.getElementById('loginForm')?.addEventListener('submit', handleLogin);
-    } else if (view === 'dashboard') {
-      if (!currentUser) { renderView('login'); return; }
-      container.innerHTML = await renderDashboard();
-      attachCalculator();
-      document.getElementById('createOrderForm')?.addEventListener('submit', createOrder);
-    } else if (view === 'admin') {
-      if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'founder')) { renderView('dashboard'); return; }
-      container.innerHTML = await renderAdmin();
-      document.getElementById('adminOrdersBtn')?.addEventListener('click', () => showAdminOrders());
-      document.getElementById('adminRatesBtn')?.addEventListener('click', () => showAdminCurrencies());
-      showAdminOrders();
-    }
-  }
+                <div style="background: rgba(0,240,255,0.1); padding: 20px; border-radius: 20px; margin-top: 20px; border: 1px dashed #00f0ff;">
+                    <p style="margin-bottom:5px;">Recibirás en Bolívares:</p>
+                    <h1 class="neon-text" id="vesResult">0.00 Bs</h1>
+                    <small id="rateInfo" style="color:#00f0ff;"></small>
+                </div>
+            </div>
 
-  // ==================== FUNCIONES DE NEGOCIO ====================
-  async function handleRegister(e) {
+            <div class="glass-card">
+                <h3 style="margin-bottom:15px;"><i class="fas fa-user-shield"></i> Admin: ${currentUser.email}</h3>
+                <hr style="border:0; border-top:1px solid #2a3a48; margin-bottom:15px;">
+                
+                <p><strong>Ajustar Tasas (Bs/USD):</strong></p>
+                <label>Zelle:</label>
+                <input type="number" id="edit_zelle" value="${currentRates.zelle.rate_value}">
+                
+                <label>Zinli:</label>
+                <input type="number" id="edit_zinli" value="${currentRates.zinli.rate_value}">
+                
+                <label>PayPal:</label>
+                <input type="number" id="edit_paypal" value="${currentRates.paypal.rate_value}">
+
+                <button class="btn-neon" onclick="saveNewRates()" style="margin-top:10px;">GUARDAR CAMBIOS</button>
+            </div>
+        </div>
+    `;
+    calculate();
+}
+
+// 5. FUNCIONES LÓGICAS
+async function handleLogin(e) {
     e.preventDefault();
-    const email = document.getElementById('reg_email').value.trim();
-    const password = document.getElementById('reg_password').value;
-    const full_name = document.getElementById('reg_name').value.trim();
-    if (!email || !password || !full_name) {
-      showToast('Complete todos los campos', true);
-      return;
-    }
-    const { error } = await supabase.from('users').insert([{
-      email, password, full_name,
-      role: 'user', kyc_status: 'pending'
-    }]);
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
     if (error) {
-      showToast(error.message, true);
-      return;
-    }
-    showToast('Registro exitoso. Inicia sesión.');
-    renderView('login');
-  }
-
-  async function handleLogin(e) {
-    e.preventDefault();
-    const email = document.getElementById('login_email').value.trim();
-    const password = document.getElementById('login_password').value;
-    const { data, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('email', email)
-      .eq('password', password);
-    if (error || !data || data.length === 0) {
-      showToast('Email o contraseña incorrectos', true);
-      return;
-    }
-    currentUser = data[0];
-    sessionStorage.setItem('starpage_user', JSON.stringify(currentUser));
-    updateNavButtons();
-    renderView('dashboard');
-    showToast(`✨ Bienvenido ${currentUser.full_name} ✨`);
-  }
-
-  async function createOrder(e) {
-    e.preventDefault();
-    const amount = parseFloat(document.getElementById('orderAmount').value);
-    const destination = document.getElementById('orderDestination').value.trim();
-    const source = document.getElementById('orderSource').value;
-    if (isNaN(amount) || amount <= 0) {
-      showToast('Monto inválido', true);
-      return;
-    }
-    if (!destination) {
-      showToast('Indique cuenta destino', true);
-      return;
-    }
-    const currency = currencies.find(c => c.code === source);
-    if (!currency) return;
-    const net = amount * currency.rate * (1 - currency.commission / 100);
-    const orderId = 'ORD-' + Date.now();
-    const { error } = await supabase.from('orders').insert([{
-      id: orderId,
-      user_id: currentUser.id,
-      amount_usd: amount,
-      net_bs: net,
-      status: 'pending',
-      source_currency: source,
-      destination_account: destination
-    }]);
-    if (error) {
-      showToast('Error al crear orden', true);
-      return;
-    }
-    showToast('Orden creada');
-    renderView('dashboard');
-  }
-
-  window.uploadProof = async function(orderId) {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.onchange = async (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        const fakeUrl = URL.createObjectURL(file);
-        await supabase.from('orders').update({ payment_proof_url: fakeUrl }).eq('id', orderId);
-        showToast('Comprobante subido (simulado)');
-        renderView('dashboard');
-      }
-    };
-    input.click();
-  };
-
-  async function showAdminOrders() {
-    const { data } = await supabase.from('orders').select('*, users(full_name, email)');
-    const container = document.getElementById('adminContent');
-    if (!container) return;
-    container.innerHTML = `<h3>Órdenes</h3>${data.map(o => `<div class="order-item">
-      <b>${o.id}</b> - ${o.users?.full_name || '?'}<br>
-      Monto: $${o.amount_usd} → ${Number(o.net_bs).toLocaleString()} Bs<br>
-      Estado: ${o.status}<br>
-      <select id="status-${o.id}">
-        <option ${o.status==='pending'?'selected':''}>pending</option>
-        <option ${o.status==='processing'?'selected':''}>processing</option>
-        <option ${o.status==='completed'?'selected':''}>completed</option>
-        <option ${o.status==='cancelled'?'selected':''}>cancelled</option>
-      </select>
-      <button class="btn-neon" onclick="updateOrderStatus('${o.id}')">Actualizar</button>
-    </div>`).join('')}`;
-  }
-
-  window.updateOrderStatus = async function(id) {
-    const newStatus = document.getElementById(`status-${id}`).value;
-    await supabase.from('orders').update({ status: newStatus }).eq('id', id);
-    showToast('Estado actualizado');
-    showAdminOrders();
-  };
-
-  async function showAdminCurrencies() {
-    const { data } = await supabase.from('platform_settings').select('*').eq('type', 'currency');
-    const container = document.getElementById('adminContent');
-    container.innerHTML = `<h3>Editar Tasas</h3>
-      ${data.map(c => `<div style="display:flex; gap:10px; margin-bottom:10px; flex-wrap:wrap;">
-        <strong>${c.key}</strong>
-        <input id="rate-${c.key}" value="${c.rate_value}" style="width:120px">
-        <input id="comm-${c.key}" value="${c.commission_value}" style="width:80px">
-        <input id="acc-${c.key}" value="${c.receiving_account || ''}" style="width:200px">
-        <button class="btn-outline" onclick="updateCurrency('${c.key}')">Guardar</button>
-      </div>`).join('')}
-      <button id="refreshCurr" class="btn-neon">Refrescar</button>`;
-    document.getElementById('refreshCurr')?.addEventListener('click', () => { loadCurrencies(); showAdminCurrencies(); });
-  }
-
-  window.updateCurrency = async function(key) {
-    const rate = parseFloat(document.getElementById(`rate-${key}`).value);
-    const comm = parseFloat(document.getElementById(`comm-${key}`).value);
-    const acc = document.getElementById(`acc-${key}`).value;
-    if (isNaN(rate) || isNaN(comm)) {
-      showToast('Valores inválidos', true);
-      return;
-    }
-    await supabase.from('platform_settings').update({
-      rate_value: rate,
-      commission_value: comm,
-      receiving_account: acc
-    }).eq('key', key).eq('type', 'currency');
-    showToast(`${key} actualizado`);
-    await loadCurrencies();
-    showAdminCurrencies();
-  };
-
-  function attachCalculator() {
-    const currencySelect = document.getElementById('calcCurrency');
-    const amountInput = document.getElementById('calcAmount');
-    const resultSpan = document.getElementById('calcResult');
-    const receiveSpan = document.getElementById('receiveAccount');
-    if (!currencySelect) return;
-    function update() {
-      const selected = currencySelect.value;
-      const curr = currencies.find(c => c.code === selected);
-      if (!curr) return;
-      const usd = parseFloat(amountInput.value) || 0;
-      const net = usd * curr.rate * (1 - curr.commission / 100);
-      if (resultSpan) resultSpan.innerText = net.toLocaleString(undefined, { maximumFractionDigits: 2 });
-      if (receiveSpan) receiveSpan.innerText = curr.receiving_account || 'No especificada';
-    }
-    currencySelect.addEventListener('change', update);
-    amountInput.addEventListener('input', update);
-    update();
-  }
-
-  function updateNavButtons() {
-    const logged = !!currentUser;
-    document.querySelectorAll('[data-view="register"], [data-view="login"]').forEach(btn => btn.style.display = logged ? 'none' : 'inline-block');
-    const dashBtn = document.getElementById('dashboardNavBtn');
-    if (dashBtn) dashBtn.style.display = logged ? 'inline-block' : 'none';
-    const adminBtn = document.getElementById('adminNavBtn');
-    if (adminBtn) adminBtn.style.display = (logged && (currentUser?.role === 'admin' || currentUser?.role === 'founder')) ? 'inline-block' : 'none';
-    const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) logoutBtn.style.display = logged ? 'inline-block' : 'none';
-  }
-
-  function logout() {
-    sessionStorage.removeItem('starpage_user');
-    currentUser = null;
-    updateNavButtons();
-    renderView('landing');
-    showToast('Sesión cerrada');
-  }
-
-  document.addEventListener('click', (e) => {
-    const target = e.target.closest('[data-view]');
-    if (target) {
-      e.preventDefault();
-      const view = target.getAttribute('data-view');
-      if (view === 'logout') logout();
-      else renderView(view);
-    }
-    if (e.target.id === 'logoutBtn') logout();
-  });
-
-  // ==================== INICIO ====================
-  async function init() {
-    await loadCurrencies();
-    const stored = sessionStorage.getItem('starpage_user');
-    if (stored) {
-      currentUser = JSON.parse(stored);
-      updateNavButtons();
-      renderView('dashboard');
+        alert("Error: " + error.message);
     } else {
-      renderView('landing');
+        location.reload();
     }
-  }
-  init();
+}
+
+function calculate() {
+    const coin = document.getElementById('coinSelect').value;
+    const amount = document.getElementById('usdAmount').value || 0;
+    const rateData = currentRates[coin];
+
+    // Cálculo: (Monto - Comisión%) * Tasa
+    const amountAfterComm = amount * (1 - (rateData.commission / 100));
+    const totalVes = amountAfterComm * rateData.rate_value;
+
+    document.getElementById('vesResult').innerText = totalVes.toLocaleString('es-VE', { minimumFractionDigits: 2 }) + " Bs";
+    document.getElementById('rateInfo').innerText = `Tasa: ${rateData.rate_value} Bs | Comisión: ${rateData.commission}%`;
+}
+
+async function saveNewRates() {
+    const rZelle = document.getElementById('edit_zelle').value;
+    const rZinli = document.getElementById('edit_zinli').value;
+    const rPaypal = document.getElementById('edit_paypal').value;
+
+    const updates = [
+        { id: 'zelle', rate_value: parseFloat(rZelle) },
+        { id: 'zinli', rate_value: parseFloat(rZinli) },
+        { id: 'paypal', rate_value: parseFloat(rPaypal) }
+    ];
+
+    for (let item of updates) {
+        await supabase.from('rates').update({ rate_value: item.rate_value }).eq('id', item.id);
+    }
+
+    alert("¡Tasas actualizadas globalmente!");
+    location.reload();
+}
+
+async function handleLogout() {
+    await supabase.auth.signOut();
+    location.reload();
+}
+
+init();
 </script>
 </body>
 </html>
