@@ -1,119 +1,551 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>StarPage</title>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<style>
-body{background:#000;color:#fff;font-family:sans-serif;text-align:center}
-input,button{padding:10px;margin:5px;border-radius:10px}
-button{background:#00f0ff;color:#000;font-weight:bold}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>StarPage VE · Intercambio Real</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+    body { background: radial-gradient(circle at 10% 20%, #03050b, #000000); color: #eef5ff; line-height: 1.5; }
+    .glass-card { background: rgba(8,18,28,0.75); backdrop-filter: blur(12px); border: 1px solid rgba(0,240,255,0.25); border-radius: 28px; padding: 1.5rem; margin-bottom: 1rem; }
+    .neon-text { color: #00f0ff; text-shadow: 0 0 5px #00f0ff, 0 0 12px #ff6bd6; }
+    .btn-neon { background: linear-gradient(95deg, #00c3ff, #ff6bd6); border: none; color: #010101; font-weight: bold; padding: 10px 24px; border-radius: 60px; cursor: pointer; transition: 0.2s; }
+    .btn-neon:hover { transform: scale(1.02); opacity: 0.9; }
+    .btn-outline { background: transparent; border: 1px solid #00f0ff; color: #00f0ff; border-radius: 40px; padding: 8px 18px; cursor: pointer; transition: 0.2s; }
+    .btn-outline:hover { background: #00f0ff20; }
+    input, select { background: #0b1018; border: 1px solid #2a3a48; padding: 12px; border-radius: 20px; color: white; width: 100%; margin: 6px 0 12px; outline: none; }
+    input:focus { border-color: #00f0ff; }
+    header { display: flex; justify-content: space-between; align-items: center; padding: 18px 5%; border-bottom: 1px solid rgba(0,240,255,0.3); flex-wrap: wrap; gap: 15px; }
+    .logo { font-size: 1.7rem; font-weight: 800; }
+    .badge-ve { background: #ff6bd6; color: black; font-size: 0.7rem; border-radius: 30px; padding: 2px 10px; margin-left: 8px; }
+    .nav-buttons { display: flex; gap: 12px; flex-wrap: wrap; }
+    .main-container { max-width: 1400px; margin: 20px auto; padding: 0 20px 40px; }
+    .dashboard-grid { display: grid; grid-template-columns: 1fr 360px; gap: 24px; }
+    .order-item { background: #0f1722; border-left: 5px solid #00f0ff; border-radius: 20px; padding: 16px; margin-bottom: 12px; }
+    .toast { position: fixed; bottom: 30px; left: 20px; background: #1e2a3a; border-left: 6px solid #00f0ff; padding: 12px 20px; border-radius: 16px; z-index: 2000; animation: fadein 0.3s; }
+    @keyframes fadein { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .chat-widget { position: fixed; bottom: 24px; right: 24px; z-index: 1100; }
+    .chat-button { background: #ff6bd6; width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 26px; cursor: pointer; box-shadow: 0 0 20px #ff6bd6; }
+    .chat-panel { position: fixed; bottom: 90px; right: 24px; width: 320px; height: 450px; background: #0a0f1c; border-radius: 24px; border: 1px solid cyan; display: none; flex-direction: column; overflow: hidden; }
+    .chat-header { padding: 12px; background: #0f1722; border-bottom: 1px solid cyan; font-weight: bold; }
+    .chat-messages { flex: 1; overflow-y: auto; padding: 12px; font-size: 13px; }
+    .chat-input-area { display: flex; border-top: 1px solid #2a3a48; }
+    .chat-input-area input { flex: 1; border: none; border-radius: 0; margin: 0; }
+    .chat-input-area button { background: #00f0ff; border: none; padding: 12px; cursor: pointer; color: black; }
+    footer { text-align: center; padding: 28px 20px; border-top: 1px solid rgba(0,240,255,0.15); margin-top: 40px; font-size: 13px; }
+    @media (max-width: 800px) { .dashboard-grid { grid-template-columns: 1fr; } }
+    .status-pending { color: #f0b400; }
+    .status-processing { color: #00aaff; }
+    .status-completed { color: #00cc88; }
+    .status-cancelled { color: #ff4466; }
+    a { color: #00f0ff; cursor: pointer; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+  </style>
 </head>
-
 <body>
 
-<h1>🚀 StarPage</h1>
+<header>
+  <div class="logo"><i class="fas fa-rocket" style="color:#00f0ff"></i> StarPage<span class="badge-ve">VE</span></div>
+  <div class="nav-buttons" id="navButtons">
+    <button class="btn-outline" data-view="landing">Inicio</button>
+    <button class="btn-outline" data-view="register">Registro</button>
+    <button class="btn-outline" data-view="login">Acceso</button>
+    <button class="btn-outline" data-view="dashboard" style="display:none;" id="dashboardNavBtn">Dashboard</button>
+    <button class="btn-outline" data-view="admin" style="display:none;" id="adminNavBtn">Admin</button>
+    <button class="btn-outline" id="logoutBtn" style="display:none;">Salir</button>
+  </div>
+</header>
 
-<div id="auth">
-  <h2>Login</h2>
-  <input id="email" placeholder="Correo">
-  <input id="password" type="password" placeholder="Contraseña">
-  <button onclick="login()">Entrar</button>
-</div>
+<main class="main-container" id="appRoot"></main>
 
-<div id="app" style="display:none">
-  <h2>Calculadora</h2>
-  <input id="usd" placeholder="USD">
-  <p id="result">0 Bs</p>
+<footer>© StarPage - Todos los derechos reservados · <span id="rateFooter">Tasa: 600.000 Bs/USD</span></footer>
 
-  <h3>Crear Orden</h3>
-  <input id="amount" placeholder="Monto USD">
-  <button onclick="crearOrden()">Crear</button>
-
-  <h3>Mis órdenes</h3>
-  <div id="orders"></div>
-
-  <button onclick="logout()">Salir</button>
+<div class="chat-widget">
+  <div class="chat-button" id="chatToggleBtn"><i class="fas fa-comment-dots"></i></div>
+  <div class="chat-panel glass-card" id="chatPanel">
+    <div class="chat-header">💬 Soporte en vivo</div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="chat-input-area">
+      <input type="text" id="chatInput" placeholder="Escribe tu mensaje...">
+      <button id="chatSendBtn"><i class="fas fa-paper-plane"></i></button>
+    </div>
+  </div>
 </div>
 
 <script>
-const supabase = window.supabase.createClient(
-  "https://drdlldpcyeaavjdqrzec.supabase.co",
-  "sb_publishable_38DviMPudTo2uM1QdzCh5g_7B1cyEmx"
-);
+  // ==================== INICIO: NO DEPENDENCIAS EXTERNAS (solo localStorage) ====================
+  (function() {
+    // ---------- DATOS INICIALES ----------
+    let users = JSON.parse(localStorage.getItem('starpage_users'));
+    if (!users || users.length === 0) {
+      users = [
+        { id: '1', full_name: 'Admin Fundador', email: 'admin@starpage.com', password: 'admin123', role: 'founder', kyc_status: 'verified', phone: '', address: '', bank_name: '', bank_account: '', phone_pagomovil: '' },
+        { id: '2', full_name: 'Usuario Demo', email: 'demo@test.com', password: 'demo123', role: 'user', kyc_status: 'pending', phone: '', address: '', bank_name: '', bank_account: '', phone_pagomovil: '' }
+      ];
+      localStorage.setItem('starpage_users', JSON.stringify(users));
+    }
 
-// LOGIN
-async function login(){
-  const email = document.getElementById('email').value;
-  const password = document.getElementById('password').value;
+    let orders = JSON.parse(localStorage.getItem('starpage_orders'));
+    if (!orders) {
+      orders = [
+        { id: 'ORD-001', userId: '2', amount_usd: 100, net_bs: 56400000, status: 'completed', source_currency: 'PayPal', destination_account: 'demo@pagomovil', created_at: new Date().toISOString() }
+      ];
+      localStorage.setItem('starpage_orders', JSON.stringify(orders));
+    }
 
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email, password
-  });
+    let settings = JSON.parse(localStorage.getItem('starpage_settings'));
+    if (!settings) {
+      settings = { rate: 600000, commission: 6 };
+      localStorage.setItem('starpage_settings', JSON.stringify(settings));
+    }
 
-  if(error){
-    alert("Error login");
-    return;
-  }
+    let chatMessages = JSON.parse(localStorage.getItem('starpage_chat'));
+    if (!chatMessages) {
+      chatMessages = [];
+      localStorage.setItem('starpage_chat', JSON.stringify(chatMessages));
+    }
 
-  document.getElementById('auth').style.display="none";
-  document.getElementById('app').style.display="block";
+    let currentUser = JSON.parse(sessionStorage.getItem('starpage_current_user')) || null;
 
-  cargarDatos();
-}
+    // Funciones auxiliares de persistencia
+    function saveUsers() { localStorage.setItem('starpage_users', JSON.stringify(users)); }
+    function saveOrders() { localStorage.setItem('starpage_orders', JSON.stringify(orders)); }
+    function saveSettings() { localStorage.setItem('starpage_settings', JSON.stringify(settings)); }
+    function saveChat() { localStorage.setItem('starpage_chat', JSON.stringify(chatMessages)); }
+    function updateFooterRate() {
+      const footerSpan = document.getElementById('rateFooter');
+      if (footerSpan) footerSpan.innerText = `Tasa: ${settings.rate.toLocaleString()} Bs/USD · Comisión: ${settings.commission}%`;
+    }
+    function showToast(msg) {
+      let t = document.createElement('div');
+      t.className = 'toast';
+      t.innerText = msg;
+      document.body.appendChild(t);
+      setTimeout(() => t.remove(), 3000);
+    }
 
-// LOGOUT
-async function logout(){
-  await supabase.auth.signOut();
-  location.reload();
-}
+    // ---------- RENDERIZADO DE VISTAS (TODAS LAS FUNCIONES DEFINIDAS ANTES DE USARSE) ----------
+    function renderLanding() {
+      return `<div class="glass-card" style="text-align:center">
+        <h1 class="neon-text">⚡ StarPage VE</h1>
+        <p>Intercambio de monedas digitales a Bolívares vía Pago Móvil o Transferencia.</p>
+        <button class="btn-neon" data-view="register">Crear cuenta ahora</button>
+      </div>`;
+    }
 
-// CALCULO AUTOMATICO
-document.getElementById('usd').addEventListener('input', async ()=>{
-  const usd = parseFloat(document.getElementById('usd').value)||0;
+    function renderRegister() {
+      return `<div class="glass-card" style="max-width:600px;margin:auto">
+        <h2>Registro completo</h2>
+        <form id="registerForm">
+          <input type="text" id="reg_name" placeholder="Nombre completo" required>
+          <input type="text" id="reg_cedula" placeholder="Cédula" required>
+          <input type="email" id="reg_email" placeholder="Email" required>
+          <input type="tel" id="reg_phone" placeholder="Teléfono">
+          <input type="text" id="reg_address" placeholder="Dirección">
+          <input type="password" id="reg_password" placeholder="Contraseña" required>
+          <input type="text" id="reg_bank" placeholder="Banco">
+          <input type="text" id="reg_account" placeholder="Número de cuenta">
+          <input type="text" id="reg_pagomovil" placeholder="Teléfono Pago Móvil">
+          <button type="submit" class="btn-neon">Registrarme</button>
+        </form>
+        <p>¿Ya tienes cuenta? <a href="#" data-view="login">Inicia sesión</a></p>
+      </div>`;
+    }
 
-  const { data } = await supabase.from('settings').select('*').single();
+    function renderLogin() {
+      return `<div class="glass-card" style="max-width:450px;margin:auto">
+        <h2>Acceso</h2>
+        <form id="loginForm">
+          <input type="email" id="login_email" placeholder="Email" required>
+          <input type="password" id="login_password" placeholder="Contraseña" required>
+          <button type="submit" class="btn-neon">Entrar</button>
+        </form>
+        <p>¿Sin cuenta? <a href="#" data-view="register">Regístrate</a></p>
+      </div>`;
+    }
 
-  const result = usd * data.rate * (1 - data.commission/100);
+    function renderDashboard() {
+      if (!currentUser) return '<p>Debes iniciar sesión.</p>';
+      const userOrders = orders.filter(o => o.userId === currentUser.id);
+      return `<div class="dashboard-grid">
+        <div class="glass-card">
+          <h2>💰 Calculadora de cambio</h2>
+          <label>Monto en USD: <input type="number" id="calcUsd" value="100"></label>
+          <p>Tasa actual: ${settings.rate.toLocaleString()} Bs/USD</p>
+          <p>Comisión: ${settings.commission}%</p>
+          <p><strong>Recibirás: <span id="calcResult">0</span> Bs</strong></p>
+          <hr>
+          <h3>Crear nueva orden</h3>
+          <form id="createOrderForm">
+            <select id="orderSource">
+              <option>PayPal</option><option>Zinli</option><option>USDT</option>
+            </select>
+            <input type="number" id="orderAmount" placeholder="Monto USD" required>
+            <input type="text" id="orderDestination" placeholder="Cuenta destino (Pago Móvil o Transferencia)" required>
+            <button type="submit" class="btn-neon">Generar orden</button>
+          </form>
+        </div>
+        <div class="glass-card">
+          <h3>📋 Mis órdenes</h3>
+          <div id="myOrdersList">
+            ${userOrders.map(o => `<div class="order-item">
+              <strong>ID:</strong> ${o.id}<br>
+              <strong>Monto:</strong> $${o.amount_usd}<br>
+              <strong>Neto Bs:</strong> ${o.net_bs.toLocaleString()}<br>
+              <strong>Estado:</strong> <span class="status-${o.status}">${o.status}</span><br>
+              <button class="btn-outline" onclick="window.uploadProof('${o.id}')">Subir comprobante</button>
+            </div>`).join('') || '<p>No hay órdenes</p>'}
+          </div>
+        </div>
+      </div>`;
+    }
 
-  document.getElementById('result').innerText = result.toLocaleString() + " Bs";
-});
+    function renderAdmin() {
+      if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'founder')) return '<p>Acceso denegado.</p>';
+      return `<div class="glass-card">
+        <h2>Panel de Administración</h2>
+        <div style="display:flex;gap:20px;flex-wrap:wrap;">
+          <button id="adminShowOrdersBtn" class="btn-outline">Órdenes</button>
+          <button id="adminShowUsersBtn" class="btn-outline">Usuarios</button>
+          <button id="adminShowSettingsBtn" class="btn-outline">Ajustes</button>
+          ${currentUser.role === 'founder' ? '<button id="adminManageAdminsBtn" class="btn-outline">Gestionar Admins</button>' : ''}
+        </div>
+        <div id="adminContent"></div>
+      </div>`;
+    }
 
-// CREAR ORDEN
-async function crearOrden(){
-  const user = (await supabase.auth.getUser()).data.user;
-  const amount = parseFloat(document.getElementById('amount').value);
+    // Diccionario de vistas
+    const views = {
+      landing: renderLanding,
+      register: renderRegister,
+      login: renderLogin,
+      dashboard: renderDashboard,
+      admin: renderAdmin
+    };
 
-  const { data:settings } = await supabase.from('settings').select('*').single();
+    // Función principal que pinta la vista y asigna eventos
+    function renderView(viewName) {
+      const container = document.getElementById('appRoot');
+      if (!container) return;
+      const renderFn = views[viewName];
+      if (renderFn) container.innerHTML = renderFn();
+      else container.innerHTML = renderLanding();
 
-  const net = amount * settings.rate * (1 - settings.commission/100);
+      // Asignar eventos específicos después de inyectar el HTML
+      if (viewName === 'register') {
+        const form = document.getElementById('registerForm');
+        if (form) form.addEventListener('submit', handleRegister);
+      }
+      if (viewName === 'login') {
+        const form = document.getElementById('loginForm');
+        if (form) form.addEventListener('submit', handleLogin);
+      }
+      if (viewName === 'dashboard') {
+        const calcInput = document.getElementById('calcUsd');
+        if (calcInput) {
+          const updateCalc = () => {
+            const usd = parseFloat(calcInput.value) || 0;
+            const net = usd * settings.rate * (1 - settings.commission / 100);
+            const resultSpan = document.getElementById('calcResult');
+            if (resultSpan) resultSpan.innerText = net.toLocaleString();
+          };
+          calcInput.addEventListener('input', updateCalc);
+          updateCalc();
+        }
+        const orderForm = document.getElementById('createOrderForm');
+        if (orderForm) orderForm.addEventListener('submit', createOrder);
+      }
+      if (viewName === 'admin') {
+        const ordersBtn = document.getElementById('adminShowOrdersBtn');
+        const usersBtn = document.getElementById('adminShowUsersBtn');
+        const settingsBtn = document.getElementById('adminShowSettingsBtn');
+        const manageBtn = document.getElementById('adminManageAdminsBtn');
+        if (ordersBtn) ordersBtn.addEventListener('click', showAdminOrders);
+        if (usersBtn) usersBtn.addEventListener('click', showAdminUsers);
+        if (settingsBtn) settingsBtn.addEventListener('click', showAdminSettings);
+        if (manageBtn) manageBtn.addEventListener('click', showAdminManageAdmins);
+        // Mostrar por defecto las órdenes
+        showAdminOrders();
+      }
+    }
 
-  await supabase.from('orders').insert({
-    user_id: user.id,
-    amount_usd: amount,
-    net_bs: net
-  });
+    // ---------- MANEJADORES DE REGISTRO Y LOGIN ----------
+    function handleRegister(e) {
+      e.preventDefault();
+      const email = document.getElementById('reg_email').value.trim();
+      const password = document.getElementById('reg_password').value;
+      const full_name = document.getElementById('reg_name').value.trim();
+      const cedula = document.getElementById('reg_cedula').value.trim();
 
-  alert("Orden creada");
-  cargarDatos();
-}
+      if (!email || !password || !full_name || !cedula) {
+        showToast('Por favor completa todos los campos obligatorios.');
+        return;
+      }
+      if (users.find(u => u.email === email)) {
+        showToast('El email ya está registrado.');
+        return;
+      }
+      const newUser = {
+        id: Date.now().toString(),
+        full_name,
+        email,
+        password,
+        cedula,
+        phone: document.getElementById('reg_phone').value,
+        address: document.getElementById('reg_address').value,
+        bank_name: document.getElementById('reg_bank').value,
+        bank_account: document.getElementById('reg_account').value,
+        phone_pagomovil: document.getElementById('reg_pagomovil').value,
+        role: 'user',
+        kyc_status: 'pending'
+      };
+      users.push(newUser);
+      saveUsers();
+      showToast('Registro exitoso. Ahora inicia sesión.');
+      renderView('login');
+    }
 
-// CARGAR ORDENES
-async function cargarDatos(){
-  const user = (await supabase.auth.getUser()).data.user;
+    function handleLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('login_email').value.trim();
+      const password = document.getElementById('login_password').value;
+      const user = users.find(u => u.email === email && u.password === password);
+      if (!user) {
+        showToast('Email o contraseña incorrectos.');
+        return;
+      }
+      currentUser = { ...user }; // copia
+      sessionStorage.setItem('starpage_current_user', JSON.stringify(currentUser));
+      updateNavButtons();
+      renderView('dashboard');
+      showToast(`Bienvenido ${currentUser.full_name}`);
+    }
 
-  const { data } = await supabase
-    .from('orders')
-    .select('*')
-    .eq('user_id', user.id);
+    // ---------- ÓRDENES ----------
+    function createOrder(e) {
+      e.preventDefault();
+      const amount = parseFloat(document.getElementById('orderAmount').value);
+      const destination = document.getElementById('orderDestination').value.trim();
+      const source = document.getElementById('orderSource').value;
+      if (isNaN(amount) || amount <= 0) {
+        showToast('Monto inválido');
+        return;
+      }
+      if (!destination) {
+        showToast('Indica la cuenta destino');
+        return;
+      }
+      const gross = amount * settings.rate;
+      const net = gross * (1 - settings.commission / 100);
+      const newOrder = {
+        id: 'ORD-' + Date.now(),
+        userId: currentUser.id,
+        amount_usd: amount,
+        net_bs: net,
+        status: 'pending',
+        source_currency: source,
+        destination_account: destination,
+        created_at: new Date().toISOString()
+      };
+      orders.push(newOrder);
+      saveOrders();
+      showToast('Orden creada correctamente');
+      renderView('dashboard');
+    }
 
-  document.getElementById('orders').innerHTML =
-    data.map(o=>`<p>$${o.amount_usd} → ${o.net_bs}</p>`).join('');
-}
+    window.uploadProof = function(orderId) {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.onchange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          const url = URL.createObjectURL(file);
+          const order = orders.find(o => o.id === orderId);
+          if (order) order.payment_proof_url = url;
+          saveOrders();
+          showToast('Comprobante subido (simulado)');
+          renderView('dashboard');
+        }
+      };
+      input.click();
+    };
+
+    // ---------- ADMIN FUNCTIONS ----------
+    function showAdminOrders() {
+      const container = document.getElementById('adminContent');
+      if (!container) return;
+      container.innerHTML = `<h3>📦 Órdenes</h3>
+        ${orders.map(o => `<div class="order-item">
+          <b>${o.id}</b> - Usuario: ${users.find(u=>u.id===o.userId)?.email || '?'}<br>
+          Monto: $${o.amount_usd} → ${o.net_bs.toLocaleString()} Bs<br>
+          Estado: ${o.status}<br>
+          <select id="status-${o.id}">
+            <option ${o.status==='pending'?'selected':''}>pending</option>
+            <option ${o.status==='processing'?'selected':''}>processing</option>
+            <option ${o.status==='completed'?'selected':''}>completed</option>
+            <option ${o.status==='cancelled'?'selected':''}>cancelled</option>
+          </select>
+          <button class="btn-neon" onclick="window.updateOrderStatus('${o.id}')">Actualizar</button>
+        </div>`).join('')}`;
+    }
+
+    window.updateOrderStatus = function(id) {
+      const newStatus = document.getElementById(`status-${id}`).value;
+      const order = orders.find(o => o.id === id);
+      if (order) order.status = newStatus;
+      saveOrders();
+      showToast('Estado actualizado');
+      showAdminOrders();
+    };
+
+    function showAdminUsers() {
+      const container = document.getElementById('adminContent');
+      if (!container) return;
+      container.innerHTML = `<h3>👥 Usuarios</h3>
+        ${users.map(u => `<div class="order-item">
+          <b>${u.full_name}</b> (${u.email}) - KYC: ${u.kyc_status || 'pending'}<br>
+          <button class="btn-outline" onclick="window.approveKYC('${u.id}')">Aprobar KYC</button>
+        </div>`).join('')}`;
+    }
+
+    window.approveKYC = function(id) {
+      const user = users.find(u => u.id === id);
+      if (user) user.kyc_status = 'verified';
+      saveUsers();
+      showToast('KYC aprobado');
+      showAdminUsers();
+    };
+
+    function showAdminSettings() {
+      const container = document.getElementById('adminContent');
+      if (!container) return;
+      container.innerHTML = `<h3>⚙️ Ajustes</h3>
+        <label>Tasa (Bs/USD): <input id="newRate" value="${settings.rate}"></label><br>
+        <label>Comisión (%): <input id="newComm" value="${settings.commission}"></label><br>
+        <button class="btn-neon" id="saveSetBtn">Guardar cambios</button>`;
+      const saveBtn = document.getElementById('saveSetBtn');
+      if (saveBtn) {
+        saveBtn.addEventListener('click', () => {
+          settings.rate = parseFloat(document.getElementById('newRate').value);
+          settings.commission = parseFloat(document.getElementById('newComm').value);
+          saveSettings();
+          updateFooterRate();
+          showToast('Tasa y comisión actualizadas');
+          renderView('admin'); // refresca el panel
+        });
+      }
+    }
+
+    function showAdminManageAdmins() {
+      const container = document.getElementById('adminContent');
+      if (!container) return;
+      const admins = users.filter(u => u.role === 'admin');
+      container.innerHTML = `<h3>🔐 Administradores</h3>
+        <div>${admins.map(a => `<div class="order-item">${a.full_name} - ${a.email} <button class="btn-outline" onclick="window.deleteAdmin('${a.id}')">Eliminar</button></div>`).join('')}</div>
+        <hr><h4>Crear nuevo admin</h4>
+        <input id="newAdminName" placeholder="Nombre completo">
+        <input id="newAdminEmail" placeholder="Email">
+        <input id="newAdminPass" type="password" placeholder="Contraseña">
+        <button class="btn-neon" id="createAdminBtn">Crear Admin</button>`;
+      const createBtn = document.getElementById('createAdminBtn');
+      if (createBtn) {
+        createBtn.addEventListener('click', () => {
+          const name = document.getElementById('newAdminName').value.trim();
+          const email = document.getElementById('newAdminEmail').value.trim();
+          const pass = document.getElementById('newAdminPass').value;
+          if (!name || !email || !pass) return showToast('Complete todos los campos');
+          if (users.find(u => u.email === email)) return showToast('El email ya existe');
+          const newAdmin = { id: Date.now().toString(), full_name: name, email, password: pass, role: 'admin', kyc_status: 'verified', phone: '', address: '', bank_name: '', bank_account: '', phone_pagomovil: '' };
+          users.push(newAdmin);
+          saveUsers();
+          showToast('Administrador creado');
+          showAdminManageAdmins();
+        });
+      }
+    }
+
+    window.deleteAdmin = function(id) {
+      users = users.filter(u => u.id !== id);
+      saveUsers();
+      showToast('Admin eliminado');
+      showAdminManageAdmins();
+    };
+
+    // ---------- NAVEGACIÓN Y CHAT ----------
+    function updateNavButtons() {
+      const isLogged = !!currentUser;
+      const regLogin = document.querySelectorAll('[data-view="register"], [data-view="login"]');
+      regLogin.forEach(btn => btn.style.display = isLogged ? 'none' : 'inline-block');
+      const dashBtn = document.getElementById('dashboardNavBtn');
+      if (dashBtn) dashBtn.style.display = isLogged ? 'inline-block' : 'none';
+      const adminBtn = document.getElementById('adminNavBtn');
+      if (adminBtn) adminBtn.style.display = (isLogged && (currentUser?.role === 'admin' || currentUser?.role === 'founder')) ? 'inline-block' : 'none';
+      const logoutBtn = document.getElementById('logoutBtn');
+      if (logoutBtn) logoutBtn.style.display = isLogged ? 'inline-block' : 'none';
+    }
+
+    function logout() {
+      sessionStorage.removeItem('starpage_current_user');
+      currentUser = null;
+      updateNavButtons();
+      renderView('landing');
+      showToast('Sesión cerrada');
+    }
+
+    // Evento global de navegación (data-view)
+    document.addEventListener('click', (e) => {
+      const target = e.target.closest('[data-view]');
+      if (target) {
+        e.preventDefault();
+        const view = target.getAttribute('data-view');
+        if (view === 'logout') logout();
+        else renderView(view);
+      }
+      if (e.target.id === 'logoutBtn') logout();
+    });
+
+    // Chat local
+    function renderChat() {
+      const chatContainer = document.getElementById('chatMessages');
+      if (!chatContainer) return;
+      chatContainer.innerHTML = chatMessages.map(m => `<div><strong>${m.isAdmin ? '👑 Soporte' : (users.find(u=>u.id===m.userId)?.full_name || 'Usuario')}:</strong> ${m.message}</div>`).join('');
+    }
+    const chatToggle = document.getElementById('chatToggleBtn');
+    const chatPanel = document.getElementById('chatPanel');
+    if (chatToggle) {
+      chatToggle.addEventListener('click', () => {
+        if (chatPanel) chatPanel.style.display = chatPanel.style.display === 'flex' ? 'none' : 'flex';
+        renderChat();
+      });
+    }
+    const chatSend = document.getElementById('chatSendBtn');
+    if (chatSend) {
+      chatSend.addEventListener('click', () => {
+        const input = document.getElementById('chatInput');
+        if (!input.value.trim()) return showToast('Escribe un mensaje');
+        if (!currentUser) return showToast('Inicia sesión para chatear');
+        chatMessages.push({
+          userId: currentUser.id,
+          message: input.value,
+          isAdmin: currentUser.role === 'admin' || currentUser.role === 'founder'
+        });
+        saveChat();
+        renderChat();
+        input.value = '';
+      });
+    }
+
+    // Inicialización final
+    updateFooterRate();
+    renderView('landing');
+    if (currentUser) {
+      updateNavButtons();
+      renderView('dashboard');
+    } else {
+      updateNavButtons();
+    }
+  })();
 </script>
-
 </body>
 </html>
