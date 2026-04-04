@@ -141,6 +141,21 @@
     .status-processing { color: #00aaff; }
     .status-completed { color: #00cc88; }
     .status-cancelled { color: #ff4466; }
+    .error-box {
+      position: fixed;
+      bottom: 10px;
+      left: 10px;
+      right: 10px;
+      background: #ff3366;
+      color: white;
+      padding: 12px;
+      border-radius: 12px;
+      font-size: 14px;
+      z-index: 10000;
+      text-align: center;
+      font-weight: bold;
+      box-shadow: 0 0 10px red;
+    }
   </style>
 </head>
 <body>
@@ -174,12 +189,32 @@
 </div>
 
 <script>
-  // ========== CONFIGURACIÓN DE SUPABASE (TUS CLAVES YA PUESTAS) ==========
+  // ========== MOSTRAR ERRORES EN PANTALLA ==========
+  window.onerror = function(msg, url, line, col, error) {
+    var errorDiv = document.createElement('div');
+    errorDiv.className = 'error-box';
+    errorDiv.innerHTML = '⚠️ ERROR: ' + msg + ' (línea ' + line + ')<br>Revisa consola F12';
+    document.body.appendChild(errorDiv);
+    setTimeout(() => errorDiv.remove(), 10000);
+    console.error(msg, url, line, col, error);
+    return false;
+  };
+
+  // ========== CONFIGURACIÓN DE SUPABASE (TUS CLAVES) ==========
   const SUPABASE_URL = "https://drdlldpcyeaavjdqrzec.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRyZGxsZHBjeWVhYXZqZHFyemVjIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTI1Nzk3NiwiZXhwIjoyMDkwODMzOTc2fQ.xs_UB5AMXLLLJ7A2hKre06MrENMkgNhy3unAWBiWjhE";
-  // =========================================================================
-
   const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // Probar conexión a la base de datos al cargar
+  supabase.from('settings').select('*').limit(1).then(res => {
+    if (res.error) {
+      showToast('❌ Error de conexión con Supabase: ' + res.error.message);
+    } else {
+      console.log('✅ Conexión a Supabase exitosa');
+    }
+  }).catch(err => {
+    showToast('❌ No se pudo conectar a Supabase: ' + err.message);
+  });
 
   let currentUser = JSON.parse(sessionStorage.getItem('starpage_current_user')) || null;
   let settings = { rate_usd_to_bs: 600000, commission_percent: 6 };
@@ -191,9 +226,14 @@
   }
 
   async function loadSettings() {
-    const { data } = await supabase.from('settings').select('*').order('id', { ascending: false }).limit(1);
-    if (data && data.length) settings = data[0];
-    document.getElementById('rateFooter').innerText = `Tasa: ${settings.rate_usd_to_bs.toLocaleString()} Bs/USD · Comisión: ${settings.commission_percent}%`;
+    try {
+      const { data, error } = await supabase.from('settings').select('*').order('id', { ascending: false }).limit(1);
+      if (error) throw error;
+      if (data && data.length) settings = data[0];
+      document.getElementById('rateFooter').innerText = `Tasa: ${settings.rate_usd_to_bs.toLocaleString()} Bs/USD · Comisión: ${settings.commission_percent}%`;
+    } catch (err) {
+      showToast('Error al cargar tasas: ' + err.message);
+    }
   }
 
   async function handleRegister(e) {
@@ -203,36 +243,43 @@
     const full_name = document.getElementById('reg_name').value;
     const cedula = document.getElementById('reg_cedula').value;
     
-    const { data: authData, error: authError } = await supabase.auth.signUp({ email, password });
-    if (authError) return showToast(authError.message);
-    
-    const userId = authData.user.id;
-    const { error: userError } = await supabase.from('users').insert([{
-      id: userId, full_name, cedula,
-      phone: document.getElementById('reg_phone').value,
-      address: document.getElementById('reg_address').value,
-      bank_name: document.getElementById('reg_bank').value,
-      bank_account: document.getElementById('reg_account').value,
-      phone_pagomovil: document.getElementById('reg_pagomovil').value,
-      role: 'user'
-    }]);
-    if (userError) showToast(userError.message);
-    else showToast('Registro exitoso. Revisa tu correo para confirmar.');
+    try {
+      const { data: authData, error: authError } = await supabase.auth.signUp({ email, password });
+      if (authError) throw authError;
+      const userId = authData.user.id;
+      const { error: userError } = await supabase.from('users').insert([{
+        id: userId, full_name, cedula,
+        phone: document.getElementById('reg_phone').value,
+        address: document.getElementById('reg_address').value,
+        bank_name: document.getElementById('reg_bank').value,
+        bank_account: document.getElementById('reg_account').value,
+        phone_pagomovil: document.getElementById('reg_pagomovil').value,
+        role: 'user'
+      }]);
+      if (userError) throw userError;
+      showToast('Registro exitoso. Revisa tu correo para confirmar.');
+    } catch (err) {
+      showToast('Error: ' + err.message);
+    }
   }
 
   async function handleLogin(e) {
     e.preventDefault();
     const email = document.getElementById('login_email').value;
     const password = document.getElementById('login_password').value;
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) return showToast(error.message);
-    
-    const { data: userData } = await supabase.from('users').select('*').eq('id', data.user.id).single();
-    currentUser = { id: data.user.id, email, role: userData.role, full_name: userData.full_name, kyc_status: userData.kyc_status };
-    sessionStorage.setItem('starpage_current_user', JSON.stringify(currentUser));
-    updateNavButtons();
-    renderView('dashboard');
-    showToast(`Bienvenido ${currentUser.full_name}`);
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      const { data: userData, error: userError } = await supabase.from('users').select('*').eq('id', data.user.id).single();
+      if (userError) throw userError;
+      currentUser = { id: data.user.id, email, role: userData.role, full_name: userData.full_name, kyc_status: userData.kyc_status };
+      sessionStorage.setItem('starpage_current_user', JSON.stringify(currentUser));
+      updateNavButtons();
+      renderView('dashboard');
+      showToast(`Bienvenido ${currentUser.full_name}`);
+    } catch (err) {
+      showToast('Error al iniciar sesión: ' + err.message);
+    }
   }
 
   async function logout() {
@@ -251,19 +298,23 @@
     if (!amount || amount <= 0) return showToast('Monto inválido');
     const gross = amount * settings.rate_usd_to_bs;
     const net = gross * (1 - settings.commission_percent / 100);
-    const { error } = await supabase.from('orders').insert([{
-      user_id: currentUser.id,
-      source_currency: source,
-      amount_usd: amount,
-      exchange_rate: settings.rate_usd_to_bs,
-      commission_percent: settings.commission_percent,
-      net_bs: net,
-      destination_account: destination,
-      status: 'pending'
-    }]);
-    if (error) showToast(error.message);
-    else showToast('Orden creada. Sube el comprobante.');
-    renderView('dashboard');
+    try {
+      const { error } = await supabase.from('orders').insert([{
+        user_id: currentUser.id,
+        source_currency: source,
+        amount_usd: amount,
+        exchange_rate: settings.rate_usd_to_bs,
+        commission_percent: settings.commission_percent,
+        net_bs: net,
+        destination_account: destination,
+        status: 'pending'
+      }]);
+      if (error) throw error;
+      showToast('Orden creada. Sube el comprobante.');
+      renderView('dashboard');
+    } catch (err) {
+      showToast('Error: ' + err.message);
+    }
   }
 
   window.uploadProofPrompt = async (orderId) => {
