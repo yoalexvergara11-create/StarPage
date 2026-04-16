@@ -57,18 +57,19 @@
       Turn <span class="text-electric">8‑hour podcasts</span> into <br class="hidden sm:block"> viral clips <span class="bg-gradient-to-r from-cyan-300 to-electric bg-clip-text text-transparent">in minutes</span>
     </h1>
     <p class="text-base sm:text-lg text-gray-300 max-w-3xl mx-auto mt-6">
-      Upload your video — AI finds highlights, adds captions, and delivers clips for TikTok, Reels, Shorts.
+      Paste a YouTube link or upload a file — AI finds highlights, adds captions, and delivers clips for TikTok, Reels, Shorts.
     </p>
   </div>
 
   <!-- MAIN PANEL -->
   <div class="glass rounded-3xl p-5 sm:p-8 border border-white/5 shadow-2xl mb-10">
     <div class="flex border-b border-white/10 pb-3 gap-1">
-      <button class="tab-btn active px-5 py-2.5 text-sm font-medium rounded-xl bg-white/5 text-white transition" data-tab="upload"><i class="fas fa-cloud-upload-alt mr-2"></i>Upload file</button>
-      <button class="tab-btn px-5 py-2.5 text-sm font-medium rounded-xl text-gray-400 hover:text-white transition" data-tab="link"><i class="fas fa-link mr-2"></i>Paste link</button>
+      <button class="tab-btn active px-5 py-2.5 text-sm font-medium rounded-xl bg-white/5 text-white transition" data-tab="link"><i class="fas fa-link mr-2"></i>Paste link</button>
+      <button class="tab-btn px-5 py-2.5 text-sm font-medium rounded-xl text-gray-400 hover:text-white transition" data-tab="upload"><i class="fas fa-cloud-upload-alt mr-2"></i>Upload file</button>
     </div>
 
-    <div id="panel-link" class="hidden mt-6 space-y-5">
+    <!-- LINK PANEL -->
+    <div id="panel-link" class="mt-6 space-y-5">
       <div>
         <label class="block text-sm font-medium text-gray-300 mb-2"><i class="fas fa-globe mr-1"></i>YouTube, Vimeo, podcast RSS, etc.</label>
         <div class="flex flex-col sm:flex-row gap-3">
@@ -82,7 +83,8 @@
       </div>
     </div>
 
-    <div id="panel-upload" class="mt-6">
+    <!-- UPLOAD PANEL -->
+    <div id="panel-upload" class="hidden mt-6">
       <div class="border-2 border-dashed border-white/20 rounded-3xl p-8 text-center bg-black/20 hover:border-electric/50 transition cursor-pointer" id="dropZone">
         <i class="fas fa-cloud-upload-alt text-4xl text-electric mb-3"></i>
         <p class="font-medium">Drag & drop or <span class="text-electric underline">choose a file</span></p>
@@ -92,6 +94,7 @@
       <div id="uploadPreview" class="hidden mt-4 p-4 bg-white/5 rounded-2xl"></div>
     </div>
 
+    <!-- CONFIGURATION PANEL -->
     <div id="configPanel" class="hidden mt-8 pt-5 border-t border-white/10">
       <div class="grid grid-cols-2 md:grid-cols-5 gap-4 items-end">
         <div class="col-span-2 md:col-span-1">
@@ -143,7 +146,7 @@
   <!-- PRICING -->
   <div id="pricing" class="mt-20 scroll-mt-16">
     <h2 class="font-display text-4xl font-bold text-center mb-4">Plans that scale with you</h2>
-    <p class="text-center text-gray-300 mb-6">Start with 3 free clips. Upgrade when you're ready.</p>
+    <p class="text-center text-gray-300 mb-6">Start with 3 free clips. Upgrade for advanced AI and editing features.</p>
     <div class="flex justify-center mb-10">
       <div class="glass rounded-full p-1 flex text-sm">
         <button id="monthlyToggle" class="px-6 py-2 rounded-full bg-electric text-white">Monthly</button>
@@ -170,27 +173,34 @@
     const SUPABASE_URL = 'https://yuatqhpiqqoouinmxwpq.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_Uux9fZalin3gfbJD8_Y99A_YtGGkfw0';
     const PAYPAL_EMAIL = 'Yoalexflores12@gmail.com';
+    // NOTA: Necesitarás una API Key de RapidAPI o similar para obtener la URL de descarga de YouTube.
+    // Por ahora, para el MVP, puedes simularlo o integrar un servicio como youtube-dl-exec en tu backend.
     
     let supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     let user = null;
     let userPlan = 'free';
-    let currentMedia = { type: 'file', file: null, title: '' };
+    let currentMedia = { type: 'file', file: null, title: '', url: null };
     let generatedClips = [];
     let isYearly = false;
     let ffmpeg = null;
 
+    // Elementos del DOM
     const authBtn = document.getElementById('authBtn'), authText = document.getElementById('authText');
     const tabBtns = document.querySelectorAll('.tab-btn'), panelLink = document.getElementById('panel-link'), panelUpload = document.getElementById('panel-upload');
+    const mediaUrl = document.getElementById('mediaUrl'), fetchUrlBtn = document.getElementById('fetchUrlBtn');
     const dropZone = document.getElementById('dropZone'), fileInput = document.getElementById('fileInput');
     const generateBtn = document.getElementById('generateBtn'), configPanel = document.getElementById('configPanel');
     const processingArea = document.getElementById('processingArea'), processingMsg = document.getElementById('processingMsg'), progressBar = document.getElementById('progressBar');
     const clipsGrid = document.getElementById('clipsGrid');
+    const urlPreview = document.getElementById('urlPreview'), previewTitle = document.getElementById('previewTitle');
     const uploadPreview = document.getElementById('uploadPreview');
     const monthlyToggle = document.getElementById('monthlyToggle'), yearlyToggle = document.getElementById('yearlyToggle'), pricingContainer = document.getElementById('pricingContainer');
 
+    // Funciones de UI
     function showProcessing(show, msg = 'Processing...') { processingArea.classList.toggle('hidden', !show); if(msg) processingMsg.textContent = msg; }
     function updateProgress(p) { progressBar.style.width = Math.min(p,100)+'%'; }
 
+    // Autenticación
     async function updateAuthUI() {
       const { data: { user: sbUser } } = await supabase.auth.getUser();
       user = sbUser;
@@ -204,11 +214,18 @@
       }
     }
     authBtn.addEventListener('click', async ()=>{
-      if (!user) { await supabase.auth.signInWithOAuth({ provider: 'google' }); }
-      else { await supabase.auth.signOut(); user = null; updateAuthUI(); }
+      if (!user) { 
+        const { error } = await supabase.auth.signInWithOAuth({ provider: 'google' });
+        if (error) alert('Login failed: ' + error.message);
+      } else { 
+        await supabase.auth.signOut(); 
+        user = null; 
+        updateAuthUI(); 
+      }
     });
     updateAuthUI();
 
+    // Cambio de pestañas
     tabBtns.forEach(b=>b.addEventListener('click', ()=>{
       tabBtns.forEach(btn=>{ btn.classList.remove('active','bg-white/5','text-white'); btn.classList.add('text-gray-400'); });
       b.classList.add('active','bg-white/5','text-white'); b.classList.remove('text-gray-400');
@@ -216,6 +233,18 @@
       panelUpload.classList.toggle('hidden', b.dataset.tab!=='upload');
     }));
 
+    // Obtener info de YouTube (simulado para MVP, puedes reemplazar con una API real)
+    fetchUrlBtn.addEventListener('click', async ()=>{
+      const url = mediaUrl.value.trim();
+      if(!url) return alert('Enter a URL');
+      // Simulación: en un caso real, llamarías a tu backend que use youtube-dl
+      previewTitle.textContent = 'Video de YouTube (simulado)';
+      urlPreview.classList.remove('hidden');
+      configPanel.classList.remove('hidden');
+      currentMedia = { type: 'url', url: url, title: 'Video de YouTube', file: null };
+    });
+
+    // Manejo de archivos subidos
     function handleFile(file) {
       if(!file) return;
       currentMedia = { type: 'file', file, title: file.name };
@@ -229,6 +258,7 @@
     dropZone.addEventListener('dragleave', ()=> dropZone.classList.remove('border-electric'));
     dropZone.addEventListener('drop', e=> { e.preventDefault(); dropZone.classList.remove('border-electric'); const file = e.dataTransfer.files[0]; if(file) handleFile(file); });
 
+    // Inicializar FFmpeg
     async function initFFmpeg() {
       if (ffmpeg) return ffmpeg;
       const { createFFmpeg, fetchFile } = FFmpeg;
@@ -237,9 +267,12 @@
       return ffmpeg;
     }
 
+    // Generar Clips
     generateBtn.addEventListener('click', async () => {
-      if (!currentMedia.file) return alert('Please upload a video file first.');
+      if (!currentMedia.type) return alert('Please select a source (file or YouTube link).');
       if (!user) return alert('Please sign in to generate clips.');
+      
+      // Control de límite gratuito
       if (userPlan === 'free') {
         const { data: usage } = await supabase.from('user_usage').select('clips_generated_this_month').eq('user_id', user.id).single();
         if (usage && usage.clips_generated_this_month >= 3) return alert('Free limit reached (3 clips/month). Upgrade to continue!');
@@ -250,9 +283,21 @@
 
       showProcessing(true, 'Loading FFmpeg...'); updateProgress(10);
       await initFFmpeg();
-      processingMsg.textContent = 'Cutting segments...'; updateProgress(30);
       
-      ffmpeg.FS('writeFile', 'input.mp4', await FFmpeg.fetchFile(currentMedia.file));
+      // Obtener el archivo (para YouTube, esto requeriría un paso adicional de descarga)
+      let fileData;
+      if (currentMedia.type === 'file') {
+        fileData = await FFmpeg.fetchFile(currentMedia.file);
+      } else {
+        // Simulación: en producción, tu backend descargaría el video y lo devolvería.
+        alert('YouTube link processing is simulated. In production, it will work with a backend service.');
+        // Para el MVP, puedes usar un video de prueba local.
+        fileData = await FFmpeg.fetchFile('https://www.w3schools.com/html/mov_bbb.mp4');
+      }
+
+      processingMsg.textContent = 'Cutting segments...'; updateProgress(30);
+      ffmpeg.FS('writeFile', 'input.mp4', fileData);
+      
       generatedClips = [];
       for (let i=0; i<count; i++) {
         const start = i * 60;
@@ -278,6 +323,7 @@
       });
     }
 
+    // Renderizado de precios
     const plans = [{ name:'Free', price:0, clips:3, res:'720p', watermark:true },{ name:'Creator', price:20, clips:30, res:'1080p', watermark:false },{ name:'Pro', price:49, clips:100, res:'4K', watermark:false },{ name:'Agency', price:99, clips:300, res:'4K', watermark:false }];
     function renderPricing() {
       pricingContainer.innerHTML = '';
@@ -298,6 +344,7 @@
     monthlyToggle.addEventListener('click', ()=>{ isYearly=false; monthlyToggle.classList.add('bg-electric','text-white'); yearlyToggle.classList.remove('bg-electric','text-white'); yearlyToggle.classList.add('text-gray-300'); renderPricing(); });
     yearlyToggle.addEventListener('click', ()=>{ isYearly=true; yearlyToggle.classList.add('bg-electric','text-white'); monthlyToggle.classList.remove('bg-electric','text-white'); monthlyToggle.classList.add('text-gray-300'); renderPricing(); });
     renderPricing();
+    
     document.getElementById('footerTerms').addEventListener('click', e=>{ e.preventDefault(); alert('GrowthStack AI – Terms of Service'); });
     document.getElementById('footerPrivacy').addEventListener('click', e=>{ e.preventDefault(); alert('Privacy Policy'); });
   })();
