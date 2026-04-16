@@ -7,6 +7,9 @@
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz@14..32&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Librerías para procesamiento real -->
+  <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/ffmpeg.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/whisper-web-transcriber@1.0.0/dist/whisper-web-transcriber.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style type="text/tailwindcss">
     @theme {
@@ -22,18 +25,8 @@
     }
     body { font-family: var(--font-body); background-color: var(--color-void); color: #eef2fb; }
     .font-display { font-family: var(--font-display); }
-    .glass {
-      background: rgba(11, 18, 28, 0.7);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      border: 1px solid rgba(255, 255, 255, 0.04);
-    }
-    .glass-card {
-      background: rgba(15, 25, 35, 0.6);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-    }
+    .glass { background: rgba(11, 18, 28, 0.7); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border: 1px solid rgba(255, 255, 255, 0.04); }
+    .glass-card { background: rgba(15, 25, 35, 0.6); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
   </style>
 </head>
 <body class="bg-void antialiased">
@@ -149,25 +142,39 @@
   <!-- CLIPS GRID -->
   <div id="clipsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-10"></div>
 
-  <!-- EDITOR MODAL -->
+  <!-- EDITOR MODAL (AVANZADO) -->
   <div id="editorModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-    <div class="glass w-full max-w-5xl max-h-[90vh] overflow-hidden rounded-3xl border border-white/10 flex flex-col">
+    <div class="glass w-full max-w-7xl max-h-[90vh] overflow-hidden rounded-3xl border border-white/10 flex flex-col">
       <div class="flex justify-between items-center p-5 border-b border-white/10">
         <h3 class="font-display text-xl font-semibold flex items-center gap-2"><i class="fas fa-film text-electric"></i> Advanced Clip Editor</h3>
         <button id="closeEditor" class="text-2xl hover:text-electric transition">&times;</button>
       </div>
       <div class="flex-1 overflow-auto p-6">
         <div class="grid lg:grid-cols-3 gap-6">
+          <!-- Panel de vista previa -->
           <div class="lg:col-span-2">
             <div class="rounded-xl overflow-hidden bg-black/40 border border-white/10">
               <video id="editorVideo" controls class="w-full aspect-video object-contain"></video>
             </div>
-            <div class="flex gap-3 mt-4">
+            <!-- Controles de edición avanzados -->
+            <div class="grid grid-cols-3 gap-3 mt-4">
               <button id="playPreviewBtn" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-full text-sm"><i class="fas fa-play mr-1"></i> Play</button>
               <button id="pausePreviewBtn" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-full text-sm"><i class="fas fa-pause mr-1"></i> Pause</button>
-              <span class="text-xs text-gray-400 self-center">00:00 - 00:30</span>
+              <button id="trimBtn" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-full text-sm"><i class="fas fa-cut mr-1"></i> Trim</button>
+              <button id="cropBtn" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-full text-sm"><i class="fas fa-crop-alt mr-1"></i> Crop (9:16)</button>
+              <button id="filterBtn" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-full text-sm"><i class="fas fa-magic mr-1"></i> Filters</button>
+              <button id="volumeBtn" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-full text-sm"><i class="fas fa-volume-up mr-1"></i> Audio</button>
+            </div>
+            <!-- Línea de tiempo (waveform simulada) -->
+            <div class="mt-4 p-3 bg-black/30 rounded-xl border border-white/5">
+              <div class="flex items-center gap-2 text-xs text-gray-400 mb-1"><i class="fas fa-waveform"></i> Audio waveform</div>
+              <div class="h-10 flex items-end gap-[2px]">
+                <div class="flex-1 h-3 bg-electric/40 rounded-full"></div><div class="flex-1 h-5 bg-electric/40 rounded-full"></div><div class="flex-1 h-8 bg-electric rounded-full"></div><div class="flex-1 h-4 bg-electric/40 rounded-full"></div><div class="flex-1 h-6 bg-electric/40 rounded-full"></div><div class="flex-1 h-9 bg-electric rounded-full"></div><div class="flex-1 h-5 bg-electric/40 rounded-full"></div><div class="flex-1 h-7 bg-electric/40 rounded-full"></div><div class="flex-1 h-10 bg-electric rounded-full"></div><div class="flex-1 h-4 bg-electric/40 rounded-full"></div><div class="flex-1 h-6 bg-electric/40 rounded-full"></div><div class="flex-1 h-8 bg-electric rounded-full"></div><div class="flex-1 h-3 bg-electric/40 rounded-full"></div><div class="flex-1 h-5 bg-electric/40 rounded-full"></div><div class="flex-1 h-7 bg-electric/40 rounded-full"></div>
+              </div>
+              <div class="flex justify-between text-xs text-gray-500 mt-2"><span>00:00</span><span>00:15</span><span>00:30</span></div>
             </div>
           </div>
+          <!-- Panel de edición de texto y estilos -->
           <div class="space-y-5">
             <div>
               <label class="block text-sm font-medium text-gray-300 mb-1"><i class="fas fa-align-left mr-1"></i> Caption</label>
@@ -176,6 +183,21 @@
             <div>
               <label class="block text-sm font-medium text-gray-300 mb-1"><i class="fas fa-bolt mr-1"></i> Hook</label>
               <input id="editorHook" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-sm">
+            </div>
+            <div class="pt-4 border-t border-white/10">
+              <label class="block text-sm font-medium text-gray-300 mb-2">Caption style</label>
+              <div class="grid grid-cols-4 gap-2">
+                <div class="caption-style bg-electric/20 border border-electric rounded-lg p-2 text-center text-xs cursor-pointer" data-style="bold">Bold</div>
+                <div class="caption-style bg-white/5 rounded-lg p-2 text-center text-xs cursor-pointer" data-style="clean">Clean</div>
+                <div class="caption-style bg-white/5 rounded-lg p-2 text-center text-xs cursor-pointer" data-style="neon">Neon</div>
+                <div class="caption-style bg-white/5 rounded-lg p-2 text-center text-xs cursor-pointer" data-style="minimal">Minimal</div>
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-1"><i class="fas fa-font mr-1"></i> Font</label>
+              <select id="fontSelect" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-sm">
+                <option value="Inter">Inter</option><option value="Outfit">Outfit</option><option value="Arial">Arial</option><option value="Georgia">Georgia</option>
+              </select>
             </div>
             <button id="saveEditor" class="w-full bg-gradient-to-r from-electric to-blue-600 text-white font-semibold py-3 rounded-xl transition hover:shadow-glow"><i class="fas fa-check mr-2"></i> Apply changes</button>
           </div>
@@ -192,10 +214,10 @@
     <div class="glass p-5 rounded-2xl"><i class="fas fa-brain text-2xl text-electric mb-2"></i><p class="text-xl font-bold">V‑Score™</p><span class="text-xs text-gray-400">viral potential</span></div>
   </div>
 
-  <!-- PRICING -->
+  <!-- PRICING (con funciones premium) -->
   <div id="pricing" class="mt-20 scroll-mt-16">
     <h2 class="font-display text-4xl font-bold text-center mb-4">Plans that scale with you</h2>
-    <p class="text-center text-gray-300 mb-6">Start with 3 free clips. Upgrade when you're ready.</p>
+    <p class="text-center text-gray-300 mb-6">Start with 3 free clips. Upgrade for advanced AI and editing features.</p>
     <div class="flex justify-center mb-10">
       <div class="glass rounded-full p-1 flex text-sm">
         <button id="monthlyToggle" class="px-6 py-2 rounded-full bg-electric text-white">Monthly</button>
@@ -220,26 +242,23 @@
   (function(){
     "use strict";
 
-    // ==================== CONFIGURACIÓN (INTEGRADA CON TUS DATOS REALES) ====================
+    // ==================== CONFIGURACIÓN (TUS DATOS REALES) ====================
     const SUPABASE_URL = 'https://yuatqhpiqqoouinmxwpq.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_Uux9fZalin3gfbJD8_Y99A_YtGGkfw0';
     const SUPABASE_BUCKET = 'videos';
     const PAYPAL_EMAIL = 'Yoalexflores12@gmail.com';
-    
+    // Hugging Face API (gratis hasta 30k requests/mes)
+    const HF_API_TOKEN = 'hf_TU_TOKEN_AQUI'; // <-- Reemplaza con tu token de Hugging Face
+    const HF_MODEL = 'facebook/bart-large-mnli';
+
     // ==================== ESTADO GLOBAL ====================
-    let supabase = null;
+    let supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     let user = null;
+    let userPlan = 'free';
     let currentMedia = { type: null, url: '', title: '', file: null };
     let generatedClips = [];
     let isYearly = false;
-
-    // ==================== INICIALIZACIÓN DE SUPABASE ====================
-    if (SUPABASE_URL && SUPABASE_ANON_KEY) {
-      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      console.log('✅ Supabase conectado correctamente');
-    } else {
-      console.warn('⚠️ Supabase no configurado');
-    }
+    let ffmpeg = null;
 
     // ==================== ELEMENTOS DOM ====================
     const authBtn = document.getElementById('authBtn'), authText = document.getElementById('authText');
@@ -262,17 +281,33 @@
     }
     function updateProgress(p) { progressBar.style.width = Math.min(p,100)+'%'; }
 
-    // ==================== AUTENTICACIÓN ====================
+    // ==================== AUTENTICACIÓN Y PLAN ====================
     async function updateAuthUI() {
-      if (supabase) {
-        const { data } = await supabase.auth.getUser();
-        user = data.user;
+      const { data: { user: sbUser } } = await supabase.auth.getUser();
+      user = sbUser;
+      if (user) {
+        authText.textContent = user.email?.split('@')[0] || 'Dashboard';
+        // Obtener plan del usuario desde Supabase
+        const { data: profile } = await supabase.from('profiles').select('subscription_tier').eq('id', user.id).single();
+        userPlan = profile?.subscription_tier || 'free';
+      } else {
+        authText.textContent = 'Sign in';
+        userPlan = 'free';
       }
-      authText.textContent = user ? (user.email?.split('@')[0] || 'Dashboard') : 'Sign in';
+      // Actualizar UI según plan
+      updatePremiumFeaturesVisibility();
     }
+    
+    function updatePremiumFeaturesVisibility() {
+      const isPremium = userPlan === 'creator' || userPlan === 'pro' || userPlan === 'agency';
+      // Mostrar/ocultar funciones premium en el editor
+      document.querySelectorAll('.premium-feature').forEach(el => {
+        el.style.display = isPremium ? 'block' : 'none';
+      });
+    }
+
     authBtn.addEventListener('click', async ()=>{
-      if(!supabase) { user = { email: 'demo@clipcraft.ai' }; updateAuthUI(); return; }
-      if(!user) { 
+      if (!user) { 
         const { error } = await supabase.auth.signInWithOAuth({ provider: 'google' });
         if (error) alert(error.message);
       } else { 
@@ -315,78 +350,134 @@
     dropZone.addEventListener('dragleave', ()=> dropZone.classList.remove('border-electric'));
     dropZone.addEventListener('drop', e=> { e.preventDefault(); dropZone.classList.remove('border-electric'); const file = e.dataTransfer.files[0]; if(file) handleFile(file); });
 
-    // ==================== GENERAR CLIPS (USA SUPABASE STORAGE) ====================
-    generateBtn.addEventListener('click', async ()=>{
-      if(!currentMedia.type) return alert('Select a video source first');
+    // ==================== INICIALIZAR FFMPEG ====================
+    async function initFFmpeg() {
+      if (ffmpeg) return ffmpeg;
+      const { createFFmpeg, fetchFile } = FFmpeg;
+      ffmpeg = createFFmpeg({ log: false, corePath: 'https://unpkg.com/@ffmpeg/core@0.10.0/dist/ffmpeg-core.js' });
+      await ffmpeg.load();
+      return ffmpeg;
+    }
+
+    // ==================== PIPELINE DE IA REAL ====================
+    async function extractAudioFromVideo(videoFile) {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const arrayBuffer = await videoFile.arrayBuffer();
+      const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+      return audioBuffer;
+    }
+
+    async function transcribeAudio(audioBuffer) {
+      // Usamos Whisper local (modelo 'tiny' para pruebas rápidas)
+      const transcriber = new WhisperWebTranscriber();
+      await transcriber.loadModel('tiny');
+      const result = await transcriber.transcribe(audioBuffer);
+      return result.text;
+    }
+
+    async function detectViralSegments(fullText, count) {
+      // Dividir en oraciones
+      const sentences = fullText.split(/[.!?]+/).filter(s => s.trim().length > 10);
+      if (sentences.length === 0) return [];
       
+      const segments = [];
+      for (const sentence of sentences) {
+        // Llamada a Hugging Face para puntuar viralidad
+        const response = await fetch(`https://api-inference.huggingface.co/models/${HF_MODEL}`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${HF_API_TOKEN}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ inputs: sentence, parameters: { candidate_labels: ['viral', 'neutral', 'boring'] } })
+        });
+        const result = await response.json();
+        const viralScore = result.scores[result.labels.indexOf('viral')] || 0.5;
+        segments.push({ text: sentence, score: viralScore * 10 });
+      }
+      // Ordenar por puntuación y devolver los mejores
+      return segments.sort((a,b) => b.score - a.score).slice(0, count);
+    }
+
+    // ==================== GENERAR CLIPS (PROCESAMIENTO REAL) ====================
+    generateBtn.addEventListener('click', async () => {
+      if (!currentMedia.type) return alert('Select a video source first');
+      if (!user) return alert('Please sign in to generate clips.');
+      
+      // Verificar límites del plan free
+      if (userPlan === 'free') {
+        const { data: usage } = await supabase.from('user_usage').select('clips_generated_this_month').eq('user_id', user.id).single();
+        if (usage && usage.clips_generated_this_month >= 3) {
+          return alert('You have reached the free limit of 3 clips this month. Upgrade to continue!');
+        }
+      }
+
+      const videoFile = currentMedia.type === 'file' ? currentMedia.file : null;
+      if (!videoFile) return alert('URL processing not implemented yet. Please upload a file.');
+
       const count = parseInt(document.getElementById('clipCount').value) || 3;
-      showProcessing(true, `Generating ${count} clips...`);
+      const duration = parseInt(document.getElementById('clipDuration').value) || 30;
+
+      showProcessing(true, 'Initializing FFmpeg...');
+      updateProgress(10);
+      await initFFmpeg();
+
+      processingMsg.textContent = 'Extracting audio...';
       updateProgress(20);
-      
-      setTimeout(()=>{ processingMsg.textContent = 'Transcribing audio...'; updateProgress(40); }, 800);
-      setTimeout(()=>{ processingMsg.textContent = 'Detecting viral moments...'; updateProgress(65); }, 1600);
-      
-      setTimeout(async () => {
-        processingMsg.textContent = 'Rendering clips...'; updateProgress(85);
-        
-        generatedClips = [];
-        
-        // Usar un video de muestra del bucket de Supabase Storage (debe existir un video llamado 'sample.mp4')
-        const sampleVideoUrl = `${SUPABASE_URL}/storage/v1/object/public/${SUPABASE_BUCKET}/sample.mp4`;
-        
-        for(let i = 0; i < count; i++){
-          generatedClips.push({
-            id: i,
-            title: `Clip ${i+1} · ${currentMedia.title.substring(0, 25)}`,
-            vScore: (Math.random() * 3 + 7).toFixed(1),
-            hook: i%2===0 ? '🔥 "You won\'t believe what happens next"' : '💡 "The one insight that changes everything"',
-            caption: i%2===0 ? 'This moment is pure gold. Watch till the end!' : 'Here\'s why this clip is trending.',
-            videoUrl: sampleVideoUrl
-          });
-        }
-        
-        renderClips(generatedClips);
-        showProcessing(false);
-        updateProgress(100);
-        
-        // Guardar proyecto en Supabase si el usuario está autenticado
-        if (user && supabase) {
-          const { data: project } = await supabase
-            .from('clip_projects')
-            .insert({ user_id: user.id, source_url: currentMedia.url || currentMedia.title, source_type: currentMedia.type, status: 'completed' })
-            .select('id')
-            .single();
-          if (project) {
-            for (const clip of generatedClips) {
-              await supabase.from('generated_clips').insert({
-                project_id: project.id,
-                user_id: user.id,
-                clip_url: clip.videoUrl,
-                v_score: parseFloat(clip.vScore)
-              });
-            }
-          }
-        }
-      }, 2500);
+      const audioBuffer = await extractAudioFromVideo(videoFile);
+
+      processingMsg.textContent = 'Transcribing with AI...';
+      updateProgress(40);
+      const transcription = await transcribeAudio(audioBuffer);
+
+      processingMsg.textContent = 'Detecting viral moments...';
+      updateProgress(60);
+      const segments = await detectViralSegments(transcription, count);
+
+      processingMsg.textContent = `Cutting ${segments.length} clips...`;
+      updateProgress(80);
+
+      // Cortar video con FFmpeg
+      ffmpeg.FS('writeFile', 'input.mp4', await FFmpeg.fetchFile(videoFile));
+      const clips = [];
+      for (let i = 0; i < segments.length; i++) {
+        const seg = segments[i];
+        const startTime = i * 60; // Simplificación: asumimos 1 min por segmento
+        const outputName = `clip_${i}.mp4`;
+        await ffmpeg.run('-i', 'input.mp4', '-ss', startTime.toString(), '-t', duration.toString(), '-vf', 'scale=1080:1920', outputName);
+        const data = ffmpeg.FS('readFile', outputName);
+        const blob = new Blob([data.buffer], { type: 'video/mp4' });
+        clips.push({ blob, text: seg.text, score: seg.score });
+      }
+
+      // Guardar clips generados y actualizar uso
+      generatedClips = clips.map((clip, idx) => ({
+        id: idx,
+        title: `Clip ${idx+1}`,
+        videoUrl: URL.createObjectURL(clip.blob),
+        hook: clip.text.substring(0, 60) + '...',
+        caption: clip.text,
+        vScore: clip.score.toFixed(1)
+      }));
+
+      renderClips(generatedClips);
+
+      // Actualizar uso en Supabase
+      await supabase.from('user_usage').upsert({ user_id: user.id, clips_generated_this_month: count }, { onConflict: 'user_id' });
+
+      showProcessing(false);
+      updateProgress(100);
     });
 
     // ==================== RENDERIZAR CLIPS ====================
     function renderClips(clips) {
       clipsGrid.innerHTML = '';
-      
       clips.forEach(clip => {
         const card = document.createElement('div');
         card.className = 'glass-card rounded-2xl overflow-hidden border border-white/5';
         card.innerHTML = `
           <div class="relative bg-black/30">
-            <video class="w-full aspect-[9/16] object-cover" src="${clip.videoUrl}" crossorigin="anonymous" preload="metadata" onerror="this.parentElement.innerHTML='<div class=\'w-full aspect-[9/16] bg-black/50 flex items-center justify-center\'><i class=\'fas fa-exclamation-triangle text-yellow-500 text-2xl\'></i><p class=\'text-xs ml-2\'>Video not available</p></div>'"></video>
+            <video class="w-full aspect-[9/16] object-cover" src="${clip.videoUrl}" preload="metadata"></video>
             <div class="video-overlay absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition flex items-center justify-center gap-4">
-              <button class="preview-clip bg-white/20 backdrop-blur p-3 rounded-full hover:bg-electric/80" data-id="${clip.id}">
-                <i class="fas fa-play text-white"></i>
-              </button>
-              <button class="download-clip bg-white/20 backdrop-blur p-3 rounded-full hover:bg-electric/80" data-id="${clip.id}">
-                <i class="fas fa-download text-white"></i>
-              </button>
+              <button class="preview-clip bg-white/20 backdrop-blur p-3 rounded-full hover:bg-electric/80" data-id="${clip.id}"><i class="fas fa-play text-white"></i></button>
+              <button class="download-clip bg-white/20 backdrop-blur p-3 rounded-full hover:bg-electric/80" data-id="${clip.id}"><i class="fas fa-download text-white"></i></button>
             </div>
             <span class="absolute top-3 right-3 bg-black/60 backdrop-blur text-xs px-3 py-1 rounded-full border border-white/20">🔥 ${clip.vScore}</span>
           </div>
@@ -394,22 +485,16 @@
             <h4 class="font-medium text-sm line-clamp-1">${clip.title}</h4>
             <p class="text-xs text-gray-400 mt-1">${clip.hook}</p>
             <div class="flex gap-2 mt-4">
-              <button class="edit-clip flex-1 bg-white/5 hover:bg-white/10 px-3 py-2 rounded-full text-xs transition" data-id="${clip.id}">
-                <i class="fas fa-pen mr-1"></i>Edit
-              </button>
-              <button class="preview-clip flex-1 bg-white/5 hover:bg-white/10 px-3 py-2 rounded-full text-xs transition" data-id="${clip.id}">
-                <i class="fas fa-eye mr-1"></i>Preview
-              </button>
+              <button class="edit-clip flex-1 bg-white/5 hover:bg-white/10 px-3 py-2 rounded-full text-xs transition" data-id="${clip.id}"><i class="fas fa-pen mr-1"></i>Edit</button>
+              <button class="preview-clip flex-1 bg-white/5 hover:bg-white/10 px-3 py-2 rounded-full text-xs transition" data-id="${clip.id}"><i class="fas fa-eye mr-1"></i>Preview</button>
             </div>
           </div>
         `;
         clipsGrid.appendChild(card);
       });
 
-      // Event listeners
       document.querySelectorAll('.preview-clip').forEach(btn => {
         btn.addEventListener('click', (e) => {
-          e.preventDefault();
           const id = btn.dataset.id;
           const clip = generatedClips.find(c => c.id == id);
           if(clip) {
@@ -421,7 +506,6 @@
           }
         });
       });
-      
       document.querySelectorAll('.edit-clip').forEach(btn => {
         btn.addEventListener('click', () => {
           const id = btn.dataset.id;
@@ -434,10 +518,8 @@
           }
         });
       });
-
       document.querySelectorAll('.download-clip').forEach(btn => {
         btn.addEventListener('click', (e) => {
-          e.preventDefault();
           const id = btn.dataset.id;
           const clip = generatedClips.find(c => c.id == id);
           if(clip) {
@@ -455,16 +537,16 @@
     saveEditor.addEventListener('click', ()=>{ editorModal.classList.add('hidden'); alert('✅ Changes saved!'); });
     document.getElementById('playPreviewBtn').addEventListener('click', ()=> editorVideo.play());
     document.getElementById('pausePreviewBtn').addEventListener('click', ()=> editorVideo.pause());
-    editorModal.addEventListener('click', e=> { if(e.target === editorModal) { editorModal.classList.add('hidden'); editorVideo.pause(); } });
+    // Botones premium (solo visibles para usuarios de pago)
+    document.querySelectorAll('.premium-feature').forEach(el => el.style.display = 'none');
 
     // ==================== PRICING ====================
     const plans = [
-      { name:'Free', price:0, clips:3, res:'720p', watermark:true },
-      { name:'Creator', price:20, clips:30, res:'1080p', watermark:false },
-      { name:'Pro', price:49, clips:100, res:'4K', watermark:false },
-      { name:'Agency', price:99, clips:300, res:'4K', watermark:false }
+      { name:'Free', price:0, clips:3, res:'720p', watermark:true, premiumFeatures: false },
+      { name:'Creator', price:20, clips:30, res:'1080p', watermark:false, premiumFeatures: true },
+      { name:'Pro', price:49, clips:100, res:'4K', watermark:false, premiumFeatures: true },
+      { name:'Agency', price:99, clips:300, res:'4K', watermark:false, premiumFeatures: true }
     ];
-    
     function renderPricing() {
       pricingContainer.innerHTML = '';
       plans.forEach((p,i)=>{
@@ -481,6 +563,7 @@
           <ul class="mt-5 space-y-2 text-sm">
             <li><i class="fas fa-check text-electric mr-2"></i>${p.clips} clips/mo</li>
             <li><i class="fas fa-check text-electric mr-2"></i>${p.res} ${p.watermark?'(watermark)':'no watermark'}</li>
+            ${p.premiumFeatures ? '<li><i class="fas fa-crown text-yellow-400 mr-2"></i>Advanced AI & editing</li>' : ''}
           </ul>
         `;
         const btn = document.createElement('button');
@@ -495,16 +578,14 @@
         pricingContainer.appendChild(card);
       });
     }
-    
     monthlyToggle.addEventListener('click', ()=>{ isYearly=false; monthlyToggle.classList.add('bg-electric','text-white'); yearlyToggle.classList.remove('bg-electric','text-white'); yearlyToggle.classList.add('text-gray-300'); renderPricing(); });
     yearlyToggle.addEventListener('click', ()=>{ isYearly=true; yearlyToggle.classList.add('bg-electric','text-white'); monthlyToggle.classList.remove('bg-electric','text-white'); monthlyToggle.classList.add('text-gray-300'); renderPricing(); });
     renderPricing();
 
-    // ==================== TÉRMINOS Y PRIVACIDAD ====================
+    // ==================== TÉRMINOS ====================
     document.getElementById('footerTerms').addEventListener('click', e=>{ e.preventDefault(); alert('📄 GrowthStack AI – Terms of Service\n\nBy using ClipCraft AI you agree to our Fair Use & AI generation policies.'); });
     document.getElementById('footerPrivacy').addEventListener('click', e=>{ e.preventDefault(); alert('🔒 Privacy Policy\n\nWe do not store your raw media. Only usage metadata is stored. No personal data is sold.'); });
 
-    console.log('✅ ClipCraft AI — Funcionando 100% con Supabase');
   })();
 </script>
 </body>
