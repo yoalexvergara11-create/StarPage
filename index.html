@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+  <!-- Las cabeceras reales deben ir en vercel.json, pero los meta ayudan en algunos navegadores -->
   <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin">
   <meta http-equiv="Cross-Origin-Embedder-Policy" content="require-corp">
   <title>ClipCraft AI · Viral clips from any content</title>
@@ -190,9 +191,10 @@
     let generatedClips = [];
     let ffmpeg = null;
     let isFFmpegLoaded = false;
+    let authInitialized = false;
 
     const { FFmpeg } = window.FFmpegWASM || {};
-    const { toBlobURL } = window.FFmpegUtil || {};
+    const { toBlobURL, fetchFile } = window.FFmpegUtil || {};
 
     // DOM elements
     const authBtn = document.getElementById('authBtn'), authText = document.getElementById('authText');
@@ -206,11 +208,20 @@
     const uploadPreview = document.getElementById('uploadPreview');
     const pricingContainer = document.getElementById('pricingContainer');
 
-    function showProcessing(show, msg = 'Processing...') { processingArea.classList.toggle('hidden', !show); if(msg) processingMsg.textContent = msg; }
-    function updateProgress(p) { progressBar.style.width = Math.min(p,100)+'%'; }
+    function showProcessing(show, msg = 'Processing...') { 
+      processingArea.classList.toggle('hidden', !show); 
+      if(msg) processingMsg.textContent = msg; 
+    }
+    function updateProgress(p) { 
+      progressBar.style.width = Math.min(p,100)+'%'; 
+    }
 
-    // ---------- AUTENTICACIÓN PERSISTENTE (MEJORADA) ----------
+    // ---------- AUTENTICACIÓN CORREGIDA (UN SOLO CLIC) ----------
     async function updateAuthUI() {
+      if (!authInitialized) {
+        authText.textContent = 'Loading...';
+        return;
+      }
       const { data: { user: sbUser } } = await supabase.auth.getUser();
       user = sbUser;
       if (user) {
@@ -223,14 +234,15 @@
       }
     }
 
-    // Carga inicial: forzar detección de sesión existente
-    (async () => {
+    async function initAuth() {
       const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        user = session.user;
-      }
+      user = session?.user || null;
       await updateAuthUI();
-    })();
+      authInitialized = true;
+    }
+
+    // Iniciar autenticación al cargar
+    initAuth();
 
     authBtn.addEventListener('click', async ()=>{
       if (!user) { 
@@ -247,13 +259,13 @@
     });
 
     // Escuchar cambios de sesión (cuando vuelve de Google)
-    supabase.auth.onAuthStateChange((event, session) => {
+    supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
         user = session?.user || null;
-        updateAuthUI();
+        await updateAuthUI();
       } else if (event === 'SIGNED_OUT') {
         user = null;
-        updateAuthUI();
+        await updateAuthUI();
       }
     });
 
@@ -289,7 +301,7 @@
     dropZone.addEventListener('dragleave', ()=> dropZone.classList.remove('border-electric'));
     dropZone.addEventListener('drop', e=> { e.preventDefault(); dropZone.classList.remove('border-electric'); const file = e.dataTransfer.files[0]; if(file) handleFile(file); });
 
-    // FFmpeg Loader (con progreso real)
+    // FFmpeg Loader (CORREGIDO CON CDN ESTABLE Y PROGRESO)
     async function loadFFmpeg() {
       if (isFFmpegLoaded) return ffmpeg;
       
@@ -298,12 +310,13 @@
       
       try {
         ffmpeg = new FFmpeg();
-        const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm';
+        // Usar jsdelivr (más fiable) con la versión compatible
+        const baseURL = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/esm';
         
         ffmpeg.on('log', ({ message }) => { console.log(message); });
         ffmpeg.on('progress', ({ progress }) => {
           const percent = Math.round(progress * 100);
-          updateProgress(10 + Math.floor(percent * 0.2));
+          updateProgress(10 + Math.floor(percent * 0.3));
           processingMsg.textContent = `Loading engine (${percent}%)...`;
         });
 
@@ -318,12 +331,13 @@
         return ffmpeg;
       } catch (e) {
         showProcessing(false);
-        alert('Failed to load video engine. ' + e.message);
+        console.error('FFmpeg load error:', e);
+        alert('Failed to load video engine. Ensure COOP/COEP headers are set (see vercel.json).');
         throw e;
       }
     }
 
-    // Generar Clips (CON PROGRESO REAL Y CORRECCIÓN DE ERRORES)
+    // Generar Clips (FUNCIONAL CON fetchFile Y PROGRESO REAL)
     generateBtn.addEventListener('click', async () => {
       if (!currentMedia.type) return alert('Please select a source (file or YouTube link).');
       if (!user) return alert('Please sign in to generate clips.');
@@ -358,21 +372,16 @@
         const ffmpeg = await loadFFmpeg();
         
         if (currentMedia.type === 'file') {
-          processingMsg.textContent = 'Mounting file (direct disk access)...';
+          processingMsg.textContent = 'Writing file to memory...';
           updateProgress(15);
           
-          // Montar WORKERFS con el archivo
-          await ffmpeg.mount('WORKERFS', {
-            files: [currentMedia.file],
-            mountpoint: '/input'
-          });
-          
-          processingMsg.textContent = `Analyzing video stream...`;
-          updateProgress(25);
+          // Usar fetchFile para mayor compatibilidad (evita problemas con WORKERFS)
+          await ffmpeg.writeFile('input.mp4', await fetchFile(currentMedia.file));
           
           generatedClips = [];
+          
           for (let i = 0; i < count; i++) {
-            processingMsg.textContent = `Generating clip ${i+1} of ${count} (${style})...`;
+            processingMsg.textContent = `Generating clip ${i+1} of ${count}...`;
             
             const startTime = i * 60;
             const outputName = `clip_${i}.mp4`;
@@ -387,20 +396,18 @@
             } else {
               scaleFilter = 'scale=1080:1080:force_original_aspect_ratio=increase,crop=1080:1080';
             }
-
-            const inputPath = `/input/${currentMedia.file.name}`;
             
-            // Configurar evento de progreso para este clip
+            // Progreso por clip
             ffmpeg.on('progress', ({ progress }) => {
-              const baseProgress = 30 + Math.floor((i / count) * 60);
-              const clipProgress = Math.floor(progress * (60 / count));
-              updateProgress(baseProgress + clipProgress);
+              const base = 30 + (i / count) * 60;
+              const add = progress * (60 / count);
+              updateProgress(base + add);
             });
             
             await ffmpeg.exec([
               '-ss', startTime.toString(),
               '-t', duration.toString(),
-              '-i', inputPath,
+              '-i', 'input.mp4',
               '-vf', scaleFilter,
               '-c:v', 'libx264',
               '-preset', 'ultrafast',
@@ -408,9 +415,9 @@
               '-c:a', 'aac',
               outputName
             ]);
-
+            
             const data = await ffmpeg.readFile(outputName);
-            const blob = new Blob([data.buffer], {type: 'video/mp4'});
+            const blob = new Blob([data.buffer], { type: 'video/mp4' });
             const url = URL.createObjectURL(blob);
             
             generatedClips.push({ 
@@ -421,11 +428,11 @@
               caption: 'Your AI-generated clip.',
               vScore: (7+Math.random()*3).toFixed(1)
             });
-
+            
             await ffmpeg.deleteFile(outputName);
           }
           
-          await ffmpeg.unmount('/input');
+          await ffmpeg.deleteFile('input.mp4');
           
           if (userPlan === 'free') {
             const { data: usage } = await supabase.from('user_usage').select('clips_generated_this_month').eq('user_id', user.id).single();
