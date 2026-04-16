@@ -4,140 +4,163 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
   <title>ClipCraft AI · Viral clips from any content</title>
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz@14..32&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/ffmpeg.min.js"></script>
-  <style type="text/tailwindcss">
-    @theme {
-      --color-void: #03060b;
-      --color-deep: #0b121c;
-      --color-electric: #2a6df4;
-      --color-glow: #9bbaff;
-      --font-display: "Outfit", "Inter", sans-serif;
-      --font-body: "Inter", sans-serif;
-      --radius-card: 2rem;
-      --radius-btn: 9999px;
-      --shadow-glow: 0 12px 30px -8px rgba(42, 109, 244, 0.25);
-    }
-    body { font-family: var(--font-body); background-color: var(--color-void); color: #eef2fb; }
-    .font-display { font-family: var(--font-display); }
+  <!-- FFmpeg -->
+  <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/ffmpeg.min.js"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #03060b; color: #eef2fb; }
+    .font-display { font-family: 'Outfit', sans-serif; }
     .glass { background: rgba(11, 18, 28, 0.7); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border: 1px solid rgba(255, 255, 255, 0.04); }
     .glass-card { background: rgba(15, 25, 35, 0.6); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
+    .shadow-glow { box-shadow: 0 12px 30px -8px rgba(42, 109, 244, 0.25); }
+    .modal {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.7); backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center; z-index: 1000;
+    }
+    .modal-content {
+      background: #0b121c; border-radius: 2rem; padding: 2rem;
+      max-width: 400px; width: 90%; border: 1px solid #2a6df4;
+    }
+    .tab-btn.active { background-color: rgba(255,255,255,0.05); color: white; }
   </style>
 </head>
-<body class="bg-void antialiased">
+<body class="antialiased">
+
+<!-- Modal de Autenticación -->
+<div id="authModal" class="modal hidden">
+  <div class="modal-content">
+    <h2 class="text-2xl font-bold mb-4 text-white" id="authModalTitle">Sign in</h2>
+    <form id="authForm">
+      <input type="email" id="authEmail" placeholder="Email" class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3 mb-3 text-white" required>
+      <input type="password" id="authPassword" placeholder="Password" class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3 mb-4 text-white" required>
+      <div class="flex gap-3">
+        <button type="submit" id="authSubmitBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-3 rounded-xl flex-1">Sign In</button>
+        <button type="button" id="switchAuthModeBtn" class="border border-white/20 hover:bg-white/5 px-4 py-3 rounded-xl text-white">Sign Up</button>
+      </div>
+    </form>
+    <button id="closeAuthModal" class="mt-4 text-sm text-gray-400 hover:text-white">Cancel</button>
+    <div id="authError" class="text-red-400 text-sm mt-3"></div>
+  </div>
+</div>
 
 <main class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
 
   <!-- HEADER -->
   <header class="flex flex-wrap items-center justify-between gap-4 mb-10">
     <div class="flex items-center gap-3">
-      <div class="h-11 w-11 rounded-2xl bg-gradient-to-br from-electric to-cyan-400 flex items-center justify-center shadow-glow">
+      <div class="h-11 w-11 rounded-2xl bg-gradient-to-br from-blue-600 to-cyan-400 flex items-center justify-center shadow-glow">
         <i class="fas fa-scissors text-white text-xl"></i>
       </div>
-      <span class="font-display font-bold text-2xl tracking-tight">ClipCraft<span class="text-electric"> AI</span></span>
-      <span class="ml-2 text-xs font-medium bg-electric/20 text-electric px-3 py-1 rounded-full border border-electric/30">BETA</span>
+      <span class="font-display font-bold text-2xl tracking-tight">ClipCraft<span class="text-blue-500"> AI</span></span>
+      <span class="ml-2 text-xs font-medium bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full border border-blue-500/30">BETA</span>
     </div>
     <div class="flex items-center gap-3 sm:gap-5">
       <a href="#pricing" class="text-sm font-medium text-gray-300 hover:text-white transition">Pricing</a>
       <button id="authBtn" class="glass px-5 py-2.5 rounded-full text-sm font-medium border border-white/5 hover:bg-white/10 transition flex items-center gap-2">
-        <i class="fas fa-user-astronaut text-electric"></i> <span id="authText">Sign in</span>
+        <i class="fas fa-user-astronaut text-blue-400"></i> <span id="authText">Sign in</span>
       </button>
     </div>
   </header>
 
   <!-- HERO -->
   <div class="text-center mb-12 lg:mb-16">
-    <div class="inline-flex items-center gap-2 glass px-5 py-2 rounded-full text-xs sm:text-sm font-medium mb-6 border border-electric/20">
+    <div class="inline-flex items-center gap-2 glass px-5 py-2 rounded-full text-xs sm:text-sm font-medium mb-6 border border-blue-500/20">
       <span class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span> 3 FREE CLIPS — no card required
     </div>
     <h1 class="font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight max-w-5xl mx-auto leading-[1.1]">
-      Turn <span class="text-electric">8‑hour podcasts</span> into <br class="hidden sm:block"> viral clips <span class="bg-gradient-to-r from-cyan-300 to-electric bg-clip-text text-transparent">in minutes</span>
+      Turn <span class="text-blue-500">8‑hour podcasts</span> into <br class="hidden sm:block"> viral clips <span class="bg-gradient-to-r from-cyan-300 to-blue-500 bg-clip-text text-transparent">in minutes</span>
     </h1>
     <p class="text-base sm:text-lg text-gray-300 max-w-3xl mx-auto mt-6">
-      Paste a YouTube link or upload a file — AI finds highlights, adds captions, and delivers clips for TikTok, Reels, Shorts.
+      Upload a video/audio file — AI finds highlights, adds captions, and delivers clips for TikTok, Reels, Shorts.
     </p>
   </div>
 
   <!-- MAIN PANEL -->
   <div class="glass rounded-3xl p-5 sm:p-8 border border-white/5 shadow-2xl mb-10">
     <div class="flex border-b border-white/10 pb-3 gap-1">
-      <button class="tab-btn active px-5 py-2.5 text-sm font-medium rounded-xl bg-white/5 text-white transition" data-tab="link"><i class="fas fa-link mr-2"></i>Paste link</button>
-      <button class="tab-btn px-5 py-2.5 text-sm font-medium rounded-xl text-gray-400 hover:text-white transition" data-tab="upload"><i class="fas fa-cloud-upload-alt mr-2"></i>Upload file</button>
+      <button class="tab-btn active px-5 py-2.5 text-sm font-medium rounded-xl text-white transition" data-tab="upload">
+        <i class="fas fa-cloud-upload-alt mr-2"></i>Upload file
+      </button>
+      <button class="tab-btn px-5 py-2.5 text-sm font-medium rounded-xl text-gray-400 hover:text-white transition" data-tab="link">
+        <i class="fas fa-link mr-2"></i>Paste link (soon)
+      </button>
     </div>
 
-    <!-- LINK PANEL -->
-    <div id="panel-link" class="mt-6 space-y-5">
-      <div>
-        <label class="block text-sm font-medium text-gray-300 mb-2"><i class="fas fa-globe mr-1"></i>YouTube, Vimeo, podcast RSS, etc.</label>
-        <div class="flex flex-col sm:flex-row gap-3">
-          <input type="url" id="mediaUrl" placeholder="https://www.youtube.com/watch?v=..." class="w-full bg-black/30 border border-white/10 rounded-2xl px-5 py-4 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-electric/50 transition">
-          <button id="fetchUrlBtn" class="bg-electric hover:bg-electric/90 text-white font-semibold px-8 py-4 rounded-2xl transition flex items-center justify-center gap-2 shadow-glow whitespace-nowrap"><i class="fas fa-cloud-download-alt"></i> Fetch</button>
-        </div>
-      </div>
-      <div id="urlPreview" class="hidden mt-4 p-4 bg-white/5 rounded-2xl border border-white/5 flex items-center gap-4">
-        <i class="fab fa-youtube text-3xl text-red-500"></i>
-        <div><p class="font-medium" id="previewTitle">Ready to analyze</p><p class="text-xs text-gray-400" id="previewDuration">Duration will be detected</p></div>
-      </div>
-    </div>
-
-    <!-- UPLOAD PANEL -->
-    <div id="panel-upload" class="hidden mt-6">
-      <div class="border-2 border-dashed border-white/20 rounded-3xl p-8 text-center bg-black/20 hover:border-electric/50 transition cursor-pointer" id="dropZone">
-        <i class="fas fa-cloud-upload-alt text-4xl text-electric mb-3"></i>
-        <p class="font-medium">Drag & drop or <span class="text-electric underline">choose a file</span></p>
-        <p class="text-xs text-gray-400 mt-2">MP4, MOV, MKV, MP3, WAV – up to 8h / 4GB</p>
+    <!-- PANEL UPLOAD -->
+    <div id="panel-upload" class="mt-6">
+      <div class="border-2 border-dashed border-white/20 rounded-3xl p-8 text-center bg-black/20 hover:border-blue-500/50 transition cursor-pointer" id="dropZone">
+        <i class="fas fa-cloud-upload-alt text-4xl text-blue-500 mb-3"></i>
+        <p class="font-medium">Drag & drop or <span class="text-blue-500 underline">choose a file</span></p>
+        <p class="text-xs text-gray-400 mt-2">MP4, MOV, MKV, MP3, WAV – up to 2GB (large files may take time)</p>
         <input type="file" id="fileInput" accept="video/*,audio/*" class="hidden">
       </div>
       <div id="uploadPreview" class="hidden mt-4 p-4 bg-white/5 rounded-2xl"></div>
     </div>
 
-    <!-- CONFIGURATION PANEL -->
+    <!-- PANEL LINK (informativo) -->
+    <div id="panel-link" class="hidden mt-6 space-y-5">
+      <div>
+        <label class="block text-sm font-medium text-gray-300 mb-2"><i class="fas fa-globe mr-1"></i>YouTube, Vimeo (coming soon)</label>
+        <div class="flex flex-col sm:flex-row gap-3">
+          <input type="url" id="mediaUrl" placeholder="https://www.youtube.com/watch?v=..." class="w-full bg-black/30 border border-white/10 rounded-2xl px-5 py-4 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition">
+          <button id="fetchUrlBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-4 rounded-2xl transition flex items-center justify-center gap-2 shadow-glow whitespace-nowrap opacity-50 cursor-not-allowed" disabled><i class="fas fa-cloud-download-alt"></i> Fetch</button>
+        </div>
+      </div>
+      <p class="text-xs text-yellow-400">YouTube processing requires backend service. Use file upload for now.</p>
+    </div>
+
+    <!-- CONFIG PANEL -->
     <div id="configPanel" class="hidden mt-8 pt-5 border-t border-white/10">
       <div class="grid grid-cols-2 md:grid-cols-5 gap-4 items-end">
         <div class="col-span-2 md:col-span-1">
           <label class="text-xs uppercase tracking-wider text-gray-400 block mb-1"><i class="fas fa-hashtag mr-1"></i>Clip count</label>
-          <select id="clipCount" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm">
+          <select id="clipCount" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white">
             <option value="3">3 clips (free)</option><option value="5" selected>5 clips</option><option value="10">10 clips</option><option value="15">15 clips</option><option value="20">20 clips</option>
           </select>
         </div>
         <div>
           <label class="text-xs uppercase tracking-wider text-gray-400 block mb-1"><i class="fas fa-clock mr-1"></i>Duration</label>
-          <select id="clipDuration" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm">
+          <select id="clipDuration" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white">
             <option value="15">15 sec</option><option value="30" selected>30 sec</option><option value="45">45 sec</option><option value="60">60 sec</option><option value="90">90 sec</option>
           </select>
         </div>
         <div>
           <label class="text-xs uppercase tracking-wider text-gray-400 block mb-1"><i class="fas fa-mobile-alt mr-1"></i>Platform</label>
-          <select id="platformSelect" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm">
+          <select id="platformSelect" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white">
             <option value="tiktok" selected>TikTok / Reels</option><option value="shorts">YouTube Shorts</option><option value="landscape">Landscape</option>
           </select>
         </div>
         <div>
           <label class="text-xs uppercase tracking-wider text-gray-400 block mb-1"><i class="fas fa-palette mr-1"></i>Style</label>
-          <select id="clipStyle" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm">
+          <select id="clipStyle" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white">
             <option value="energetic">⚡ Energetic</option><option value="educational" selected>📘 Educational</option><option value="motivational">🔥 Motivational</option>
           </select>
         </div>
         <div class="md:text-right">
-          <button id="generateBtn" class="w-full md:w-auto bg-gradient-to-r from-electric to-blue-600 hover:from-blue-600 hover:to-electric text-white font-bold px-8 py-4 rounded-2xl shadow-glow transition flex items-center justify-center gap-2">
+          <button id="generateBtn" class="w-full md:w-auto bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold px-8 py-4 rounded-2xl shadow-glow transition flex items-center justify-center gap-2">
             <i class="fas fa-magic"></i> Generate clips
           </button>
         </div>
       </div>
       <div class="flex flex-wrap gap-6 mt-5 items-center">
-        <label class="flex items-center gap-2 text-sm"><input type="checkbox" id="subtitlesToggle" checked class="w-4 h-4 accent-electric"> Animated captions</label>
-        <label class="flex items-center gap-2 text-sm"><input type="checkbox" id="upscaleToggle" checked class="w-4 h-4 accent-electric"> Upscale (1080p)</label>
+        <label class="flex items-center gap-2 text-sm text-gray-300"><input type="checkbox" id="subtitlesToggle" checked class="w-4 h-4 accent-blue-500"> Animated captions</label>
+        <label class="flex items-center gap-2 text-sm text-gray-300"><input type="checkbox" id="upscaleToggle" checked class="w-4 h-4 accent-blue-500"> Upscale (1080p)</label>
       </div>
     </div>
   </div>
 
   <!-- PROCESSING -->
-  <div id="processingArea" class="hidden glass rounded-3xl p-6 border border-electric/20 mb-10">
+  <div id="processingArea" class="hidden glass rounded-3xl p-6 border border-blue-500/20 mb-10">
     <div class="flex items-center gap-4"><div class="animate-spin text-2xl"><i class="fas fa-spinner"></i></div><span class="font-medium" id="processingMsg">Analyzing content...</span></div>
-    <div class="mt-4 h-2 bg-white/10 rounded-full overflow-hidden"><div id="progressBar" class="h-full bg-electric w-1/3 rounded-full transition-all duration-700"></div></div>
+    <div class="mt-4 h-2 bg-white/10 rounded-full overflow-hidden"><div id="progressBar" class="h-full bg-blue-500 w-1/3 rounded-full transition-all duration-700"></div></div>
   </div>
 
   <!-- CLIPS GRID -->
@@ -149,7 +172,7 @@
     <p class="text-center text-gray-300 mb-6">Start with 3 free clips. Upgrade for advanced AI and editing features.</p>
     <div class="flex justify-center mb-10">
       <div class="glass rounded-full p-1 flex text-sm">
-        <button id="monthlyToggle" class="px-6 py-2 rounded-full bg-electric text-white">Monthly</button>
+        <button id="monthlyToggle" class="px-6 py-2 rounded-full bg-blue-500 text-white">Monthly</button>
         <button id="yearlyToggle" class="px-6 py-2 rounded-full text-gray-300">Yearly (save 20%)</button>
       </div>
     </div>
@@ -170,42 +193,72 @@
 <script>
   (function(){
     "use strict";
+
+    // ---------- CONFIGURACIÓN SUPABASE CON TU ANON KEY ----------
     const SUPABASE_URL = 'https://yuatqhpiqqoouinmxwpq.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_Uux9fZalin3gfbJD8_Y99A_YtGGkfw0';
-    const PAYPAL_EMAIL = 'Yoalexflores12@gmail.com';
-    // NOTA: Necesitarás una API Key de RapidAPI o similar para obtener la URL de descarga de YouTube.
-    // Por ahora, para el MVP, puedes simularlo o integrar un servicio como youtube-dl-exec en tu backend.
     
-    let supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    // ---------- VARIABLES GLOBALES ----------
     let user = null;
     let userPlan = 'free';
-    let currentMedia = { type: 'file', file: null, title: '', url: null };
+    let currentMedia = { type: null, file: null, title: '' };
     let generatedClips = [];
     let isYearly = false;
-    let ffmpeg = null;
+    let ffmpegInstance = null;
 
-    // Elementos del DOM
-    const authBtn = document.getElementById('authBtn'), authText = document.getElementById('authText');
-    const tabBtns = document.querySelectorAll('.tab-btn'), panelLink = document.getElementById('panel-link'), panelUpload = document.getElementById('panel-upload');
-    const mediaUrl = document.getElementById('mediaUrl'), fetchUrlBtn = document.getElementById('fetchUrlBtn');
-    const dropZone = document.getElementById('dropZone'), fileInput = document.getElementById('fileInput');
-    const generateBtn = document.getElementById('generateBtn'), configPanel = document.getElementById('configPanel');
-    const processingArea = document.getElementById('processingArea'), processingMsg = document.getElementById('processingMsg'), progressBar = document.getElementById('progressBar');
-    const clipsGrid = document.getElementById('clipsGrid');
-    const urlPreview = document.getElementById('urlPreview'), previewTitle = document.getElementById('previewTitle');
+    // Elementos DOM
+    const authBtn = document.getElementById('authBtn');
+    const authText = document.getElementById('authText');
+    const authModal = document.getElementById('authModal');
+    const authForm = document.getElementById('authForm');
+    const authEmail = document.getElementById('authEmail');
+    const authPassword = document.getElementById('authPassword');
+    const authSubmitBtn = document.getElementById('authSubmitBtn');
+    const switchAuthModeBtn = document.getElementById('switchAuthModeBtn');
+    const closeAuthModal = document.getElementById('closeAuthModal');
+    const authError = document.getElementById('authError');
+    const authModalTitle = document.getElementById('authModalTitle');
+    
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const panelUpload = document.getElementById('panel-upload');
+    const panelLink = document.getElementById('panel-link');
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
     const uploadPreview = document.getElementById('uploadPreview');
-    const monthlyToggle = document.getElementById('monthlyToggle'), yearlyToggle = document.getElementById('yearlyToggle'), pricingContainer = document.getElementById('pricingContainer');
+    const configPanel = document.getElementById('configPanel');
+    const generateBtn = document.getElementById('generateBtn');
+    const processingArea = document.getElementById('processingArea');
+    const processingMsg = document.getElementById('processingMsg');
+    const progressBar = document.getElementById('progressBar');
+    const clipsGrid = document.getElementById('clipsGrid');
+    const pricingContainer = document.getElementById('pricingContainer');
+    const monthlyToggle = document.getElementById('monthlyToggle');
+    const yearlyToggle = document.getElementById('yearlyToggle');
 
-    // Funciones de UI
-    function showProcessing(show, msg = 'Processing...') { processingArea.classList.toggle('hidden', !show); if(msg) processingMsg.textContent = msg; }
-    function updateProgress(p) { progressBar.style.width = Math.min(p,100)+'%'; }
+    let authMode = 'signIn'; // 'signIn' o 'signUp'
 
-    // Autenticación
+    // ---------- FUNCIONES DE AUTENTICACIÓN ----------
+    function showAuthModal(mode = 'signIn') {
+      authMode = mode;
+      authModalTitle.textContent = mode === 'signIn' ? 'Sign in' : 'Sign up';
+      authSubmitBtn.textContent = mode === 'signIn' ? 'Sign In' : 'Sign Up';
+      switchAuthModeBtn.textContent = mode === 'signIn' ? 'Sign Up' : 'Sign In';
+      authError.textContent = '';
+      authModal.classList.remove('hidden');
+    }
+
+    function hideAuthModal() {
+      authModal.classList.add('hidden');
+    }
+
     async function updateAuthUI() {
       const { data: { user: sbUser } } = await supabase.auth.getUser();
       user = sbUser;
       if (user) {
         authText.textContent = user.email?.split('@')[0] || 'Dashboard';
+        // Obtener plan del usuario
         const { data: profile } = await supabase.from('profiles').select('subscription_tier').eq('id', user.id).single();
         userPlan = profile?.subscription_tier || 'free';
       } else {
@@ -213,140 +266,323 @@
         userPlan = 'free';
       }
     }
-    authBtn.addEventListener('click', async ()=>{
-      if (!user) { 
-        const { error } = await supabase.auth.signInWithOAuth({ provider: 'google' });
-        if (error) alert('Login failed: ' + error.message);
-      } else { 
-        await supabase.auth.signOut(); 
-        user = null; 
-        updateAuthUI(); 
+
+    authBtn.addEventListener('click', () => {
+      if (user) {
+        supabase.auth.signOut().then(() => {
+          user = null;
+          updateAuthUI();
+        });
+      } else {
+        showAuthModal('signIn');
       }
     });
-    updateAuthUI();
 
-    // Cambio de pestañas
-    tabBtns.forEach(b=>b.addEventListener('click', ()=>{
-      tabBtns.forEach(btn=>{ btn.classList.remove('active','bg-white/5','text-white'); btn.classList.add('text-gray-400'); });
-      b.classList.add('active','bg-white/5','text-white'); b.classList.remove('text-gray-400');
-      panelLink.classList.toggle('hidden', b.dataset.tab!=='link');
-      panelUpload.classList.toggle('hidden', b.dataset.tab!=='upload');
-    }));
-
-    // Obtener info de YouTube (simulado para MVP, puedes reemplazar con una API real)
-    fetchUrlBtn.addEventListener('click', async ()=>{
-      const url = mediaUrl.value.trim();
-      if(!url) return alert('Enter a URL');
-      // Simulación: en un caso real, llamarías a tu backend que use youtube-dl
-      previewTitle.textContent = 'Video de YouTube (simulado)';
-      urlPreview.classList.remove('hidden');
-      configPanel.classList.remove('hidden');
-      currentMedia = { type: 'url', url: url, title: 'Video de YouTube', file: null };
+    closeAuthModal.addEventListener('click', hideAuthModal);
+    switchAuthModeBtn.addEventListener('click', () => {
+      authMode = authMode === 'signIn' ? 'signUp' : 'signIn';
+      authModalTitle.textContent = authMode === 'signIn' ? 'Sign in' : 'Sign up';
+      authSubmitBtn.textContent = authMode === 'signIn' ? 'Sign In' : 'Sign Up';
+      switchAuthModeBtn.textContent = authMode === 'signIn' ? 'Sign Up' : 'Sign In';
+      authError.textContent = '';
     });
 
-    // Manejo de archivos subidos
+    authForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = authEmail.value.trim();
+      const password = authPassword.value;
+      authError.textContent = '';
+      
+      let result;
+      if (authMode === 'signIn') {
+        result = await supabase.auth.signInWithPassword({ email, password });
+      } else {
+        result = await supabase.auth.signUp({ email, password });
+      }
+      
+      if (result.error) {
+        authError.textContent = result.error.message;
+      } else {
+        hideAuthModal();
+        await updateAuthUI();
+        // Limpiar formulario
+        authEmail.value = '';
+        authPassword.value = '';
+        // Recargar para asegurar que todo esté actualizado
+        location.reload();
+      }
+    });
+
+    // ---------- PESTAÑAS ----------
+    tabBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        tabBtns.forEach(b => { b.classList.remove('active', 'bg-white/5', 'text-white'); b.classList.add('text-gray-400'); });
+        btn.classList.add('active', 'bg-white/5', 'text-white');
+        btn.classList.remove('text-gray-400');
+        if (btn.dataset.tab === 'upload') {
+          panelUpload.classList.remove('hidden');
+          panelLink.classList.add('hidden');
+        } else {
+          panelUpload.classList.add('hidden');
+          panelLink.classList.remove('hidden');
+        }
+      });
+    });
+
+    // ---------- SUBIDA DE ARCHIVOS ----------
     function handleFile(file) {
-      if(!file) return;
+      if (!file) return;
       currentMedia = { type: 'file', file, title: file.name };
-      uploadPreview.innerHTML = `<div class="flex items-center gap-3"><i class="fas fa-file-video text-2xl text-electric"></i><div><p class="font-medium">${file.name}</p><p class="text-xs text-gray-400">${(file.size/1024/1024).toFixed(2)} MB</p></div></div>`;
+      uploadPreview.innerHTML = `
+        <div class="flex items-center gap-3">
+          <i class="fas fa-file-video text-2xl text-blue-500"></i>
+          <div>
+            <p class="font-medium">${file.name}</p>
+            <p class="text-xs text-gray-400">${(file.size/1024/1024).toFixed(2)} MB</p>
+          </div>
+        </div>
+      `;
       uploadPreview.classList.remove('hidden');
       configPanel.classList.remove('hidden');
     }
-    dropZone.addEventListener('click', ()=> fileInput.click());
-    fileInput.addEventListener('change', e=> { if(e.target.files[0]) handleFile(e.target.files[0]); });
-    dropZone.addEventListener('dragover', e=> { e.preventDefault(); dropZone.classList.add('border-electric'); });
-    dropZone.addEventListener('dragleave', ()=> dropZone.classList.remove('border-electric'));
-    dropZone.addEventListener('drop', e=> { e.preventDefault(); dropZone.classList.remove('border-electric'); const file = e.dataTransfer.files[0]; if(file) handleFile(file); });
 
-    // Inicializar FFmpeg
+    dropZone.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', e => { if (e.target.files[0]) handleFile(e.target.files[0]); });
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('border-blue-500'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-blue-500'));
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropZone.classList.remove('border-blue-500');
+      const file = e.dataTransfer.files[0];
+      if (file) handleFile(file);
+    });
+
+    // ---------- FFMPEG ----------
     async function initFFmpeg() {
-      if (ffmpeg) return ffmpeg;
+      if (ffmpegInstance) return ffmpegInstance;
       const { createFFmpeg, fetchFile } = FFmpeg;
-      ffmpeg = createFFmpeg({ log: false, corePath: 'https://unpkg.com/@ffmpeg/core@0.10.0/dist/ffmpeg-core.js' });
-      await ffmpeg.load();
-      return ffmpeg;
+      ffmpegInstance = createFFmpeg({ log: false });
+      await ffmpegInstance.load();
+      return ffmpegInstance;
     }
 
-    // Generar Clips
+    // ---------- GENERAR CLIPS ----------
     generateBtn.addEventListener('click', async () => {
-      if (!currentMedia.type) return alert('Please select a source (file or YouTube link).');
+      if (!currentMedia.type) return alert('Please select a file first.');
       if (!user) return alert('Please sign in to generate clips.');
       
-      // Control de límite gratuito
+      // Verificar límite gratuito
       if (userPlan === 'free') {
-        const { data: usage } = await supabase.from('user_usage').select('clips_generated_this_month').eq('user_id', user.id).single();
-        if (usage && usage.clips_generated_this_month >= 3) return alert('Free limit reached (3 clips/month). Upgrade to continue!');
+        const { data: usage } = await supabase
+          .from('user_usage')
+          .select('clips_generated_this_month, last_reset')
+          .eq('user_id', user.id)
+          .single();
+        
+        let currentUsage = usage?.clips_generated_this_month || 0;
+        const lastReset = usage?.last_reset ? new Date(usage.last_reset) : null;
+        const now = new Date();
+        
+        // Reiniciar si es nuevo mes
+        if (!lastReset || lastReset.getMonth() !== now.getMonth() || lastReset.getFullYear() !== now.getFullYear()) {
+          await supabase.from('user_usage').upsert({
+            user_id: user.id,
+            clips_generated_this_month: 0,
+            last_reset: now.toISOString().split('T')[0]
+          });
+          currentUsage = 0;
+        }
+        
+        const requestedClips = parseInt(document.getElementById('clipCount').value) || 3;
+        if (currentUsage + requestedClips > 3) {
+          return alert(`Free plan allows only 3 clips per month. You have ${3 - currentUsage} left. Upgrade to generate more.`);
+        }
       }
 
       const count = parseInt(document.getElementById('clipCount').value) || 3;
       const duration = parseInt(document.getElementById('clipDuration').value) || 30;
-
-      showProcessing(true, 'Loading FFmpeg...'); updateProgress(10);
-      await initFFmpeg();
       
-      // Obtener el archivo (para YouTube, esto requeriría un paso adicional de descarga)
+      showProcessing(true, 'Loading FFmpeg...');
+      updateProgress(10);
+      
+      const ffmpeg = await initFFmpeg();
+      const { fetchFile } = FFmpeg;
+      
+      processingMsg.textContent = 'Reading file...';
+      updateProgress(20);
+      
       let fileData;
-      if (currentMedia.type === 'file') {
-        fileData = await FFmpeg.fetchFile(currentMedia.file);
-      } else {
-        // Simulación: en producción, tu backend descargaría el video y lo devolvería.
-        alert('YouTube link processing is simulated. In production, it will work with a backend service.');
-        // Para el MVP, puedes usar un video de prueba local.
-        fileData = await FFmpeg.fetchFile('https://www.w3schools.com/html/mov_bbb.mp4');
+      try {
+        fileData = await fetchFile(currentMedia.file);
+      } catch (err) {
+        alert('Error reading file: ' + err.message);
+        showProcessing(false);
+        return;
       }
-
-      processingMsg.textContent = 'Cutting segments...'; updateProgress(30);
+      
       ffmpeg.FS('writeFile', 'input.mp4', fileData);
       
       generatedClips = [];
-      for (let i=0; i<count; i++) {
-        const start = i * 60;
-        const out = `clip_${i}.mp4`;
-        await ffmpeg.run('-i', 'input.mp4', '-ss', start.toString(), '-t', duration.toString(), '-vf', 'scale=1080:1920', out);
-        const data = ffmpeg.FS('readFile', out);
-        const blob = new Blob([data.buffer], {type: 'video/mp4'});
-        generatedClips.push({ id: i, title: `Clip ${i+1}`, videoUrl: URL.createObjectURL(blob), hook: '🔥 Viral moment detected!', caption: 'Your AI-generated clip.', vScore: (7+Math.random()*3).toFixed(1) });
+      for (let i = 0; i < count; i++) {
+        processingMsg.textContent = `Generating clip ${i+1} of ${count}...`;
+        updateProgress(30 + Math.floor((i / count) * 60));
+        
+        const startTime = i * 60; // Comenzar en minutos diferentes para simular highlights
+        const outputName = `clip_${i}.mp4`;
+        
+        // Comando FFmpeg para recortar y escalar a 9:16 (1080x1920)
+        await ffmpeg.run(
+          '-i', 'input.mp4',
+          '-ss', startTime.toString(),
+          '-t', duration.toString(),
+          '-vf', 'scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920',
+          '-c:v', 'libx264',
+          '-preset', 'ultrafast',
+          '-crf', '23',
+          outputName
+        );
+        
+        const data = ffmpeg.FS('readFile', outputName);
+        const blob = new Blob([data.buffer], { type: 'video/mp4' });
+        const url = URL.createObjectURL(blob);
+        
+        generatedClips.push({
+          id: i,
+          title: `Clip ${i+1}`,
+          videoUrl: url,
+          hook: '🔥 Viral moment detected!',
+          caption: 'Your AI-generated clip.',
+          vScore: (7 + Math.random() * 3).toFixed(1)
+        });
+        
+        // Liberar memoria
+        ffmpeg.FS('unlink', outputName);
+      }
+      
+      ffmpeg.FS('unlink', 'input.mp4');
+      
+      // Actualizar uso en Supabase
+      if (userPlan === 'free') {
+        const { data: usage } = await supabase
+          .from('user_usage')
+          .select('clips_generated_this_month')
+          .eq('user_id', user.id)
+          .single();
+        const newCount = (usage?.clips_generated_this_month || 0) + count;
+        await supabase.from('user_usage').upsert({
+          user_id: user.id,
+          clips_generated_this_month: newCount
+        });
       }
       
       renderClips(generatedClips);
-      await supabase.from('user_usage').upsert({ user_id: user.id, clips_generated_this_month: count }, { onConflict: 'user_id' });
       showProcessing(false);
     });
+
+    function showProcessing(show, msg = 'Processing...') {
+      processingArea.classList.toggle('hidden', !show);
+      if (msg) processingMsg.textContent = msg;
+      if (!show) progressBar.style.width = '0%';
+    }
+
+    function updateProgress(p) {
+      progressBar.style.width = Math.min(p, 100) + '%';
+    }
 
     function renderClips(clips) {
       clipsGrid.innerHTML = '';
       clips.forEach(clip => {
         const card = document.createElement('div');
         card.className = 'glass-card rounded-2xl overflow-hidden border border-white/5';
-        card.innerHTML = `<div class="relative"><video class="w-full aspect-[9/16] object-cover" src="${clip.videoUrl}" controls></video><span class="absolute top-3 right-3 bg-black/60 text-xs px-3 py-1 rounded-full">🔥 ${clip.vScore}</span></div><div class="p-4"><h4>${clip.title}</h4><p class="text-xs text-gray-400">${clip.hook}</p><a href="${clip.videoUrl}" download="clip_${clip.id}.mp4" class="mt-2 inline-block bg-electric px-4 py-2 rounded-full text-xs"><i class="fas fa-download mr-1"></i>Download</a></div>`;
+        card.innerHTML = `
+          <div class="relative">
+            <video class="w-full aspect-[9/16] object-cover" src="${clip.videoUrl}" controls></video>
+            <span class="absolute top-3 right-3 bg-black/60 text-xs px-3 py-1 rounded-full">🔥 ${clip.vScore}</span>
+          </div>
+          <div class="p-4">
+            <h4 class="font-medium">${clip.title}</h4>
+            <p class="text-xs text-gray-400">${clip.hook}</p>
+            <a href="${clip.videoUrl}" download="clip_${clip.id}.mp4" class="mt-3 inline-block bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-full text-xs font-medium transition">
+              <i class="fas fa-download mr-1"></i>Download
+            </a>
+          </div>
+        `;
         clipsGrid.appendChild(card);
       });
     }
 
-    // Renderizado de precios
-    const plans = [{ name:'Free', price:0, clips:3, res:'720p', watermark:true },{ name:'Creator', price:20, clips:30, res:'1080p', watermark:false },{ name:'Pro', price:49, clips:100, res:'4K', watermark:false },{ name:'Agency', price:99, clips:300, res:'4K', watermark:false }];
+    // ---------- PRICING ----------
+    const plans = [
+      { name: 'Free', price: 0, clips: 3, res: '720p', watermark: true },
+      { name: 'Creator', price: 20, clips: 30, res: '1080p', watermark: false },
+      { name: 'Pro', price: 49, clips: 100, res: '4K', watermark: false },
+      { name: 'Agency', price: 99, clips: 300, res: '4K', watermark: false }
+    ];
+
     function renderPricing() {
       pricingContainer.innerHTML = '';
-      plans.forEach((p,i)=>{
-        let displayPrice = isYearly ? Math.round(p.price*0.8) : p.price;
-        if(p.price===0) displayPrice=0;
+      plans.forEach((plan, i) => {
+        let displayPrice = isYearly ? Math.round(plan.price * 0.8) : plan.price;
+        if (plan.price === 0) displayPrice = 0;
+        
         const card = document.createElement('div');
-        card.className = `glass rounded-3xl p-6 border ${i===1?'border-electric/40':'border-white/10'} relative`;
-        card.innerHTML = `${i===1?'<div class="absolute -top-3 right-6 bg-electric text-xs font-bold px-4 py-1 rounded-full">POPULAR</div>':''}<div class="text-2xl mb-2">${p.price===0?'🎁':(i===1?'✨':(i===2?'🚀':'🏢'))}</div><h3 class="text-xl font-bold">${p.name}</h3><p class="text-3xl font-bold mt-3">$${displayPrice}<span class="text-sm font-normal text-gray-400">/mo</span></p><ul class="mt-5 space-y-2 text-sm"><li><i class="fas fa-check text-electric mr-2"></i>${p.clips} clips/mo</li><li><i class="fas fa-check text-electric mr-2"></i>${p.res}</li></ul>`;
+        card.className = `glass rounded-3xl p-6 border ${i === 1 ? 'border-blue-500/40' : 'border-white/10'} relative`;
+        card.innerHTML = `
+          ${i === 1 ? '<div class="absolute -top-3 right-6 bg-blue-500 text-xs font-bold px-4 py-1 rounded-full">POPULAR</div>' : ''}
+          <div class="text-2xl mb-2">${plan.price === 0 ? '🎁' : (i === 1 ? '✨' : (i === 2 ? '🚀' : '🏢'))}</div>
+          <h3 class="text-xl font-bold">${plan.name}</h3>
+          <p class="text-3xl font-bold mt-3">$${displayPrice}<span class="text-sm font-normal text-gray-400">/mo</span></p>
+          <ul class="mt-5 space-y-2 text-sm">
+            <li><i class="fas fa-check text-blue-500 mr-2"></i>${plan.clips} clips/mo</li>
+            <li><i class="fas fa-check text-blue-500 mr-2"></i>${plan.res} export</li>
+            <li><i class="fas ${plan.watermark ? 'fa-times text-gray-500' : 'fa-check text-blue-500'} mr-2"></i>No watermark</li>
+          </ul>
+        `;
+        
         const btn = document.createElement('button');
-        btn.className = `mt-6 w-full py-3 rounded-full text-sm font-medium ${p.price===0?'border border-white/20':'bg-electric text-white'}`;
-        btn.textContent = p.price===0?'Current plan':`Subscribe $${displayPrice}`;
-        if(p.price>0) btn.addEventListener('click', ()=> window.open(`https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=${PAYPAL_EMAIL}&item_name=ClipCraft ${p.name}&amount=${displayPrice}&currency_code=USD`, '_blank'));
+        btn.className = `mt-6 w-full py-3 rounded-full text-sm font-medium transition ${plan.price === 0 ? 'border border-white/20 hover:bg-white/5' : 'bg-blue-600 hover:bg-blue-700 text-white'}`;
+        btn.textContent = plan.price === 0 ? 'Current plan' : `Subscribe $${displayPrice}`;
+        
+        if (plan.price > 0) {
+          btn.addEventListener('click', () => {
+            const paypalUrl = `https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=Yoalexflores12@gmail.com&item_name=ClipCraft%20${plan.name}&amount=${displayPrice}&currency_code=USD`;
+            window.open(paypalUrl, '_blank');
+          });
+        }
+        
         card.appendChild(btn);
         pricingContainer.appendChild(card);
       });
     }
-    monthlyToggle.addEventListener('click', ()=>{ isYearly=false; monthlyToggle.classList.add('bg-electric','text-white'); yearlyToggle.classList.remove('bg-electric','text-white'); yearlyToggle.classList.add('text-gray-300'); renderPricing(); });
-    yearlyToggle.addEventListener('click', ()=>{ isYearly=true; yearlyToggle.classList.add('bg-electric','text-white'); monthlyToggle.classList.remove('bg-electric','text-white'); monthlyToggle.classList.add('text-gray-300'); renderPricing(); });
+
+    monthlyToggle.addEventListener('click', () => {
+      isYearly = false;
+      monthlyToggle.classList.add('bg-blue-500', 'text-white');
+      yearlyToggle.classList.remove('bg-blue-500', 'text-white');
+      yearlyToggle.classList.add('text-gray-300');
+      renderPricing();
+    });
+
+    yearlyToggle.addEventListener('click', () => {
+      isYearly = true;
+      yearlyToggle.classList.add('bg-blue-500', 'text-white');
+      monthlyToggle.classList.remove('bg-blue-500', 'text-white');
+      monthlyToggle.classList.add('text-gray-300');
+      renderPricing();
+    });
+
+    // Footer links
+    document.getElementById('footerTerms').addEventListener('click', e => { e.preventDefault(); alert('GrowthStack AI – Terms of Service'); });
+    document.getElementById('footerPrivacy').addEventListener('click', e => { e.preventDefault(); alert('Privacy Policy'); });
+
+    // Inicializar UI
+    updateAuthUI();
     renderPricing();
-    
-    document.getElementById('footerTerms').addEventListener('click', e=>{ e.preventDefault(); alert('GrowthStack AI – Terms of Service'); });
-    document.getElementById('footerPrivacy').addEventListener('click', e=>{ e.preventDefault(); alert('Privacy Policy'); });
+
+    // Detectar sesión al cargar
+    supabase.auth.onAuthStateChange((event, session) => {
+      updateAuthUI();
+    });
   })();
 </script>
 </body>
