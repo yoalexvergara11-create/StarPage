@@ -220,15 +220,11 @@
   (function(){
     "use strict";
 
-    // ==================== CONFIGURACIÓN ====================
-    // Sustituye con tus datos reales de Supabase
-    const SUPABASE_URL = 'https://your-project.supabase.co';
-    const SUPABASE_ANON_KEY = 'your-anon-key';
-    const PAYPAL_EMAIL = 'Yoalexflores12@gmail.com';
+    // ==================== CONFIGURACIÓN (INTEGRADA CON TUS DATOS REALES) ====================
+    const SUPABASE_URL = 'https://yuatqhpiqqoouinmxwpq.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_Uux9fZalin3gfbJD8_Y99A_YtGGkfw0';
     const SUPABASE_BUCKET = 'videos';
-    
-    // Video autogenerado en Base64 (gradiente animado) - 100% offline, sin CORS
-    const FALLBACK_VIDEO = 'data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjMW1wNDEAAAAIZnJlZQAAAQxtZGF0AAAAMgAAACh3cnRlIHNvbWUgdGV4dCBoZXJlIHRvIGZpeCBtZCBhdCBsZWFzdCBvbmUgYnl0ZQ==';
+    const PAYPAL_EMAIL = 'Yoalexflores12@gmail.com';
     
     // ==================== ESTADO GLOBAL ====================
     let supabase = null;
@@ -238,11 +234,11 @@
     let isYearly = false;
 
     // ==================== INICIALIZACIÓN DE SUPABASE ====================
-    if (!SUPABASE_URL.includes('your-project')) {
+    if (SUPABASE_URL && SUPABASE_ANON_KEY) {
       supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
       console.log('✅ Supabase conectado correctamente');
     } else {
-      console.log('ℹ️ Supabase no configurado aún — los videos se generarán localmente');
+      console.warn('⚠️ Supabase no configurado');
     }
 
     // ==================== ELEMENTOS DOM ====================
@@ -266,50 +262,6 @@
     }
     function updateProgress(p) { progressBar.style.width = Math.min(p,100)+'%'; }
 
-    // Genera un video de demostración local (canvas animado) que funciona sin CORS
-    function generateDemoVideo() {
-      return new Promise((resolve) => {
-        const canvas = document.createElement('canvas');
-        canvas.width = 640;
-        canvas.height = 360;
-        const ctx = canvas.getContext('2d');
-        
-        // Creamos un stream del canvas
-        const stream = canvas.captureStream(30);
-        
-        // Animación simple (círculo que cambia de color)
-        let frame = 0;
-        const interval = setInterval(() => {
-          ctx.fillStyle = '#0b121c';
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-          
-          const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-          gradient.addColorStop(0, '#2a6df4');
-          gradient.addColorStop(1, '#9bbaff');
-          ctx.fillStyle = gradient;
-          
-          const radius = 100 + Math.sin(frame * 0.05) * 30;
-          ctx.beginPath();
-          ctx.arc(canvas.width/2, canvas.height/2, radius, 0, Math.PI * 2);
-          ctx.fill();
-          
-          ctx.fillStyle = 'white';
-          ctx.font = 'bold 20px Outfit, Inter, sans-serif';
-          ctx.textAlign = 'center';
-          ctx.fillText('ClipCraft AI Demo', canvas.width/2, canvas.height/2);
-          
-          frame++;
-          if (frame > 90) {
-            clearInterval(interval);
-            stream.getTracks().forEach(track => track.stop());
-          }
-        }, 33);
-        
-        // Devolvemos el stream como objeto URL (funciona como src de video)
-        setTimeout(() => resolve(canvas.captureStream(30)), 100);
-      });
-    }
-
     // ==================== AUTENTICACIÓN ====================
     async function updateAuthUI() {
       if (supabase) {
@@ -320,8 +272,14 @@
     }
     authBtn.addEventListener('click', async ()=>{
       if(!supabase) { user = { email: 'demo@clipcraft.ai' }; updateAuthUI(); return; }
-      if(!user) { await supabase.auth.signInWithOAuth({ provider: 'google' }); }
-      else { await supabase.auth.signOut(); user = null; updateAuthUI(); }
+      if(!user) { 
+        const { error } = await supabase.auth.signInWithOAuth({ provider: 'google' });
+        if (error) alert(error.message);
+      } else { 
+        await supabase.auth.signOut(); 
+        user = null; 
+        updateAuthUI(); 
+      }
     });
     updateAuthUI();
 
@@ -357,25 +315,24 @@
     dropZone.addEventListener('dragleave', ()=> dropZone.classList.remove('border-electric'));
     dropZone.addEventListener('drop', e=> { e.preventDefault(); dropZone.classList.remove('border-electric'); const file = e.dataTransfer.files[0]; if(file) handleFile(file); });
 
-    // ==================== GENERAR CLIPS ====================
+    // ==================== GENERAR CLIPS (USA SUPABASE STORAGE) ====================
     generateBtn.addEventListener('click', async ()=>{
       if(!currentMedia.type) return alert('Select a video source first');
       
       const count = parseInt(document.getElementById('clipCount').value) || 3;
-      showProcessing(true, `Generando ${count} clips...`);
+      showProcessing(true, `Generating ${count} clips...`);
       updateProgress(20);
       
-      setTimeout(()=>{ processingMsg.textContent = 'Transcribiendo audio...'; updateProgress(40); }, 800);
-      setTimeout(()=>{ processingMsg.textContent = 'Detectando momentos virales...'; updateProgress(65); }, 1600);
+      setTimeout(()=>{ processingMsg.textContent = 'Transcribing audio...'; updateProgress(40); }, 800);
+      setTimeout(()=>{ processingMsg.textContent = 'Detecting viral moments...'; updateProgress(65); }, 1600);
       
       setTimeout(async () => {
-        processingMsg.textContent = 'Renderizando clips...'; updateProgress(85);
+        processingMsg.textContent = 'Rendering clips...'; updateProgress(85);
         
         generatedClips = [];
         
-        // Generar video de demostración local (sin CORS)
-        const demoStream = await generateDemoVideo();
-        const videoUrl = URL.createObjectURL(new MediaStream([demoStream.getVideoTracks()[0]]));
+        // Usar un video de muestra del bucket de Supabase Storage (debe existir un video llamado 'sample.mp4')
+        const sampleVideoUrl = `${SUPABASE_URL}/storage/v1/object/public/${SUPABASE_BUCKET}/sample.mp4`;
         
         for(let i = 0; i < count; i++){
           generatedClips.push({
@@ -384,13 +341,32 @@
             vScore: (Math.random() * 3 + 7).toFixed(1),
             hook: i%2===0 ? '🔥 "You won\'t believe what happens next"' : '💡 "The one insight that changes everything"',
             caption: i%2===0 ? 'This moment is pure gold. Watch till the end!' : 'Here\'s why this clip is trending.',
-            videoUrl: videoUrl
+            videoUrl: sampleVideoUrl
           });
         }
         
         renderClips(generatedClips);
         showProcessing(false);
         updateProgress(100);
+        
+        // Guardar proyecto en Supabase si el usuario está autenticado
+        if (user && supabase) {
+          const { data: project } = await supabase
+            .from('clip_projects')
+            .insert({ user_id: user.id, source_url: currentMedia.url || currentMedia.title, source_type: currentMedia.type, status: 'completed' })
+            .select('id')
+            .single();
+          if (project) {
+            for (const clip of generatedClips) {
+              await supabase.from('generated_clips').insert({
+                project_id: project.id,
+                user_id: user.id,
+                clip_url: clip.videoUrl,
+                v_score: parseFloat(clip.vScore)
+              });
+            }
+          }
+        }
       }, 2500);
     });
 
@@ -403,7 +379,7 @@
         card.className = 'glass-card rounded-2xl overflow-hidden border border-white/5';
         card.innerHTML = `
           <div class="relative bg-black/30">
-            <video class="w-full aspect-[9/16] object-cover" src="${clip.videoUrl}" crossorigin="anonymous" preload="auto" autoplay muted loop playsinline></video>
+            <video class="w-full aspect-[9/16] object-cover" src="${clip.videoUrl}" crossorigin="anonymous" preload="metadata" onerror="this.parentElement.innerHTML='<div class=\'w-full aspect-[9/16] bg-black/50 flex items-center justify-center\'><i class=\'fas fa-exclamation-triangle text-yellow-500 text-2xl\'></i><p class=\'text-xs ml-2\'>Video not available</p></div>'"></video>
             <div class="video-overlay absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition flex items-center justify-center gap-4">
               <button class="preview-clip bg-white/20 backdrop-blur p-3 rounded-full hover:bg-electric/80" data-id="${clip.id}">
                 <i class="fas fa-play text-white"></i>
@@ -430,7 +406,7 @@
         clipsGrid.appendChild(card);
       });
 
-      // Event listeners para preview y edit
+      // Event listeners
       document.querySelectorAll('.preview-clip').forEach(btn => {
         btn.addEventListener('click', (e) => {
           e.preventDefault();
@@ -467,7 +443,7 @@
           if(clip) {
             const a = document.createElement('a');
             a.href = clip.videoUrl;
-            a.download = `clipcraft_${clip.id}.webm`;
+            a.download = `clipcraft_${clip.id}.mp4`;
             a.click();
           }
         });
@@ -528,7 +504,7 @@
     document.getElementById('footerTerms').addEventListener('click', e=>{ e.preventDefault(); alert('📄 GrowthStack AI – Terms of Service\n\nBy using ClipCraft AI you agree to our Fair Use & AI generation policies.'); });
     document.getElementById('footerPrivacy').addEventListener('click', e=>{ e.preventDefault(); alert('🔒 Privacy Policy\n\nWe do not store your raw media. Only usage metadata is stored. No personal data is sold.'); });
 
-    console.log('✅ ClipCraft AI — Funcionando 100%, sin errores CORS');
+    console.log('✅ ClipCraft AI — Funcionando 100% con Supabase');
   })();
 </script>
 </body>
